@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arknights of War</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="slideshow-container">
+        <div class="slide fade">
+            <img src="assets/images/FrostNova27s_Death_2.png" alt="Image 1">
+        </div>
+        <div class="slide fade">
+            <img src="assets/images/Avg_60_i04.png" alt="Image 2">
+        </div>
+        <div class="slide fade">
+            <img src="assets/images/Avg_60_i19_2.png" alt="Image 3">
+        </div>
+        <div class="text-overlay">Arknights of War</div>
+        <button class="play-button" id="playButton">Chơi Đơn</button>
+    </div>
+
+    <div id="characterSelection" class="character-selection">
+        <div class="character-container">
+            <h2>Chọn Nhân Vật</h2>
+            <div class="character-panel">
+                <div class="character-list" id="characterList"></div>
+                <div class="character-info">
+                    <h3>Chọn một nhân vật để xem thông tin</h3>
+                    <div class="info-content">
+                        <h4 id="infoName"></h4>
+                        <div class="info-section" id="infoStats"></div>
+                        <!-- <div class="info-section" id="infoSkills"></div>
+                        <div class="info-section" id="infoTalent"></div>
+                        <div class="info-section" id="infoTrait"></div> -->
+                    </div>
+                </div>
+            </div>
+            <div class="selected-characters">
+                <h3>Nhân vật đã chọn</h3>
+                <div class="selected-list" id="selectedList"></div>
+            </div>
+            <div class="button-group">
+                <button class="start-game-button" disabled>Bắt Đầu Trò Chơi</button>
+                <button class="close-button" id="closeButton">Đóng</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="main.js"></script>
+    <script src="showslide.js"></script>
+</body>
+
+</html>

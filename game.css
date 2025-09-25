@@ -1,0 +1,47 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: transparent;
+}
+
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+#backgroundCanvas {
+    z-index: 1;
+    /* Background canvas below WebGL canvas */
+}
+
+#canvas {
+    z-index: 2;
+    /* WebGL canvas above background */
+}
+
+.controls {
+    position: absolute;
+    bottom: 10px; /* Đặt ở dưới cùng */
+    left: 10px;   /* Đặt ở bên trái */
+    z-index: 3;
+    /* Controls above canvases */
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    color: white;
+    transform: scale(0.5); /* Phóng to div .controls lên 1.5 lần */
+    transform-origin: bottom left; /* Điểm gốc phóng to từ góc dưới bên trái */
+}
+
+.controls .avatar {
+    cursor: pointer; /* Con trỏ chuột hiển thị khi di chuột qua */
+    margin-right: 10px; /* Khoảng cách giữa các avatar */
+    border: 2px solid transparent; /* Viền mặc định trong suốt */
+    transition: border-color 0.2s; /* Hiệu ứng chuyển đổi viền */
+}
+
+.controls .avatar:hover {
+    border-color: #fff; /* Viền trắng khi di chuột qua */
+}
