@@ -1,4 +1,4 @@
-import { characterDataObj } from 'Character.js';
+import { characterDataObj } from 'character.js';
 
 let selectedCharacters = [];
 let currentCharacter = null;
