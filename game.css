@@ -40,6 +40,9 @@ canvas {
     margin-right: 10px; /* Khoảng cách giữa các avatar */
     border: 2px solid transparent; /* Viền mặc định trong suốt */
     transition: border-color 0.2s; /* Hiệu ứng chuyển đổi viền */
+    -webkit-user-drag: none; /* Hỗ trợ trình duyệt WebKit */
+    user-select: none; /* Ngăn chọn ảnh */
+    pointer-events: auto; /* Đảm bảo ảnh vẫn có thể nhấp */
 }
 
 .controls .avatar:hover {

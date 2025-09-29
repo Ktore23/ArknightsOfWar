@@ -4,12 +4,24 @@ import { isOverlappingWithOtherUnit } from './render.js';
 
 let botUnitsByType = {};  // Object động: { "Surtr": [], "Shu": [], ... }
 let botInterval;
+let botDP = 20; // DP ban đầu cho bot
+const MAX_DP = 50; // DP tối đa
+const MAX_UNITS_PER_SIDE = 10; // Giới hạn 10 unit mỗi bên
+let botLastDeployTime = {}; // Lưu thời gian thả cuối cùng cho mỗi char
+const DP_REGEN_RATE = 1; // +1 DP mỗi giây
 
 export function initBot(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH) {
-  // Khởi tạo array cho từng type trong botSelected
   botSelected.forEach(char => {
     botUnitsByType[char] = [];
+    botLastDeployTime[char] = 0; // Khởi tạo cooldown
   });
+
+  // Regenerate DP cho bot
+  setInterval(() => {
+    if (botDP < MAX_DP) {
+      botDP = Math.min(botDP + DP_REGEN_RATE, MAX_DP);
+    }
+  }, 1000);
 
   botInterval = setInterval(() => {
     tryAddBotUnit(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH);
@@ -39,6 +51,26 @@ function tryAddBotUnit(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH) {
 
   const botArray = botUnitsByType[characterName];
   const allBots = Object.values(botUnitsByType).flat();  // Tất cả bot units để check overlap
+
+  // Kiểm tra giới hạn unit
+  if (allBots.length >= MAX_UNITS_PER_SIDE) {
+    console.log(`Bot đã đạt giới hạn ${MAX_UNITS_PER_SIDE} unit!`);
+    return;
+  }
+
+  // Kiểm tra DP
+  const stats = characterDataObj[characterName];
+  if (botDP < stats.dp) {
+    console.log(`Bot không đủ DP để thả ${characterName}! Cần ${stats.dp} DP, hiện có ${botDP} DP.`);
+    return;
+  }
+
+  // Kiểm tra cooldown
+  const now = Date.now();
+  if (botLastDeployTime[characterName] && now - botLastDeployTime[characterName] < stats.cd * 1000) {
+    console.log(`Cooldown cho ${characterName} của bot chưa hết!`);
+    return;
+  }
 
   if (!isLoadingComplete()) {
     console.log(`Assets ${characterName} chưa load xong, thử lại sau...`);
@@ -88,7 +120,7 @@ function tryAddBotUnit(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH) {
   }
   newUnit.direction = -1;
   newUnit.skeleton.scaleX = -1;
-  const stats = characterDataObj[characterName];
+  // const stats = characterDataObj[characterName];
   newUnit.hp = stats.hp;
   newUnit.maxHp = stats.hp;
   newUnit.velocity = 50;

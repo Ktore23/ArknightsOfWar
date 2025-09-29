@@ -17,6 +17,12 @@ let isGameOver = false;
 export let importedModules = {}; // Object lưu module dynamic: { "Surtr": { initSurtr, loadSurtrSkeleton, ... }, ... }
 let selectedCharacters = []; // Sẽ đọc từ localStorage
 export let botSelected = [];  // Export để bot.js dùng
+// Thêm biến mới
+let playerDP = 20; // DP ban đầu cho người chơi
+const MAX_DP = 50; // DP tối đa
+const MAX_UNITS_PER_SIDE = 10; // Giới hạn 10 unit mỗi bên
+let lastDeployTime = {}; // Lưu thời gian thả cuối cùng cho mỗi char
+const DP_REGEN_RATE = 1; // +1 DP mỗi giây
 
 const WORLD_WIDTH = 4000;
 const CAMERA_SPEED = 1000;
@@ -172,18 +178,93 @@ async function init() {
 
   initBot(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH);
 
-  // Dynamic append avatar và add event listener
+  // Thêm UI hiển thị DP
   const controls = document.querySelector('.controls');
-  for (let char of selectedCharacters) {
+  const dpDisplay = document.createElement('div');
+  dpDisplay.id = 'dpDisplay';
+  dpDisplay.style.color = 'white';
+  dpDisplay.style.marginTop = '10px';
+  dpDisplay.style.fontSize = '50px'; // Tăng kích thước chữ lên 20px (từ mặc định ~16px)
+  dpDisplay.style.fontWeight = 'bold'; // Làm chữ đậm để dễ đọc
+  dpDisplay.style.padding = '5px'; // Thêm padding cho đẹp
+  dpDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)'; // Nền tối hơn một chút
+  dpDisplay.style.borderRadius = '5px'; // Bo góc cho đẹp
+  dpDisplay.textContent = `DP: ${playerDP}/${MAX_DP}`;
+  controls.appendChild(dpDisplay);
+
+  // Thêm UI hiển thị số lượng unit
+  const unitDisplay = document.createElement('div');
+  unitDisplay.id = 'unitDisplay';
+  unitDisplay.style.color = 'white';
+  unitDisplay.style.marginTop = '5px';
+  unitDisplay.style.fontSize = '50px';
+  unitDisplay.style.fontWeight = 'bold';
+  unitDisplay.style.padding = '5px';
+  unitDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+  unitDisplay.style.borderRadius = '5px';
+  unitDisplay.textContent = `Units: ${[...surtrs, ...shus, ...chens, ...frostNovas].length}/${MAX_UNITS_PER_SIDE}`;
+  controls.appendChild(unitDisplay);
+
+  // Regenerate DP mỗi giây
+  setInterval(() => {
+    if (playerDP < MAX_DP) {
+      playerDP = Math.min(playerDP + DP_REGEN_RATE, MAX_DP);
+      dpDisplay.textContent = `DP: ${playerDP}/${MAX_DP}`;
+    }
+  }, 1000);
+
+  // Khởi tạo lastDeployTime và thêm UI hiển thị CD cho mỗi avatar
+  selectedCharacters.forEach(char => {
+    lastDeployTime[char] = 0;
+    const avatarContainer = document.createElement('div');
+    avatarContainer.style.position = 'relative';
+    avatarContainer.style.display = 'inline-block';
+    avatarContainer.style.marginRight = '10px';
+
     const avatar = document.createElement('img');
-    avatar.src = characterDataObj[char].image.replace('50', '50'); // Lấy từ characterDataObj, adjust size nếu cần
+    avatar.src = characterDataObj[char].image.replace('50', '50');
     avatar.alt = char;
     avatar.classList.add('avatar');
-    avatar.dataset.char = char; // Lưu type để click
-    controls.appendChild(avatar);
+    avatar.dataset.char = char;
+    avatar.draggable = false;
+    avatar.ondragstart = () => false;
+    avatarContainer.appendChild(avatar);
 
+    const cdDisplay = document.createElement('div');
+    cdDisplay.id = `cdDisplay-${char}`;
+    cdDisplay.style.position = 'absolute';
+    cdDisplay.style.top = '50%'; // Căn giữa theo chiều dọc
+    cdDisplay.style.left = '50%'; // Căn giữa theo chiều ngang
+    cdDisplay.style.transform = 'translate(-50%, -50%)'; // Dịch chuyển để căn giữa chính xác
+    cdDisplay.style.width = '100%';
+    cdDisplay.style.textAlign = 'center';
+    cdDisplay.style.color = 'white';
+    cdDisplay.style.fontSize = '50px';
+    cdDisplay.style.fontWeight = 'bold';
+    cdDisplay.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
+    cdDisplay.style.borderRadius = '3px';
+    cdDisplay.style.padding = '2px';
+    cdDisplay.style.lineHeight = 'normal'; // Đảm bảo text căn giữa dọc
+    cdDisplay.style.opacity = '0';
+    avatarContainer.appendChild(cdDisplay);
+
+    avatarContainer.avatar = avatar; // Lưu avatar để truy cập trong render
     avatar.addEventListener('click', () => tryAddNewUnit(char));
-  }
+    controls.appendChild(avatarContainer);
+  });
+
+  // Dynamic append avatar và add event listener
+  // const controls = document.querySelector('.controls');
+  // for (let char of selectedCharacters) {
+  //   const avatar = document.createElement('img');
+  //   avatar.src = characterDataObj[char].image.replace('50', '50'); // Lấy từ characterDataObj, adjust size nếu cần
+  //   avatar.alt = char;
+  //   avatar.classList.add('avatar');
+  //   avatar.dataset.char = char; // Lưu type để click
+  //   controls.appendChild(avatar);
+
+  //   avatar.addEventListener('click', () => tryAddNewUnit(char));
+  // }
 
   canvas.addEventListener('mousemove', (event) => {
     const rect = canvas.getBoundingClientRect();
@@ -239,6 +320,27 @@ function tryAddNewUnit(char) {
   if (!isLoadingComplete || !isLoadingComplete()) {
     console.log(`Assets ${char} chưa load xong, thử lại sau...`);
     requestAnimationFrame(() => tryAddNewUnit(char));
+    return;
+  }
+
+  const stats = characterDataObj[char];
+  // Kiểm tra DP
+  if (playerDP < stats.dp) {
+    console.log(`Không đủ DP để thả ${char}! Cần ${stats.dp} DP, hiện có ${playerDP} DP.`);
+    return;
+  }
+
+  // Kiểm tra cooldown
+  const now = Date.now();
+  if (lastDeployTime[char] && now - lastDeployTime[char] < stats.cd * 1000) {
+    console.log(`Cooldown cho ${char} chưa hết! Cần chờ thêm ${((stats.cd * 1000 - (now - lastDeployTime[char])) / 1000).toFixed(1)} giây.`);
+    return;
+  }
+
+  // Kiểm tra giới hạn unit
+  const playerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
+  if (playerUnits.length >= MAX_UNITS_PER_SIDE) {
+    console.log(`Đã đạt giới hạn ${MAX_UNITS_PER_SIDE} unit cho người chơi!`);
     return;
   }
 
@@ -301,16 +403,21 @@ function tryAddNewUnit(char) {
     return;
   }
 
-  const stats = characterDataObj[char];
+  // const stats = characterDataObj[char];
   newUnit.hp = stats.hp;
   newUnit.maxHp = stats.hp;
   newUnit.velocity = 50; // Giá trị mặc định, có thể lấy từ stats nếu có
   newUnit.direction = 1; // Di chuyển sang phải
   newUnit.skeleton.scaleX = 1; // Hướng mặc định
 
-  units.push(newUnit);
-  setUnitsArray(char, units);
-  console.log(`Thả ${char} mới tại worldX=${newWorldX}, HP=${newUnit.hp}/${newUnit.maxHp}. Tổng units: ${allPlayerUnits.length + 1}`);
+  // Trừ DP và cập nhật thời gian thả
+  playerDP -= stats.dp;
+  lastDeployTime[char] = now;
+  document.getElementById('dpDisplay').textContent = `DP: ${playerDP}/${MAX_DP}`;
+  document.getElementById('unitDisplay').textContent = `Units: ${playerUnits.length + 1}/${MAX_UNITS_PER_SIDE}`;
+
+  getUnitsArray(char).push(newUnit);
+  console.log(`Thả ${char} tại worldX=${DEFAULT_SURTR_X}, HP=${newUnit.hp}/${newUnit.maxHp}. Tổng unit người chơi: ${playerUnits.length + 1}`);
 }
 
 function showGameOverMessage(winner) {
@@ -479,6 +586,25 @@ function render() {
   const playerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
   const botUnits = getBotUnits();
 
+  // Cập nhật hiển thị CD và opacity cho mỗi avatar
+  const now = Date.now();
+  selectedCharacters.forEach(char => {
+    const cdDisplay = document.getElementById(`cdDisplay-${char}`);
+    const avatarContainer = cdDisplay.parentElement;
+    const avatar = avatarContainer.avatar;
+    const stats = characterDataObj[char];
+    const cdRemaining = lastDeployTime[char] ? Math.max(0, stats.cd - (now - lastDeployTime[char]) / 1000) : 0;
+    if (cdRemaining > 0) {
+      cdDisplay.textContent = `${cdRemaining.toFixed(1)}s`;
+      cdDisplay.style.opacity = '1';
+      avatar.style.opacity = '0.5'; // Làm mờ avatar khi đang CD
+    } else {
+      cdDisplay.textContent = '';
+      cdDisplay.style.opacity = '0';
+      avatar.style.opacity = '1'; // Khôi phục opacity khi CD hết
+    }
+  });
+
   // Render player units chỉ cho selected
   for (let char of selectedCharacters) {
     const module = importedModules[char];
@@ -522,6 +648,10 @@ function render() {
     const filtered = units.filter(unit => !unit.deathAnimationComplete);
     setUnitsArray(char, filtered);
   }
+
+  // Cập nhật UI số lượng unit sau khi filter
+  const updatedPlayerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
+  document.getElementById('unitDisplay').textContent = `Units: ${updatedPlayerUnits.length}/${MAX_UNITS_PER_SIDE}`;
 
   // Update bot units
   updateBotUnits(delta, camera, canvas, groundTileImage, WORLD_WIDTH, GROUND_Y, TOWER_POSITIONS, backgroundCtx, gl, botUnits, playerUnits);

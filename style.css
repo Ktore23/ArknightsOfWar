@@ -27,6 +27,9 @@ body {
     height: 100%;
     object-fit: cover;
     object-position: center;
+    -webkit-user-drag: none; /* Hỗ trợ trình duyệt WebKit */
+    user-select: none; /* Ngăn chọn ảnh */
+    pointer-events: auto; /* Đảm bảo ảnh vẫn có thể nhấp */
 }
 
 .fade {
@@ -175,6 +178,9 @@ body {
     object-fit: cover;
     border-radius: 5px;
     margin-bottom: 5px;
+    -webkit-user-drag: none; /* Hỗ trợ trình duyệt WebKit */
+    user-select: none; /* Ngăn chọn ảnh */
+    pointer-events: auto; /* Đảm bảo ảnh vẫn có thể nhấp */
 }
 
 .character p {
@@ -313,6 +319,9 @@ body {
     object-fit: cover;
     border-radius: 5px;
     border: 2px solid #ff416c;
+    -webkit-user-drag: none; /* Hỗ trợ trình duyệt WebKit */
+    user-select: none; /* Ngăn chọn ảnh */
+    pointer-events: auto; /* Đảm bảo ảnh vẫn có thể nhấp */
 }
 
 .button-group {
