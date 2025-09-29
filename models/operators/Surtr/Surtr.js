@@ -130,7 +130,8 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         isDead: false, // Thêm trạng thái chết
         deathAnimationTimer: 0, // Timer để theo dõi thời gian animation Die
         deathAnimationComplete: false, // Trạng thái hoàn tất animation Die
-        groundY: GROUND_Y
+        groundY: GROUND_Y,
+        type: "Surtr"
     };
     return surtrData;
 }

@@ -130,7 +130,8 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
         isDead: false,
         deathAnimationTimer: 0,
         deathAnimationComplete: false,
-        groundY: GROUND_Y // Lưu GROUND_Y vào shuData
+        groundY: GROUND_Y, // Lưu GROUND_Y vào shuData
+        type: "Shu"
     };
     return shuData;
 }

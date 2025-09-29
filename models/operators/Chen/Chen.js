@@ -130,7 +130,8 @@ export function loadChenSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         isDead: false,
         deathAnimationTimer: 0,
         deathAnimationComplete: false,
-        groundY: GROUND_Y
+        groundY: GROUND_Y,
+        type: "Ch'en"
     };
     return chenData;
 }

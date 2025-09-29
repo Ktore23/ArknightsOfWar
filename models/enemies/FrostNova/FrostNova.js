@@ -128,7 +128,8 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
         deathAnimationTimer: 0, // Timer để theo dõi thời gian animation Die
         deathAnimationComplete: false, // Trạng thái hoàn tất animation Die
         groundY: GROUND_Y,
-        blockedFrameCount: 0  // THÊM: Khởi tạo debounce counter cho blocked
+        blockedFrameCount: 0,  // THÊM: Khởi tạo debounce counter cho blocked
+        type: "Frost Nova"
     };
     frostNovaData.skeleton.scaleX = frostNovaData.direction;
     return frostNovaData;
