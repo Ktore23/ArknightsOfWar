@@ -62,11 +62,11 @@ groundTileImage.onerror = () => { console.error("Failed to load ground tile"); }
 
 // Map path module cho từng nhân vật (thêm khi có nhân vật mới)
 const characterModules = {
-  "Surtr": '/models/operators/Surtr/Surtr.js',
-  "Shu": '/models/operators/Shu/Shu.js',
-  "Ch'en": '/models/operators/Chen/Chen.js', // Lưu ý: "Ch'en" trong data, nhưng dùng "Chen" cho module
-  "Frost Nova": '/models/enemies/FrostNova/FrostNova.js', // Nếu có space trong name, dùng như vậy
-  "Exusiai": '/models/operators/Exusiai/Exusiai.js'
+  "Surtr": './models/operators/Surtr/Surtr.js',
+  "Shu": './models/operators/Shu/Shu.js',
+  "Ch'en": './models/operators/Chen/Chen.js', // Lưu ý: "Ch'en" trong data, nhưng dùng "Chen" cho module
+  "Frost Nova": './models/enemies/FrostNova/FrostNova.js', // Nếu có space trong name, dùng như vậy
+  "Exusiai": './models/operators/Exusiai/Exusiai.js'
 };
 
 // THÊM MỚI: Map để xử lý tên nhân vật có dấu/special char (như "Ch'en" -> "Chen") để gọi hàm đúng
