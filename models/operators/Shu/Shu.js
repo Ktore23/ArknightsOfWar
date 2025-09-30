@@ -1,4 +1,4 @@
-import { characterDataObj } from './character.js';
+import { characterDataObj } from '/character.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let debugRenderer, debugShader, shapes;
