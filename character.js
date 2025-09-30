@@ -36,7 +36,7 @@ class Character {
 export const characterData = [
   new Character(
     "Surtr",
-    "/assets/avatars/operators/Surtr/SurtrSummer/surtr_summer.png",
+    "./assets/avatars/operators/Surtr/SurtrSummer/surtr_summer.png",
     2916, // HP
     414, // DEF
     15, // RES
@@ -53,7 +53,7 @@ export const characterData = [
   ),
   new Character(
     "Shu",
-    "/assets/avatars/operators/Shu/ShuNian/shu_nian.png",
+    "./assets/avatars/operators/Shu/ShuNian/shu_nian.png",
     3213, // HP
     602, // DEF
     10, // RES
@@ -70,7 +70,7 @@ export const characterData = [
   ),
   new Character(
     "Frost Nova",
-    "/assets/avatars/enemies/frostnova/frostnova2/frostnova2.png",
+    "./assets/avatars/enemies/frostnova/frostnova2/frostnova2.png",
     30000, // HP
     380, // DEF
     50, // RES
@@ -87,7 +87,7 @@ export const characterData = [
   ),
   new Character(
     "Ch'en",
-    "/assets/avatars/operators/Chen/ChenNian/chen_nian.png",
+    "./assets/avatars/operators/Chen/ChenNian/chen_nian.png",
     2880, // HP
     352, // DEF
     0, // RES
@@ -104,7 +104,7 @@ export const characterData = [
   ),
   new Character(
     "Exusiai",
-    "/assets/avatars/operators/Exusiai/ExusiaiSale/char_103_angel_sale8.png",
+    "./assets/avatars/operators/Exusiai/ExusiaiSale/char_103_angel_sale8.png",
     1673, // HP
     161, // DEF
     0, // RES
