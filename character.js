@@ -70,7 +70,7 @@ export const characterData = [
   ),
   new Character(
     "Frost Nova",
-    "./assets/avatars/enemies/Frostnova/rostnova2/frostnova2.png",
+    "./assets/avatars/enemies/FrostNova/FrostNova2/frostnova2.png",
     30000, // HP
     380, // DEF
     50, // RES
