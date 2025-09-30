@@ -103,14 +103,16 @@ export const characterData = [
     "Đặc tính: <em>Pháp Sư</em> - Tăng <u>15% sát thương phép</u>."
   ),
   new Character(
-    "Nhân Vật 5",
-    "https://via.placeholder.com/150?text=Char5",
-    950, // HP
-    65, // DEF
-    60, // RES
+    "Exusiai",
+    "/assets/avatars/operators/Exusiai/ExusiaiSale/char_103_angel_sale8.png",
+    1673, // HP
+    161, // DEF
+    0, // RES
     75, // SPD
     1.6, // SPDATK
-    130, // ATK
+    540, // ATK
+    12, // DP
+    8, // Cooldown
     "Kỹ năng 1: <em>Cơn Thịnh Nộ</em> - Tăng <span style='color: orange;'>30% sát thương</span> trong <u>12 giây</u>.",
     "Kỹ năng 2: <em>Chí Mạng</em> - Gây <span style='color: red;'>400 sát thương</span> với <u>50% tỉ lệ chí mạng</u>.",
     "Kỹ năng 3: <em>Hủy Diệt</em> - Gây <span style='color: red;'>600 sát thương</span> đơn mục tiêu.",

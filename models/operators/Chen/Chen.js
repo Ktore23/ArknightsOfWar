@@ -174,7 +174,7 @@ function isCollidingWithTower(chenData, targetTower) {
                         chenDamageHitbox.y + chenDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
-        console.log(`Chen tại worldX=${chenData.worldX} va chạm với tháp tại x=${targetTower.x}`);
+        // console.log(`Chen tại worldX=${chenData.worldX} va chạm với tháp tại x=${targetTower.x}`);
     }
     return isColliding;
 }
@@ -218,9 +218,9 @@ export function isCollidingWithEnemy(chenData, enemyChen) {
                         chenDamageHitbox.y + chenDamageHitbox.height > enemyHitbox.y;
 
     if (isColliding) {
-        console.log(`Chen tại worldX=${chenData.worldX} va chạm với kẻ địch tại worldX=${enemyChen.worldX}`);
-        console.log(`Chen damageHitbox: x=${chenDamageHitbox.x}, width=${chenDamageHitbox.width}, y=${chenDamageHitbox.y}, height=${chenDamageHitbox.height}`);
-        console.log(`Enemy hitbox: x=${enemyHitbox.x}, width=${enemyHitbox.width}, y=${enemyHitbox.y}, height=${enemyHitbox.height}`);
+        // console.log(`Chen tại worldX=${chenData.worldX} va chạm với kẻ địch tại worldX=${enemyChen.worldX}`);
+        // console.log(`Chen damageHitbox: x=${chenDamageHitbox.x}, width=${chenDamageHitbox.width}, y=${chenDamageHitbox.y}, height=${chenDamageHitbox.height}`);
+        // console.log(`Enemy hitbox: x=${enemyHitbox.x}, width=${enemyHitbox.width}, y=${enemyHitbox.y}, height=${enemyHitbox.height}`);
     }
     return isColliding;
 }
@@ -329,12 +329,12 @@ function switchSkeletonFile(chenData, newSkelPath, newAtlasPath, initialAnimatio
                             let damage = characterDataObj["Ch'en"].atk;
                             if (chenData.target && chenData.isAttackingEnemy) {
                                 chenData.target.hp = Math.max(0, chenData.target.hp - damage);
-                                console.log(`Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${chenData.target.worldX}. HP kẻ địch còn: ${chenData.target.hp}`);
+                                // console.log(`Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${chenData.target.worldX}. HP kẻ địch còn: ${chenData.target.hp}`);
                             } else {
                                 const targetTower = chenData.tower;
                                 if (targetTower && isCollidingWithTower(chenData, targetTower)) {
                                     targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                                    // console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                                 }
                             }
                         }
@@ -342,7 +342,7 @@ function switchSkeletonFile(chenData, newSkelPath, newAtlasPath, initialAnimatio
                     complete: function(trackIndex, count) {
                         if (chenData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
                             chenData.deathAnimationComplete = true;
-                            console.log(`Animation Die hoàn tất cho Chen tại worldX=${chenData.worldX}`);
+                            // console.log(`Animation Die hoàn tất cho Chen tại worldX=${chenData.worldX}`);
                         }
                     }
                 });
@@ -383,7 +383,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
     state.update(delta);
 
     if (chenData.hp <= 0 && !chenData.isDead && !isSwitchingSkeleton) {
-        console.log(`Chen tại worldX=${chenData.worldX} đã chết, chuyển sang animation Die`);
+        // console.log(`Chen tại worldX=${chenData.worldX} đã chết, chuyển sang animation Die`);
         chenData.isDead = true;
         chenData.isInAttackState = false;
         chenData.velocity = 0;
@@ -394,9 +394,9 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             "Die",
             (success) => {
                 if (success) {
-                    console.log(`Chen tại worldX=${chenData.worldX} chuyển sang animation Die thành công`);
+                    // console.log(`Chen tại worldX=${chenData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    console.error(`Không thể chuyển sang animation Die cho Chen tại worldX=${chenData.worldX}`);
+                    // console.error(`Không thể chuyển sang animation Die cho Chen tại worldX=${chenData.worldX}`);
                     chenData.deathAnimationComplete = true;
                 }
             }
@@ -407,7 +407,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         chenData.deathAnimationTimer += delta;
         if (chenData.deathAnimationTimer >= 1.0) {
             chenData.deathAnimationComplete = true;
-            console.log(`Animation Die hoàn tất (theo timer) cho Chen tại worldX=${chenData.worldX}`);
+            // console.log(`Animation Die hoàn tất (theo timer) cho Chen tại worldX=${chenData.worldX}`);
         }
     }
 
@@ -435,7 +435,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         };
 
         if (!hasLoggedChenPosition) {
-            console.log(`Vị trí Chen: worldX=${worldX}, y=${skeleton.y}, direction=${chenData.direction}`);
+            // console.log(`Vị trí Chen: worldX=${worldX}, y=${skeleton.y}, direction=${chenData.direction}`);
             hasLoggedChenPosition = true;
         }
 
@@ -446,7 +446,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         validEnemies.forEach(enemy => {
             if (enemy && enemy.hp > 0 && isCollidingWithEnemy(chenData, enemy)) {
                 const distance = Math.abs(chenData.worldX - enemy.worldX);
-                console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
+                // console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestEnemy = enemy;
@@ -500,7 +500,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
             chenData.currentSkelPath === "assets/operators/chen/chennian/chen_nian_weapon.skel" && 
             !chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
-            console.log(`Chen tại worldX=${chenData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
+            // console.log(`Chen tại worldX=${chenData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 chenData,
                 "assets/operators/chen/chennian/chen_nian.skel",
@@ -520,7 +520,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
 
         if (isCollidingWithEnemyFlag && !isSwitchingSkeleton && isFinite(chenDamageHitbox.x) && !chenData.isDead) {
             if (!chenData.isInAttackState) {
-                console.log(`Chen tại worldX=${chenData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
+                // console.log(`Chen tại worldX=${chenData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     chenData,
                     "assets/operators/chen/chennian/chen_nian_weapon.skel",
@@ -539,7 +539,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             }
         } else if (isColliding && !isSwitchingSkeleton && isFinite(chenDamageHitbox.x) && !chenData.isDead) {
             if (!chenData.isInAttackState) {
-                console.log("Chen tạm dừng di chuyển do va chạm với tháp");
+                // console.log("Chen tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     chenData,
                     "assets/operators/chen/chennian/chen_nian_weapon.skel",
@@ -558,7 +558,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !chenData.isDead) {
             if (chenData.currentSkelPath !== "assets/operators/chen/chennian/chen_nian_weapon.skel") {
-                console.log(`Chen tại worldX=${chenData.worldX} bị chặn bởi Chen phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
+                // console.log(`Chen tại worldX=${chenData.worldX} bị chặn bởi Chen phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     chenData,
                     "assets/operators/chen/chennian/chen_nian_weapon.skel",
@@ -577,7 +577,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             }
         } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
                    chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
-            console.log(`Chen tại worldX=${chenData.worldX} không còn va chạm, chuyển từ Attack về Move`);
+            // console.log(`Chen tại worldX=${chenData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 chenData,
                 "assets/operators/chen/chennian/chen_nian.skel",
@@ -606,7 +606,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                     height: frontAlly.hitbox.height
                 };
                 chenData.worldX = otherHitbox.x + otherHitbox.width + chenData.hitbox.width / 2 - chenData.hitbox.offsetX * (chenData.skeleton.scaleX || 1);
-                console.log(`Chen bot tại worldX=${chenData.worldX} được điều chỉnh để kề sát Chen phía trước tại x=${frontAlly.worldX}`);
+                // console.log(`Chen bot tại worldX=${chenData.worldX} được điều chỉnh để kề sát Chen phía trước tại x=${frontAlly.worldX}`);
             }
         }
 
@@ -616,10 +616,10 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
 
         if (chenData.direction === 1 && chenData.worldX > towerHitbox.x - hitbox.width) {
             chenData.worldX = towerHitbox.x - hitbox.width;
-            console.log(`Chen bị giới hạn tại worldX=${chenData.worldX} để không vượt qua tháp phải`);
+            // console.log(`Chen bị giới hạn tại worldX=${chenData.worldX} để không vượt qua tháp phải`);
         } else if (chenData.direction === -1 && chenData.worldX < towerHitbox.x + towerHitbox.width) {
             chenData.worldX = towerHitbox.x + towerHitbox.width;
-            console.log(`Chen bị giới hạn tại worldX=${chenData.worldX} để không vượt qua tháp trái`);
+            // console.log(`Chen bị giới hạn tại worldX=${chenData.worldX} để không vượt qua tháp trái`);
         }
 
         skeleton.updateWorldTransform();

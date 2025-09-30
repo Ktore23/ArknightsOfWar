@@ -9,10 +9,6 @@ let mouseX = 0, camera = { x: 0 };
 let lastFrameTime;
 let hasLoggedRightTower = false;
 let gl;
-// let surtrs = [];
-// let shus = [];
-// let chens = [];
-// let frostNovas = [];
 let playerUnits = []; // Mảng duy nhất lưu tất cả units của người chơi
 let isGameOver = false;
 export let importedModules = {}; // Object lưu module dynamic: { "Surtr": { initSurtr, loadSurtrSkeleton, ... }, ... }
@@ -49,7 +45,7 @@ const TOWER_POSITIONS = [
 const LINE_Y = GROUND_Y + 420;
 const LINE_COLOR = "red";
 const LINE_WIDTH = 2;
-const DEFAULT_SURTR_X = 250;
+const DEFAULT_X = 250;
 const SAFE_OFFSET = 100; // Tăng từ 50 lên 100 để đảm bảo khoảng cách an toàn
 
 backgroundImage.src = "assets/images/background.png";
@@ -69,36 +65,17 @@ const characterModules = {
   "Surtr": '/models/operators/Surtr/Surtr.js',
   "Shu": '/models/operators/Shu/Shu.js',
   "Ch'en": '/models/operators/Chen/Chen.js', // Lưu ý: "Ch'en" trong data, nhưng dùng "Chen" cho module
-  "Frost Nova": '/models/enemies/FrostNova/FrostNova.js' // Nếu có space trong name, dùng như vậy
+  "Frost Nova": '/models/enemies/FrostNova/FrostNova.js', // Nếu có space trong name, dùng như vậy
+  "Exusiai": '/models/operators/Exusiai/Exusiai.js'
 };
-
-// Hàm helper để get array units theo type
-// function getUnitsArray(type) {
-//   switch (type) {
-//     case "Surtr": return surtrs;
-//     case "Shu": return shus;
-//     case "Ch'en": return chens;
-//     case "Frost Nova": return frostNovas;
-//     default: return [];
-//   }
-// }
-
-// // Hàm helper để set units array sau filter
-// function setUnitsArray(type, updatedArray) {
-//   switch (type) {
-//     case "Surtr": surtrs = updatedArray; break;
-//     case "Shu": shus = updatedArray; break;
-//     case "Ch'en": chens = updatedArray; break;
-//     case "Frost Nova": frostNovas = updatedArray; break;
-//   }
-// }
 
 // THÊM MỚI: Map để xử lý tên nhân vật có dấu/special char (như "Ch'en" -> "Chen") để gọi hàm đúng
 export const characterModuleNameMap = {
   "Surtr": "Surtr",
   "Shu": "Shu",
   "Ch'en": "Chen",
-  "Frost Nova": "FrostNova"
+  "Frost Nova": "FrostNova",
+  "Exusiai": "Exusiai"
   // Thêm nhân vật mới nếu cần, ví dụ: "Some'Char": "SomeChar"
 };
 
@@ -170,6 +147,7 @@ async function init() {
         case "Shu": module.initShu(gl); break;
         case "Ch'en": module.initChen(gl); break;
         case "Frost Nova": module.initFrostNova(gl); break;
+        case "Exusiai": module.initExusiai(gl); break;
       }
       console.log(`Đã import và init ${char}`);
     } catch (error) {
@@ -277,7 +255,7 @@ export function isOverlappingWithOtherUnit(newHitbox, existingUnits, GROUND_Y) {
       newHitbox.x + newHitbox.width > existingHitbox.x - SAFE_OFFSET &&
       newHitbox.y < existingHitbox.y + existingHitbox.height &&
       newHitbox.y + newHitbox.height > existingHitbox.y) {
-      console.log(`Chồng chéo phát hiện tại newHitbox.x=${newHitbox.x}, existingHitbox.x=${existingHitbox.x}`);
+      // console.log(`Chồng chéo phát hiện tại newHitbox.x=${newHitbox.x}, existingHitbox.x=${existingHitbox.x}`);
       return true;
     }
   }
@@ -326,17 +304,14 @@ function tryAddNewUnit(char) {
   }
 
   // Kiểm tra giới hạn unit
-  // const playerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
   if (playerUnits.length >= MAX_UNITS_PER_SIDE) {
     console.log(`Đã đạt giới hạn ${MAX_UNITS_PER_SIDE} unit cho người chơi!`);
     return;
   }
 
   const loadFunc = module[`load${moduleName}Skeleton`]; // e.g., loadChenSkeleton
-  // const units = getUnitsArray(char);
-  // const allPlayerUnits = [...surtrs, ...shus, ...chens, ...frostNovas]; // Để check overlapping
 
-  const tempUnit = loadFunc(DEFAULT_SURTR_X);
+  const tempUnit = loadFunc(DEFAULT_X);
   if (!tempUnit) {
     console.error(`Không thể tải ${char} skeleton`);
     return;
@@ -346,13 +321,13 @@ function tryAddNewUnit(char) {
   tempUnit.type = char;
 
   const newHitbox = {
-    x: DEFAULT_SURTR_X + tempUnit.hitbox.offsetX - tempUnit.hitbox.width / 2,
+    x: DEFAULT_X + tempUnit.hitbox.offsetX - tempUnit.hitbox.width / 2,
     y: GROUND_Y + 220 + tempUnit.hitbox.offsetY - tempUnit.hitbox.height / 2,
     width: tempUnit.hitbox.width,
     height: tempUnit.hitbox.height
   };
 
-  let newWorldX = DEFAULT_SURTR_X;
+  let newWorldX = DEFAULT_X;
   let attempts = 0;
   const maxAttempts = 10;
   while (isOverlappingWithOtherUnit(newHitbox, playerUnits, GROUND_Y) && attempts < maxAttempts) {
@@ -409,7 +384,7 @@ function tryAddNewUnit(char) {
   document.getElementById('unitDisplay').textContent = `Units: ${playerUnits.length + 1}/${MAX_UNITS_PER_SIDE}`;
 
   playerUnits.push(newUnit);
-  console.log(`Thả ${char} tại worldX=${DEFAULT_SURTR_X}, HP=${newUnit.hp}/${newUnit.maxHp}. Tổng unit người chơi: ${playerUnits.length + 1}`);
+  // console.log(`Thả ${char} tại worldX=${DEFAULT_X}, HP=${newUnit.hp}/${newUnit.maxHp}. Tổng unit người chơi: ${playerUnits.length + 1}`);
 }
 
 function showGameOverMessage(winner) {
@@ -597,54 +572,7 @@ function render() {
     }
   });
 
-  // Render player units chỉ cho selected
-  // for (let char of selectedCharacters) {
-  //   const module = importedModules[char];
-  //   // SỬA: Sử dụng map để lấy tên module sạch (xử lý "Ch'en" -> "Chen")
-  //   const moduleName = characterModuleNameMap[char];
-  //   if (!moduleName) {
-  //     console.error(`Không tìm thấy mapping module cho ${char}`);
-  //     continue;
-  //   }
-
-  //   const renderFunc = module[`render${moduleName}Skeleton`]; // e.g., renderChenSkeleton
-  //   const units = getUnitsArray(char);
-
-  //   units.forEach(unit => {
-  //     renderFunc(unit, delta, camera, canvas, groundTileImage, WORLD_WIDTH, GROUND_Y, TOWER_POSITIONS, backgroundCtx, gl, playerUnits, botUnits);
-
-  //     if (!unit.deathAnimationComplete) {
-  //       const barWidth = 70;
-  //       const barHeight = 8;
-  //       const barX = unit.worldX - camera.x - barWidth / 2;
-  //       const barY = GROUND_Y + 270;
-  //       backgroundCtx.fillStyle = "red";
-  //       backgroundCtx.fillRect(barX, barY, barWidth, barHeight);
-  //       backgroundCtx.fillStyle = "green";
-  //       backgroundCtx.fillRect(barX, barY, barWidth * (unit.hp / unit.maxHp), barHeight);
-  //       backgroundCtx.strokeStyle = "black";
-  //       backgroundCtx.strokeRect(barX, barY, barWidth, barHeight);
-
-  //       backgroundCtx.fillStyle = "white";
-  //       backgroundCtx.font = "10px Arial";
-  //       backgroundCtx.textAlign = "center";
-  //       backgroundCtx.textBaseline = "middle";
-  //       const hpText = `${Math.floor(unit.hp)}/${unit.maxHp}`;
-  //       const hpTextX = barX + barWidth / 2;
-  //       const hpTextY = barY + barHeight / 2;
-  //       backgroundCtx.fillText(hpText, hpTextX, hpTextY);
-  //     }
-  //   });
-
-  //   // Filter units đã chết
-  //   const filtered = units.filter(unit => !unit.deathAnimationComplete);
-  //   setUnitsArray(char, filtered);
-  // }
-
-  // // Cập nhật UI số lượng unit sau khi filter
-  // const updatedPlayerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
-  // document.getElementById('unitDisplay').textContent = `Units: ${updatedPlayerUnits.length}/${MAX_UNITS_PER_SIDE}`;
-
+  // Render player units
   playerUnits.forEach(unit => {
     const char = unit.type;
     const module = importedModules[char];

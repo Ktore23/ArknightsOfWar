@@ -79,12 +79,12 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                 let damage = characterDataObj["Shu"].atk;
                 if (shuData.target && shuData.isAttackingEnemy) {
                     shuData.target.hp = Math.max(0, shuData.target.hp - damage);
-                    console.log(`Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${shuData.target.worldX}. HP kẻ địch còn: ${shuData.target.hp}`);
+                    // console.log(`Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${shuData.target.worldX}. HP kẻ địch còn: ${shuData.target.hp}`);
                 } else {
                     const targetTower = shuData.tower;
                     if (targetTower && isCollidingWithTower(shuData, targetTower, shuData.groundY)) { // Sử dụng shuData.groundY
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        console.log(`Sự kiện OnAttack: Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                        // console.log(`Sự kiện OnAttack: Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
@@ -92,7 +92,7 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
         complete: function(trackIndex, count) {
             if (shuData.isDead && shuData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 shuData.deathAnimationComplete = true;
-                console.log(`Animation Die hoàn tất cho Shu tại worldX=${shuData.worldX}`);
+                // console.log(`Animation Die hoàn tất cho Shu tại worldX=${shuData.worldX}`);
             }
         }
     });
@@ -227,12 +227,12 @@ function isCollidingWithTower(shuData, targetTower, GROUND_Y) {
                         shuDamageHitbox.y + shuDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
-        console.log(`Shu tại worldX=${shuData.worldX} va chạm với tháp tại x=${targetTower.x}`);
+        // console.log(`Shu tại worldX=${shuData.worldX} va chạm với tháp tại x=${targetTower.x}`);
     }
     return isColliding;
 }
 
-export function isCollidingWithEnemy(shuData, enemy, GROUND_Y) {
+export function isCollidingWithEnemy(shuData, enemy) {
     const shuHitbox = {
         x: isFinite(shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2) ?
            shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2 :
@@ -253,7 +253,7 @@ export function isCollidingWithEnemy(shuData, enemy, GROUND_Y) {
         x: isFinite(enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2) ?
            enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
            enemy.worldX,
-        y: GROUND_Y + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
+        y: enemy.groundY + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
         width: enemy.hitbox.width,
         height: enemy.hitbox.height
     };
@@ -265,7 +265,7 @@ export function isCollidingWithEnemy(shuData, enemy, GROUND_Y) {
                         shuDamageHitbox.y + shuDamageHitbox.height > enemyHitbox.y;
 
     if (isColliding) {
-        console.log(`Shu tại worldX=${shuData.worldX} va chạm với kẻ địch tại worldX=${enemy.worldX}`);
+        // console.log(`Shu tại worldX=${shuData.worldX} va chạm với kẻ địch tại worldX=${enemy.worldX}`);
     }
     return isColliding;
 }
@@ -280,7 +280,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
     state.update(delta);
 
     if (shuData.hp <= 0 && !shuData.isDead && !isSwitchingSkeleton) {
-        console.log(`Shu tại worldX=${shuData.worldX} đã chết, chuyển sang animation Die`);
+        // console.log(`Shu tại worldX=${shuData.worldX} đã chết, chuyển sang animation Die`);
         shuData.isDead = true;
         shuData.isInAttackState = false;
         shuData.velocity = 0; // Ngừng di chuyển
@@ -291,9 +291,9 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             "Die",
             (success) => {
                 if (success) {
-                    console.log(`Shu tại worldX=${shuData.worldX} chuyển sang animation Die thành công`);
+                    // console.log(`Shu tại worldX=${shuData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    console.error(`Không thể chuyển sang animation Die cho Shu tại worldX=${shuData.worldX}`);
+                    // console.error(`Không thể chuyển sang animation Die cho Shu tại worldX=${shuData.worldX}`);
                     shuData.deathAnimationComplete = true; // Đánh dấu hoàn tất nếu lỗi
                 }
             }
@@ -304,7 +304,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         shuData.deathAnimationTimer += delta;
         if (shuData.deathAnimationTimer >= 1.0) { // Giả sử animation Die kéo dài 1 giây
             shuData.deathAnimationComplete = true;
-            console.log(`Animation Die hoàn tất (theo timer) cho Shu tại worldX=${shuData.worldX}`);
+            // console.log(`Animation Die hoàn tất (theo timer) cho Shu tại worldX=${shuData.worldX}`);
         }
     }
 
@@ -333,9 +333,9 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
-            if (enemy && enemy.hp > 0 && isCollidingWithEnemy(shuData, enemy, shuData.groundY)) { // Sử dụng shuData.groundY
+            if (enemy && enemy.hp > 0 && isCollidingWithEnemy(shuData, enemy)) { // Sử dụng shuData.groundY
                 const distance = Math.abs(shuData.worldX - enemy.worldX);
-                console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
+                // console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestEnemy = enemy;
@@ -390,7 +390,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
             shuData.currentSkelPath === "assets/operators/shu/shunian/shu_nian_weapon.skel" && 
             !shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
-            console.log(`Shu tại worldX=${shuData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
+            // console.log(`Shu tại worldX=${shuData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 shuData,
                 "assets/operators/shu/shunian/shu_nian.skel",
@@ -410,7 +410,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
 
         if (isCollidingWithEnemyFlag && !isSwitchingSkeleton && isFinite(shuDamageHitbox.x) && !shuData.isDead) {
             if (!shuData.isInAttackState) {
-                console.log(`Shu tại worldX=${shuData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
+                // console.log(`Shu tại worldX=${shuData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     shuData,
                     "assets/operators/shu/shunian/shu_nian_weapon.skel",
@@ -429,7 +429,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             }
         } else if (isColliding && !isSwitchingSkeleton && isFinite(shuDamageHitbox.x) && !shuData.isDead) {
             if (!shuData.isInAttackState) {
-                console.log("Shu tạm dừng di chuyển do va chạm với tháp");
+                // console.log("Shu tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     shuData,
                     "assets/operators/shu/shunian/shu_nian_weapon.skel",
@@ -448,7 +448,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !shuData.isDead) {
             if (shuData.currentSkelPath !== "assets/operators/shu/shunian/shu_nian_weapon.skel") {
-                console.log(`Shu tại worldX=${shuData.worldX} bị chặn bởi Shu phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
+                // console.log(`Shu tại worldX=${shuData.worldX} bị chặn bởi Shu phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     shuData,
                     "assets/operators/shu/shunian/shu_nian_weapon.skel",
@@ -467,7 +467,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             }
         } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
                    shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
-            console.log(`Shu tại worldX=${shuData.worldX} không còn va chạm, chuyển từ Attack về Move`);
+            // console.log(`Shu tại worldX=${shuData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 shuData,
                 "assets/operators/shu/shunian/shu_nian.skel",
@@ -498,7 +498,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                     height: frontAlly.hitbox.height
                 };
                 shuData.worldX = otherHitbox.x + (shuData.direction === -1 ? otherHitbox.width : -shuData.hitbox.width) - shuData.hitbox.offsetX * scaleX + shuData.hitbox.width / 2;
-                console.log(`Shu tại worldX=${shuData.worldX} được điều chỉnh để kề sát ally phía trước tại x=${frontAlly.worldX}, direction=${shuData.direction}`);
+                // console.log(`Shu tại worldX=${shuData.worldX} được điều chỉnh để kề sát ally phía trước tại x=${frontAlly.worldX}, direction=${shuData.direction}`);
             }
         }
 
@@ -508,10 +508,10 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
 
         if (shuData.direction === 1 && shuData.worldX > towerHitbox.x - hitbox.width + 100) {
             shuData.worldX = towerHitbox.x - hitbox.width + 100;
-            console.log(`Shu bị giới hạn tại worldX=${shuData.worldX} để không vượt qua tháp phải`);
+            // console.log(`Shu bị giới hạn tại worldX=${shuData.worldX} để không vượt qua tháp phải`);
         } else if (shuData.direction === -1 && shuData.worldX < towerHitbox.x + towerHitbox.width) {
             shuData.worldX = towerHitbox.x + towerHitbox.width;
-            console.log(`Shu bị giới hạn tại worldX=${shuData.worldX} để không vượt qua tháp trái`);
+            // console.log(`Shu bị giới hạn tại worldX=${shuData.worldX} để không vượt qua tháp trái`);
         }
 
         skeleton.updateWorldTransform();

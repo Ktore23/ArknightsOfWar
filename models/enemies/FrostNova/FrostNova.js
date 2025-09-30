@@ -76,12 +76,12 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                 let damage = characterDataObj["Frost Nova"].atk;
                 if (frostNovaData.target && frostNovaData.isAttackingEnemy) {
                     frostNovaData.target.hp = Math.max(0, frostNovaData.target.hp - damage);
-                    console.log(`Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${frostNovaData.target.worldX}. HP kẻ địch còn: ${frostNovaData.target.hp}`);
+                    // console.log(`Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${frostNovaData.target.worldX}. HP kẻ địch còn: ${frostNovaData.target.hp}`);
                 } else {
                     const targetTower = frostNovaData.tower;
                     if (targetTower && isCollidingWithTower(frostNovaData, targetTower)) {
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        console.log(`Sự kiện OnAttack: Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                        // console.log(`Sự kiện OnAttack: Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
@@ -89,7 +89,7 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
         complete: function(trackIndex, count) {
             if (frostNovaData.isDead && frostNovaData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 frostNovaData.deathAnimationComplete = true; // Đánh dấu animation Die đã hoàn tất
-                console.log(`Animation Die hoàn tất cho Frost Nova tại worldX=${frostNovaData.worldX}`);
+                // console.log(`Animation Die hoàn tất cho Frost Nova tại worldX=${frostNovaData.worldX}`);
             }
         }
     });
@@ -146,7 +146,7 @@ function calculateSetupPoseBounds(skeleton) {
 
 function isCollidingWithTower(frostNovaData, targetTower) {
     if (!frostNovaData.damageHitbox || !isFinite(frostNovaData.worldX) || !isFinite(frostNovaData.damageHitbox.offsetX)) {
-        console.warn("Invalid damageHitbox or worldX, skipping tower collision check");
+        // console.warn("Invalid damageHitbox or worldX, skipping tower collision check");
         return false;
     }
 
@@ -179,20 +179,20 @@ function isCollidingWithTower(frostNovaData, targetTower) {
                         frostNovaDamageHitbox.y + frostNovaDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
-        console.log(`FrostNova tại worldX=${frostNovaData.worldX} va chạm với tháp tại x=${targetTower.x}`);
+        // console.log(`FrostNova tại worldX=${frostNovaData.worldX} va chạm với tháp tại x=${targetTower.x}`);
     }
     return isColliding;
 }
 
-export function isCollidingWithEnemy(frostNovaData, enemies, GROUND_Y) {
+export function isCollidingWithEnemy(frostNovaData, enemies) {
     if (!frostNovaData.damageHitbox || !isFinite(frostNovaData.worldX) || !isFinite(frostNovaData.damageHitbox.offsetX)) {
-        console.warn("Invalid damageHitbox or worldX, skipping enemy collision check");
+        // console.warn("Invalid damageHitbox or worldX, skipping enemy collision check");
         return { colliding: false, target: null };
     }
 
     const frostNovaDamageHitbox = {
         x: frostNovaData.worldX + frostNovaData.damageHitbox.offsetX * frostNovaData.skeleton.scaleX - frostNovaData.damageHitbox.width / 2,  // Sửa: dùng * scaleX - width/2 (đồng nhất với render)
-        y: GROUND_Y + 220 + frostNovaData.damageHitbox.offsetY - frostNovaData.damageHitbox.height / 2,  // Giữ, nhưng có thể dùng frostNovaData.groundY nếu cần
+        y: frostNovaData.groundY + 220 + frostNovaData.damageHitbox.offsetY - frostNovaData.damageHitbox.height / 2,  // Giữ, nhưng có thể dùng frostNovaData.groundY nếu cần
         width: frostNovaData.damageHitbox.width,
         height: frostNovaData.damageHitbox.height
     };
@@ -207,7 +207,7 @@ export function isCollidingWithEnemy(frostNovaData, enemies, GROUND_Y) {
             x: isFinite(enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2) ?
                enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
                enemy.worldX,
-            y: GROUND_Y + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
+            y: enemy.groundY + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
             width: enemy.hitbox.width,
             height: enemy.hitbox.height
         };
@@ -258,7 +258,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     const isColliding = isCollidingWithTower(frostNovaData, tower);
 
     // Kiểm tra va chạm với enemy
-    const { colliding: isCollidingWithEnemyFlag, target: closestEnemy } = isCollidingWithEnemy(frostNovaData, validUnits, GROUND_Y);
+    const { colliding: isCollidingWithEnemyFlag, target: closestEnemy } = isCollidingWithEnemy(frostNovaData, validUnits);
     frostNovaData.target = closestEnemy;
     frostNovaData.isAttackingEnemy = isCollidingWithEnemyFlag;
 
@@ -344,7 +344,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
             if (attackAnimation) {
                 state.setAnimation(0, attackAnimation, true);
                 frostNovaData.isInAttackState = true;
-                console.log("Frost Nova switched to Attack animation for enemy");
+                // console.log("Frost Nova switched to Attack animation for enemy");
             }
         } else if (isColliding && currentAnimation !== "attack") {
             const attackAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "attack")?.name;
@@ -406,7 +406,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
             frostNovaData.worldX = newWorldX;
             console.log(`Frost Nova adjusted position to ${frostNovaData.worldX} (distance was ${currentDistance}, threshold ${ADJUST_THRESHOLD})`);
         } else {
-            console.log(`Frost Nova already close enough (distance ${currentDistance}), no adjust`);
+            // console.log(`Frost Nova already close enough (distance ${currentDistance}), no adjust`);
         }
     }
 
@@ -416,10 +416,10 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
 
     if (frostNovaData.direction === 1 && frostNovaData.worldX > towerHitbox.x - hitbox.width) {
         frostNovaData.worldX = towerHitbox.x - hitbox.width;
-        console.log(`Frost Nova bị giới hạn tại worldX=${frostNovaData.worldX} để không vượt qua tháp phải`);
+        // console.log(`Frost Nova bị giới hạn tại worldX=${frostNovaData.worldX} để không vượt qua tháp phải`);
     } else if (frostNovaData.direction === -1 && frostNovaData.worldX < towerHitbox.x + towerHitbox.width) {
         frostNovaData.worldX = towerHitbox.x + towerHitbox.width;
-        console.log(`Frost Nova bị giới hạn tại worldX=${frostNovaData.worldX} để không vượt qua tháp trái`);
+        // console.log(`Frost Nova bị giới hạn tại worldX=${frostNovaData.worldX} để không vượt qua tháp trái`);
     }
 
     skeleton.updateWorldTransform();
