@@ -1,4 +1,4 @@
-import { characterDataObj } from '/character.js';
+import { characterDataObj } from './character.js';
 import { initBot, updateBotUnits, getBotUnits } from './bot.js';
 
 let canvas, backgroundCanvas, backgroundCtx;
