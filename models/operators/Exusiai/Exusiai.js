@@ -5,8 +5,8 @@ let debugRenderer, debugShader, shapes;
 let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
 let velocity = 50;
 let direction = 1;
-let currentSkelPath = "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.skel";
-let currentAtlasPath = "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.atlas";
+let currentSkelPath = "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel";
+let currentAtlasPath = "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedExusiaiPosition = false;
 let fixedDamageHitbox = null;
@@ -27,12 +27,12 @@ export function initExusiai(webglContext) {
     debugShader = spine.webgl.Shader.newColored(webglContext);
     shapes = new spine.webgl.ShapeRenderer(webglContext);
 
-    assetManager.loadBinary("assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.skel");
-    assetManager.loadTextureAtlas("assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.atlas");
-    assetManager.loadTexture("assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.png");
-    assetManager.loadBinary("assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel");
-    assetManager.loadTextureAtlas("assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.atlas");
-    assetManager.loadTexture("assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.png");
+    assetManager.loadBinary("assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel");
+    assetManager.loadTextureAtlas("assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas");
+    assetManager.loadTexture("assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.png");
+    assetManager.loadBinary("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel");
+    assetManager.loadTextureAtlas("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas");
+    assetManager.loadTexture("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.png");
 }
 
 export function isExusiaiLoadingComplete() {
@@ -390,8 +390,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         exusiaiData.velocity = 0; // Ngừng di chuyển
         switchSkeletonFile(
             exusiaiData,
-            "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel",
-            "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.atlas",
+            "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
+            "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas",
             "Die",
             (success) => {
                 if (success) {
@@ -503,13 +503,13 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         }
 
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
-            exusiaiData.currentSkelPath === "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel" && 
+            exusiaiData.currentSkelPath === "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel" && 
             !exusiaiData.isInAttackState && !isSwitchingSkeleton && !exusiaiData.isDead) {
             // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 exusiaiData,
-                "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.skel",
-                "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.atlas",
+                "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
+                "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas",
                 "Move",
                 (success) => {
                     if (success) {
@@ -528,8 +528,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 // console.log(`Exusiai tại worldX=${exusiaiData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     exusiaiData,
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel",
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.atlas",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -547,8 +547,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 // console.log("Exusiai tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     exusiaiData,
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel",
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.atlas",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -562,12 +562,12 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 );
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !exusiaiData.isDead) {
-            if (exusiaiData.currentSkelPath !== "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel") {
+            if (exusiaiData.currentSkelPath !== "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel") {
                 // console.log(`Exusiai tại worldX=${exusiaiData.worldX} bị chặn bởi Exusiai phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     exusiaiData,
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.skel",
-                    "assets/operators/exusiai/exusiaisale/char_103_angel_sale_8.atlas",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
+                    "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas",
                     "Idle",
                     (success) => {
                         if (success) {
@@ -585,8 +585,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
             // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 exusiaiData,
-                "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.skel",
-                "assets/operators/exusiai/exusiaisale/build_char_103_angel_sale8.atlas",
+                "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
+                "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas",
                 "Move",
                 (success) => {
                     if (success) {

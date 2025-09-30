@@ -5,8 +5,8 @@ let debugRenderer, debugShader, shapes;
 let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
 let velocity = 50;
 let direction = 1;
-let currentSkelPath = "assets/operators/shu/shunian/shu_nian.skel";
-let currentAtlasPath = "assets/operators/shu/shunian/shu_nian.atlas";
+let currentSkelPath = "assets/operators/Shu/ShuNian/shu_nian.skel";
+let currentAtlasPath = "assets/operators/Shu/ShuNian/shu_nian.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedShuPosition = false;
 let fixedDamageHitbox = null;
@@ -27,12 +27,12 @@ export function initShu(webglContext) {
     debugShader = spine.webgl.Shader.newColored(webglContext);
     shapes = new spine.webgl.ShapeRenderer(webglContext);
 
-    assetManager.loadBinary("assets/operators/shu/shunian/shu_nian.skel");
-    assetManager.loadTextureAtlas("assets/operators/shu/shunian/shu_nian.atlas");
-    assetManager.loadTexture("assets/operators/shu/shunian/shu_nian.png");
-    assetManager.loadBinary("assets/operators/shu/shunian/shu_nian_weapon.skel");
-    assetManager.loadTextureAtlas("assets/operators/shu/shunian/shu_nian_weapon.atlas");
-    assetManager.loadTexture("assets/operators/shu/shunian/shu_nian_weapon.png");
+    assetManager.loadBinary("assets/operators/Shu/ShuNian/shu_nian.skel");
+    assetManager.loadTextureAtlas("assets/operators/Shu/ShuNian/shu_nian.atlas");
+    assetManager.loadTexture("assets/operators/Shu/ShuNian/shu_nian.png");
+    assetManager.loadBinary("assets/operators/Shu/ShuNian/shu_nian_weapon.skel");
+    assetManager.loadTextureAtlas("assets/operators/Shu/ShuNian/shu_nian_weapon.atlas");
+    assetManager.loadTexture("assets/operators/Shu/ShuNian/shu_nian_weapon.png");
 }
 
 export function isShuLoadingComplete() {
@@ -286,8 +286,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         shuData.velocity = 0; // Ngừng di chuyển
         switchSkeletonFile(
             shuData,
-            "assets/operators/shu/shunian/shu_nian_weapon.skel",
-            "assets/operators/shu/shunian/shu_nian_weapon.atlas",
+            "assets/operators/Shu/ShuNian/shu_nian_weapon.skel",
+            "assets/operators/Shu/ShuNian/shu_nian_weapon.atlas",
             "Die",
             (success) => {
                 if (success) {
@@ -388,13 +388,13 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         }
 
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
-            shuData.currentSkelPath === "assets/operators/shu/shunian/shu_nian_weapon.skel" && 
+            shuData.currentSkelPath === "assets/operators/Shu/ShuNian/shu_nian_weapon.skel" && 
             !shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
             // console.log(`Shu tại worldX=${shuData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 shuData,
-                "assets/operators/shu/shunian/shu_nian.skel",
-                "assets/operators/shu/shunian/shu_nian.atlas",
+                "assets/operators/Shu/ShuNian/shu_nian.skel",
+                "assets/operators/Shu/ShuNian/shu_nian.atlas",
                 "Move",
                 (success) => {
                     if (success) {
@@ -413,8 +413,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                 // console.log(`Shu tại worldX=${shuData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     shuData,
-                    "assets/operators/shu/shunian/shu_nian_weapon.skel",
-                    "assets/operators/shu/shunian/shu_nian_weapon.atlas",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.skel",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -432,8 +432,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                 // console.log("Shu tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     shuData,
-                    "assets/operators/shu/shunian/shu_nian_weapon.skel",
-                    "assets/operators/shu/shunian/shu_nian_weapon.atlas",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.skel",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -447,12 +447,12 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                 );
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !shuData.isDead) {
-            if (shuData.currentSkelPath !== "assets/operators/shu/shunian/shu_nian_weapon.skel") {
+            if (shuData.currentSkelPath !== "assets/operators/Shu/ShuNian/shu_nian_weapon.skel") {
                 // console.log(`Shu tại worldX=${shuData.worldX} bị chặn bởi Shu phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     shuData,
-                    "assets/operators/shu/shunian/shu_nian_weapon.skel",
-                    "assets/operators/shu/shunian/shu_nian_weapon.atlas",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.skel",
+                    "assets/operators/Shu/ShuNian/shu_nian_weapon.atlas",
                     "Idle",
                     (success) => {
                         if (success) {
@@ -470,8 +470,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             // console.log(`Shu tại worldX=${shuData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 shuData,
-                "assets/operators/shu/shunian/shu_nian.skel",
-                "assets/operators/shu/shunian/shu_nian.atlas",
+                "assets/operators/Shu/ShuNian/shu_nian.skel",
+                "assets/operators/Shu/ShuNian/shu_nian.atlas",
                 "Move",
                 (success) => {
                     if (success) {

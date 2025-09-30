@@ -5,8 +5,8 @@ let debugRenderer, debugShader, shapes;
 let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
 let velocity = 50;
 let direction = 1;
-let currentSkelPath = "assets/operators/surtr/surtrsummer/surtr_summer.skel";
-let currentAtlasPath = "assets/operators/surtr/surtrsummer/surtr_summer.atlas";
+let currentSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer.skel";
+let currentAtlasPath = "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedSurtrPosition = false;
 let fixedDamageHitbox = null;
@@ -27,12 +27,12 @@ export function initSurtr(webglContext) {
     debugShader = spine.webgl.Shader.newColored(webglContext);
     shapes = new spine.webgl.ShapeRenderer(webglContext);
 
-    assetManager.loadBinary("assets/operators/surtr/surtrsummer/surtr_summer.skel");
-    assetManager.loadTextureAtlas("assets/operators/surtr/surtrsummer/surtr_summer.atlas");
-    assetManager.loadTexture("assets/operators/surtr/surtrsummer/surtr_summer.png");
-    assetManager.loadBinary("assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel");
-    assetManager.loadTextureAtlas("assets/operators/surtr/surtrsummer/surtr_summer_weapon.atlas");
-    assetManager.loadTexture("assets/operators/surtr/surtrsummer/surtr_summer_weapon.png");
+    assetManager.loadBinary("assets/operators/Surtr/SurtrSummer/surtr_summer.skel");
+    assetManager.loadTextureAtlas("assets/operators/Surtr/SurtrSummer/surtr_summer.atlas");
+    assetManager.loadTexture("assets/operators/Surtr/SurtrSummer/surtr_summer.png");
+    assetManager.loadBinary("assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel");
+    assetManager.loadTextureAtlas("assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas");
+    assetManager.loadTexture("assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.png");
 }
 
 export function isSurtrLoadingComplete() {
@@ -390,8 +390,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         surtrData.velocity = 0; // Ngừng di chuyển
         switchSkeletonFile(
             surtrData,
-            "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel",
-            "assets/operators/surtr/surtrsummer/surtr_summer_weapon.atlas",
+            "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+            "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
             "Die",
             (success) => {
                 if (success) {
@@ -503,13 +503,13 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         }
 
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
-            surtrData.currentSkelPath === "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel" && 
+            surtrData.currentSkelPath === "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel" && 
             !surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 surtrData,
-                "assets/operators/surtr/surtrsummer/surtr_summer.skel",
-                "assets/operators/surtr/surtrsummer/surtr_summer.atlas",
+                "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
+                "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
                 "Move",
                 (success) => {
                     if (success) {
@@ -528,8 +528,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                 // console.log(`Surtr tại worldX=${surtrData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     surtrData,
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel",
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.atlas",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -547,8 +547,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                 // console.log("Surtr tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     surtrData,
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel",
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.atlas",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -562,12 +562,12 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                 );
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !surtrData.isDead) {
-            if (surtrData.currentSkelPath !== "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel") {
+            if (surtrData.currentSkelPath !== "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel") {
                 // console.log(`Surtr tại worldX=${surtrData.worldX} bị chặn bởi Surtr phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     surtrData,
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.skel",
-                    "assets/operators/surtr/surtrsummer/surtr_summer_weapon.atlas",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
                     "Idle",
                     (success) => {
                         if (success) {
@@ -585,8 +585,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 surtrData,
-                "assets/operators/surtr/surtrsummer/surtr_summer.skel",
-                "assets/operators/surtr/surtrsummer/surtr_summer.atlas",
+                "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
+                "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
                 "Move",
                 (success) => {
                     if (success) {

@@ -5,8 +5,8 @@ let debugRenderer, debugShader, shapes;
 let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
 let velocity = 50;
 let direction = 1;
-let currentSkelPath = "assets/operators/chen/chennian/chen_nian.skel";
-let currentAtlasPath = "assets/operators/chen/chennian/chen_nian.atlas";
+let currentSkelPath = "assets/operators/Chen/ChenNian/chen_nian.skel";
+let currentAtlasPath = "assets/operators/Chen/ChenNian/chen_nian.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedChenPosition = false;
 let fixedDamageHitbox = null;
@@ -27,12 +27,12 @@ export function initChen(webglContext) {
     debugShader = spine.webgl.Shader.newColored(webglContext);
     shapes = new spine.webgl.ShapeRenderer(webglContext);
 
-    assetManager.loadBinary("assets/operators/chen/chennian/chen_nian.skel");
-    assetManager.loadTextureAtlas("assets/operators/chen/chennian/chen_nian.atlas");
-    assetManager.loadTexture("assets/operators/chen/chennian/chen_nian.png");
-    assetManager.loadBinary("assets/operators/chen/chennian/chen_nian_weapon.skel");
-    assetManager.loadTextureAtlas("assets/operators/chen/chennian/chen_nian_weapon.atlas");
-    assetManager.loadTexture("assets/operators/chen/chennian/chen_nian_weapon.png");
+    assetManager.loadBinary("assets/operators/Chen/ChenNian/chen_nian.skel");
+    assetManager.loadTextureAtlas("assets/operators/Chen/ChenNian/chen_nian.atlas");
+    assetManager.loadTexture("assets/operators/Chen/ChenNian/chen_nian.png");
+    assetManager.loadBinary("assets/operators/Chen/ChenNian/chen_nian_weapon.skel");
+    assetManager.loadTextureAtlas("assets/operators/Chen/ChenNian/chen_nian_weapon.atlas");
+    assetManager.loadTexture("assets/operators/Chen/ChenNian/chen_nian_weapon.png");
 }
 
 export function isChenLoadingComplete() {
@@ -389,8 +389,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         chenData.velocity = 0;
         switchSkeletonFile(
             chenData,
-            "assets/operators/chen/chennian/chen_nian_weapon.skel",
-            "assets/operators/chen/chennian/chen_nian_weapon.atlas",
+            "assets/operators/Chen/ChenNian/chen_nian_weapon.skel",
+            "assets/operators/Chen/ChenNian/chen_nian_weapon.atlas",
             "Die",
             (success) => {
                 if (success) {
@@ -498,13 +498,13 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         }
 
         if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
-            chenData.currentSkelPath === "assets/operators/chen/chennian/chen_nian_weapon.skel" && 
+            chenData.currentSkelPath === "assets/operators/Chen/ChenNian/chen_nian_weapon.skel" && 
             !chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
             // console.log(`Chen tại worldX=${chenData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 chenData,
-                "assets/operators/chen/chennian/chen_nian.skel",
-                "assets/operators/chen/chennian/chen_nian.atlas",
+                "assets/operators/Chen/ChenNian/chen_nian.skel",
+                "assets/operators/Chen/ChenNian/chen_nian.atlas",
                 "Move",
                 (success) => {
                     if (success) {
@@ -523,8 +523,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                 // console.log(`Chen tại worldX=${chenData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     chenData,
-                    "assets/operators/chen/chennian/chen_nian_weapon.skel",
-                    "assets/operators/chen/chennian/chen_nian_weapon.atlas",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.skel",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -542,8 +542,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                 // console.log("Chen tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     chenData,
-                    "assets/operators/chen/chennian/chen_nian_weapon.skel",
-                    "assets/operators/chen/chennian/chen_nian_weapon.atlas",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.skel",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.atlas",
                     "Attack",
                     (success) => {
                         if (success) {
@@ -557,12 +557,12 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                 );
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !chenData.isDead) {
-            if (chenData.currentSkelPath !== "assets/operators/chen/chennian/chen_nian_weapon.skel") {
+            if (chenData.currentSkelPath !== "assets/operators/Chen/ChenNian/chen_nian_weapon.skel") {
                 // console.log(`Chen tại worldX=${chenData.worldX} bị chặn bởi Chen phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     chenData,
-                    "assets/operators/chen/chennian/chen_nian_weapon.skel",
-                    "assets/operators/chen/chennian/chen_nian_weapon.atlas",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.skel",
+                    "assets/operators/Chen/ChenNian/chen_nian_weapon.atlas",
                     "Idle",
                     (success) => {
                         if (success) {
@@ -580,8 +580,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             // console.log(`Chen tại worldX=${chenData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 chenData,
-                "assets/operators/chen/chennian/chen_nian.skel",
-                "assets/operators/chen/chennian/chen_nian.atlas",
+                "assets/operators/Chen/ChenNian/chen_nian.skel",
+                "assets/operators/Chen/ChenNian/chen_nian.atlas",
                 "Move",
                 (success) => {
                     if (success) {
