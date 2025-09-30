@@ -1,4 +1,4 @@
-import { characterDataObj } from './character.js'; // Import data nhân vật
+import { characterDataObj } from '../../../character.js'; // Import data nhân vật
 
 let canvas, backgroundCanvas, backgroundCtx;
 let gl;
