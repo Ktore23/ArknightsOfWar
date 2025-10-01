@@ -264,6 +264,29 @@ async function init() {
     isRightArrowPressed = false;
   });
 
+  // Sự kiện cảm ứng
+  arrowLeft.addEventListener('touchstart', (event) => {
+    event.preventDefault(); // Ngăn hành vi mặc định như cuộn trang
+    isLeftArrowPressed = true;
+  });
+  arrowLeft.addEventListener('touchend', () => {
+    isLeftArrowPressed = false;
+  });
+  arrowLeft.addEventListener('touchcancel', () => {
+    isLeftArrowPressed = false;
+  });
+
+  arrowRight.addEventListener('touchstart', (event) => {
+    event.preventDefault(); // Ngăn hành vi mặc định như cuộn trang
+    isRightArrowPressed = true;
+  });
+  arrowRight.addEventListener('touchend', () => {
+    isRightArrowPressed = false;
+  });
+  arrowRight.addEventListener('touchcancel', () => {
+    isRightArrowPressed = false;
+  });
+
   lastFrameTime = Date.now() / 1000;
   requestAnimationFrame(render);
 }
