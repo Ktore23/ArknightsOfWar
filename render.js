@@ -20,6 +20,9 @@ const MAX_DP = 50; // DP tối đa
 const MAX_UNITS_PER_SIDE = 10; // Giới hạn 10 unit mỗi bên
 let lastDeployTime = {}; // Lưu thời gian thả cuối cùng cho mỗi char
 const DP_REGEN_RATE = 1; // +1 DP mỗi giây
+// Thêm biến cho nút điều khiển camera
+let isLeftArrowPressed = false;
+let isRightArrowPressed = false;
 
 const WORLD_WIDTH = 4000;
 const CAMERA_SPEED = 1000;
@@ -237,6 +240,30 @@ async function init() {
     mouseX = event.clientX - rect.left;
   });
 
+  // Thêm sự kiện cho các nút mũi tên
+  const arrowLeft = document.getElementById('arrowLeft');
+  const arrowRight = document.getElementById('arrowRight');
+
+  arrowLeft.addEventListener('mousedown', () => {
+    isLeftArrowPressed = true;
+  });
+  arrowLeft.addEventListener('mouseup', () => {
+    isLeftArrowPressed = false;
+  });
+  arrowLeft.addEventListener('mouseleave', () => {
+    isLeftArrowPressed = false;
+  });
+
+  arrowRight.addEventListener('mousedown', () => {
+    isRightArrowPressed = true;
+  });
+  arrowRight.addEventListener('mouseup', () => {
+    isRightArrowPressed = false;
+  });
+  arrowRight.addEventListener('mouseleave', () => {
+    isRightArrowPressed = false;
+  });
+
   lastFrameTime = Date.now() / 1000;
   requestAnimationFrame(render);
 }
@@ -425,6 +452,16 @@ function render() {
     camera.x -= CAMERA_SPEED * delta;
     if (camera.x < 0) camera.x = 0;
   } else if (mouseX > canvas.width * (1 - EDGE_THRESHOLD) && camera.x < WORLD_WIDTH - canvas.width) {
+    camera.x += CAMERA_SPEED * delta;
+    if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
+  }
+
+  // Cập nhật camera khi nhấn nút mũi tên
+  if (isLeftArrowPressed && camera.x > 0) {
+    camera.x -= CAMERA_SPEED * delta;
+    if (camera.x < 0) camera.x = 0;
+  }
+  if (isRightArrowPressed && camera.x < WORLD_WIDTH - canvas.width) {
     camera.x += CAMERA_SPEED * delta;
     if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
   }

@@ -48,3 +48,46 @@ canvas {
 .controls .avatar:hover {
     border-color: #fff; /* Viền trắng khi di chuột qua */
 }
+
+.arrow-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 50px; /* Tăng kích thước nút */
+    height: 50px;
+    background: linear-gradient(45deg, #1f1f1f, #4b4b4b); /* Gradient đen nhạt */
+    border: none;
+    border-radius: 10px; /* Bo góc lớn hơn */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Thêm bóng */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+    transition: all 0.3s ease; /* Hiệu ứng chuyển đổi mượt mà */
+}
+
+.arrow-button:hover {
+    background: linear-gradient(45deg, #2a2a2a, #6b6b6b); /* Gradient đen nhạt sáng hơn khi hover */
+    transform: translateY(-50%) scale(1.1); /* Phóng to nhẹ khi hover */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4); /* Bóng nổi hơn */
+}
+
+.arrow-button:active {
+    transform: translateY(-50%) scale(0.95); /* Thu nhỏ nhẹ khi nhấn */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Giảm bóng khi nhấn */
+}
+
+.arrow-button.left {
+    left: 20px; /* Dịch ra xa mép trái một chút */
+}
+
+.arrow-button.right {
+    right: 20px; /* Dịch ra xa mép phải một chút */
+}
+
+/* Đảm bảo SVG có kích thước phù hợp */
+.arrow-button svg {
+    width: 30px;
+    height: 30px;
+}
