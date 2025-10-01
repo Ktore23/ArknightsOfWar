@@ -100,6 +100,31 @@ body {
     transform: translate(-50%, -50%) scale(1.05);
 }
 
+.donate {
+    position: absolute;
+    bottom: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 20px 40px;
+    font-size: 28px;
+    font-weight: bold;
+    font-family: 'Montserrat', sans-serif;
+    color: #fff;
+    background: linear-gradient(135deg, #2c2c2c, #1a1a3a);
+    border: 2px solid #111;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(30, 30, 60, 0.7);
+    transition: all 0.3s ease;
+    animation: textFade 2s ease-in-out;
+}
+
+.donate:hover {
+    background: linear-gradient(135deg, #1a1a3a, #2c2c2c);
+    box-shadow: 0 0 20px rgba(30, 30, 60, 1);
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
 .character-selection {
     display: none;
     position: fixed;
