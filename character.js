@@ -37,14 +37,18 @@ export const characterData = [
   new Character(
     "Surtr",
     "./assets/avatars/operators/Surtr/SurtrSummer/surtr_summer.png",
-    2916, // HP
+    // 2916, // HP
+    1000000, // HP
     414, // DEF
     15, // RES
     70, // SPD
     1.5, // SPDATK
-    672, // ATK
-    12, // DP
-    8, // Cooldown
+    // 672, // ATK
+    1000000, // ATK
+    // 12, // DP
+    50, // DP
+    // 8, // Cooldown
+    60, // Cooldown
     "Kỹ năng 1: <em>Hỏa Cầu</em> - Gây <span style='color: red;'>200 sát thương</span> diện rộng.",
     "Kỹ năng 2: <em>Bùng Nổ</em> - Tăng <span style='color: orange;'>20% sát thương</span> trong <u>8 giây</u>.",
     "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",

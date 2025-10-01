@@ -611,7 +611,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         }
 
         skeleton.x = chenData.worldX - camera.x;
-        skeleton.y = GROUND_Y + 220;
+        skeleton.y = canvas.height - (GROUND_Y + 425);
         skeleton.scaleX = chenData.direction;
 
         if (chenData.direction === 1 && chenData.worldX > towerHitbox.x - hitbox.width) {

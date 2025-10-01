@@ -616,7 +616,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         }
 
         skeleton.x = surtrData.worldX - camera.x;
-        skeleton.y = GROUND_Y + 220;
+        skeleton.y = canvas.height - (GROUND_Y + 425);
         skeleton.scaleX = surtrData.direction;
 
         if (surtrData.direction === 1 && surtrData.worldX > towerHitbox.x - hitbox.width) {

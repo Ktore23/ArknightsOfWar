@@ -411,7 +411,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     }
 
     skeleton.x = frostNovaData.worldX - camera.x;
-    skeleton.y = GROUND_Y + 220;
+    skeleton.y = canvas.height - (GROUND_Y + 425);
     skeleton.scaleX = frostNovaData.direction;
 
     if (frostNovaData.direction === 1 && frostNovaData.worldX > towerHitbox.x - hitbox.width) {

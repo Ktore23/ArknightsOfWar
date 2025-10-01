@@ -503,7 +503,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         }
 
         skeleton.x = shuData.worldX - camera.x;
-        skeleton.y = GROUND_Y + 220;
+        skeleton.y = canvas.height - (GROUND_Y + 425);
         skeleton.scaleX = shuData.direction;
 
         if (shuData.direction === 1 && shuData.worldX > towerHitbox.x - hitbox.width + 100) {

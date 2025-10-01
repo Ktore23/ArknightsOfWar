@@ -616,7 +616,7 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         }
 
         skeleton.x = exusiaiData.worldX - camera.x;
-        skeleton.y = GROUND_Y + 220;
+        skeleton.y = canvas.height - (GROUND_Y + 425);
         skeleton.scaleX = exusiaiData.direction;
 
         if (exusiaiData.direction === 1 && exusiaiData.worldX > towerHitbox.x - hitbox.width) {
