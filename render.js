@@ -23,6 +23,7 @@ const DP_REGEN_RATE = 1; // +1 DP mỗi giây
 // Thêm biến cho nút điều khiển camera
 let isLeftArrowPressed = false;
 let isRightArrowPressed = false;
+const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0; // Kiểm tra thiết bị cảm ứng
 
 const WORLD_WIDTH = 4000;
 const CAMERA_SPEED = 1000;
@@ -240,51 +241,74 @@ async function init() {
     mouseX = event.clientX - rect.left;
   });
 
-  // Thêm sự kiện cho các nút mũi tên
+  // Chỉ thêm sự kiện mousemove nếu không phải thiết bị cảm ứng
+  if (!isTouchDevice) {
+    canvas.addEventListener('mousemove', (event) => {
+      const rect = canvas.getBoundingClientRect();
+      mouseX = event.clientX - rect.left;
+      console.log('Mouse move', { mouseX });
+    });
+  }
+
   const arrowLeft = document.getElementById('arrowLeft');
   const arrowRight = document.getElementById('arrowRight');
 
-  arrowLeft.addEventListener('mousedown', () => {
+  // Sự kiện chuột
+  arrowLeft.addEventListener('mousedown', (event) => {
+    event.preventDefault();
     isLeftArrowPressed = true;
+    console.log('Left arrow mousedown');
   });
   arrowLeft.addEventListener('mouseup', () => {
     isLeftArrowPressed = false;
+    console.log('Left arrow mouseup');
   });
   arrowLeft.addEventListener('mouseleave', () => {
     isLeftArrowPressed = false;
+    console.log('Left arrow mouseleave');
   });
 
-  arrowRight.addEventListener('mousedown', () => {
+  arrowRight.addEventListener('mousedown', (event) => {
+    event.preventDefault();
     isRightArrowPressed = true;
+    console.log('Right arrow mousedown');
   });
   arrowRight.addEventListener('mouseup', () => {
     isRightArrowPressed = false;
+    console.log('Right arrow mouseup');
   });
   arrowRight.addEventListener('mouseleave', () => {
     isRightArrowPressed = false;
+    console.log('Right arrow mouseleave');
   });
 
   // Sự kiện cảm ứng
   arrowLeft.addEventListener('touchstart', (event) => {
-    event.preventDefault(); // Ngăn hành vi mặc định như cuộn trang
+    event.preventDefault();
     isLeftArrowPressed = true;
+    console.log('Left arrow touchstart', { cameraX: camera.x });
   });
   arrowLeft.addEventListener('touchend', () => {
     isLeftArrowPressed = false;
+    console.log('Left arrow touchend', { cameraX: camera.x });
   });
   arrowLeft.addEventListener('touchcancel', () => {
     isLeftArrowPressed = false;
+    console.log('Left arrow touchcancel', { cameraX: camera.x });
   });
 
   arrowRight.addEventListener('touchstart', (event) => {
-    event.preventDefault(); // Ngăn hành vi mặc định như cuộn trang
+    event.preventDefault();
     isRightArrowPressed = true;
+    console.log('Right arrow touchstart', { cameraX: camera.x });
   });
   arrowRight.addEventListener('touchend', () => {
     isRightArrowPressed = false;
+    console.log('Right arrow touchend', { cameraX: camera.x });
   });
   arrowRight.addEventListener('touchcancel', () => {
     isRightArrowPressed = false;
+    console.log('Right arrow touchcancel', { cameraX: camera.x });
   });
 
   lastFrameTime = Date.now() / 1000;
@@ -471,22 +495,29 @@ function render() {
   backgroundCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
 
   // Cập nhật camera
-  if (mouseX < canvas.width * EDGE_THRESHOLD && camera.x > 0) {
-    camera.x -= CAMERA_SPEED * delta;
-    if (camera.x < 0) camera.x = 0;
-  } else if (mouseX > canvas.width * (1 - EDGE_THRESHOLD) && camera.x < WORLD_WIDTH - canvas.width) {
-    camera.x += CAMERA_SPEED * delta;
-    if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
-  }
-
-  // Cập nhật camera khi nhấn nút mũi tên
+  let cameraDelta = CAMERA_SPEED * delta;
   if (isLeftArrowPressed && camera.x > 0) {
-    camera.x -= CAMERA_SPEED * delta;
+    camera.x -= cameraDelta;
     if (camera.x < 0) camera.x = 0;
+    console.log('Camera moving left (button)', { cameraX: camera.x, delta });
   }
   if (isRightArrowPressed && camera.x < WORLD_WIDTH - canvas.width) {
-    camera.x += CAMERA_SPEED * delta;
+    camera.x += cameraDelta;
     if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
+    console.log('Camera moving right (button)', { cameraX: camera.x, delta });
+  }
+
+  // Chỉ xử lý di chuyển camera bằng chuột nếu không phải thiết bị cảm ứng
+  if (!isTouchDevice) {
+    if (mouseX < canvas.width * EDGE_THRESHOLD && camera.x > 0) {
+      camera.x -= cameraDelta;
+      if (camera.x < 0) camera.x = 0;
+      console.log('Camera moving left (mouse)', { cameraX: camera.x, mouseX });
+    } else if (mouseX > canvas.width * (1 - EDGE_THRESHOLD) && camera.x < WORLD_WIDTH - canvas.width) {
+      camera.x += cameraDelta;
+      if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
+      console.log('Camera moving right (mouse)', { cameraX: camera.x, mouseX });
+    }
   }
 
   resize();
