@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Exusiai": '/models/operators/Exusiai/Exusiai.js'
+  "Exusiai": './models/operators/Exusiai/Exusiai.js'
 };
 
 // Load groundTileImage
