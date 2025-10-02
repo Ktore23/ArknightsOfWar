@@ -472,11 +472,6 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
 
         const isColliding = isCollidingWithTower(exusiaiData, targetTower);
 
-        const isNearTower = isFinite(exusiaiHitbox.x) && 
-            exusiaiData.direction === 1 &&
-            exusiaiHitbox.x < towerHitbox.x + towerHitbox.width + 200 &&
-            exusiaiHitbox.x + exusiaiHitbox.width > towerHitbox.x - 200;
-
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
         for (let otherAlly of allAllies) {
@@ -502,7 +497,7 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
             exusiaiData.currentSkelPath === "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel" && 
             !exusiaiData.isInAttackState && !isSwitchingSkeleton && !exusiaiData.isDead) {
             // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
@@ -580,7 +575,7 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
                    exusiaiData.isInAttackState && !isSwitchingSkeleton && !exusiaiData.isDead) {
             // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
@@ -640,23 +635,23 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         batcher.end();
         shader.unbind();
 
-        backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        backgroundCtx.fillRect(
-            exusiaiHitbox.x - camera.x,
-            exusiaiHitbox.y,
-            exusiaiHitbox.width,
-            exusiaiHitbox.height
-        );
+        // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        // backgroundCtx.fillRect(
+        //     exusiaiHitbox.x - camera.x,
+        //     exusiaiHitbox.y,
+        //     exusiaiHitbox.width,
+        //     exusiaiHitbox.height
+        // );
 
-        if (isFinite(exusiaiDamageHitbox.x) && !exusiaiData.isDead) {
-            backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-            backgroundCtx.fillRect(
-                exusiaiDamageHitbox.x - camera.x,
-                exusiaiDamageHitbox.y,
-                exusiaiDamageHitbox.width,
-                exusiaiDamageHitbox.height
-            );
-        }
+        // if (isFinite(exusiaiDamageHitbox.x) && !exusiaiData.isDead) {
+        //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+        //     backgroundCtx.fillRect(
+        //         exusiaiDamageHitbox.x - camera.x,
+        //         exusiaiDamageHitbox.y,
+        //         exusiaiDamageHitbox.width,
+        //         exusiaiDamageHitbox.height
+        //     );
+        // }
     }
 }
 

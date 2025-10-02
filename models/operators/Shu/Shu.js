@@ -82,7 +82,7 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                     // console.log(`Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${shuData.target.worldX}. HP kẻ địch còn: ${shuData.target.hp}`);
                 } else {
                     const targetTower = shuData.tower;
-                    if (targetTower && isCollidingWithTower(shuData, targetTower, shuData.groundY)) { // Sử dụng shuData.groundY
+                    if (targetTower && isCollidingWithTower(shuData, targetTower)) { // Sử dụng shuData.groundY
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
                         // console.log(`Sự kiện OnAttack: Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
@@ -191,7 +191,7 @@ function switchSkeletonFile(shuData, newSkelPath, newAtlasPath, animationName, c
     callback(true);
 }
 
-function isCollidingWithTower(shuData, targetTower, GROUND_Y) {
+function isCollidingWithTower(shuData, targetTower) {
     if (!shuData.damageHitbox || !isFinite(shuData.worldX) || !isFinite(shuData.damageHitbox.offsetX)) {
         console.warn("Invalid damageHitbox or worldX, skipping tower collision check");
         return false;
@@ -355,12 +355,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             height: targetTower.hitbox.height
         };
 
-        const isColliding = isCollidingWithTower(shuData, targetTower, shuData.groundY); // Sử dụng shuData.groundY
-
-        const isNearTower = isFinite(shuHitbox.x) && 
-            shuData.direction === 1 &&
-            shuHitbox.x < towerHitbox.x + towerHitbox.width + 200 &&
-            shuHitbox.x + shuHitbox.width > towerHitbox.x - 200;
+        const isColliding = isCollidingWithTower(shuData, targetTower); // Sử dụng shuData.groundY
 
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
@@ -387,7 +382,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
             shuData.currentSkelPath === "assets/operators/Shu/ShuNian/shu_nian_weapon.skel" && 
             !shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
             // console.log(`Shu tại worldX=${shuData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
@@ -465,7 +460,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
                    shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
             // console.log(`Shu tại worldX=${shuData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
@@ -527,23 +522,23 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         batcher.end();
         shader.unbind();
 
-        backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        backgroundCtx.fillRect(
-            shuHitbox.x - camera.x,
-            shuHitbox.y,
-            shuHitbox.width,
-            shuHitbox.height
-        );
+        // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        // backgroundCtx.fillRect(
+        //     shuHitbox.x - camera.x,
+        //     shuHitbox.y,
+        //     shuHitbox.width,
+        //     shuHitbox.height
+        // );
 
-        if (isFinite(shuDamageHitbox.x) && !shuData.isDead) {
-            backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-            backgroundCtx.fillRect(
-                shuDamageHitbox.x - camera.x,
-                shuDamageHitbox.y,
-                shuDamageHitbox.width,
-                shuDamageHitbox.height
-            );
-        }
+        // if (isFinite(shuDamageHitbox.x) && !shuData.isDead) {
+        //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+        //     backgroundCtx.fillRect(
+        //         shuDamageHitbox.x - camera.x,
+        //         shuDamageHitbox.y,
+        //         shuDamageHitbox.width,
+        //         shuDamageHitbox.height
+        //     );
+        // }
     }
 }
 

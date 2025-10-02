@@ -450,7 +450,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         validEnemies.forEach(enemy => {
             if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
                 const distance = Math.abs(surtrData.worldX - enemy.worldX);
-                console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
+                // console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestEnemy = enemy;
@@ -471,11 +471,6 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         };
 
         const isColliding = isCollidingWithTower(surtrData, targetTower);
-
-        const isNearTower = isFinite(surtrHitbox.x) && 
-            surtrData.direction === 1 &&
-            surtrHitbox.x < towerHitbox.x + towerHitbox.width + 200 &&
-            surtrHitbox.x + surtrHitbox.width > towerHitbox.x - 200;
 
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
@@ -502,7 +497,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
             surtrData.currentSkelPath === "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel" && 
             !surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
@@ -580,7 +575,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
                    surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
@@ -640,23 +635,23 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         batcher.end();
         shader.unbind();
 
-        backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        backgroundCtx.fillRect(
-            surtrHitbox.x - camera.x,
-            surtrHitbox.y,
-            surtrHitbox.width,
-            surtrHitbox.height
-        );
+        // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        // backgroundCtx.fillRect(
+        //     surtrHitbox.x - camera.x,
+        //     surtrHitbox.y,
+        //     surtrHitbox.width,
+        //     surtrHitbox.height
+        // );
 
-        if (isFinite(surtrDamageHitbox.x) && !surtrData.isDead) {
-            backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-            backgroundCtx.fillRect(
-                surtrDamageHitbox.x - camera.x,
-                surtrDamageHitbox.y,
-                surtrDamageHitbox.width,
-                surtrDamageHitbox.height
-            );
-        }
+        // if (isFinite(surtrDamageHitbox.x) && !surtrData.isDead) {
+        //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+        //     backgroundCtx.fillRect(
+        //         surtrDamageHitbox.x - camera.x,
+        //         surtrDamageHitbox.y,
+        //         surtrDamageHitbox.width,
+        //         surtrDamageHitbox.height
+        //     );
+        // }
     }
 }
 

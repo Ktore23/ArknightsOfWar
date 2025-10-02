@@ -254,7 +254,6 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     };
 
     // Kiểm tra va chạm với tower
-    const isNearTower = Math.abs(worldX - tower.x) < 300;
     const isColliding = isCollidingWithTower(frostNovaData, tower);
 
     // Kiểm tra va chạm với enemy
@@ -451,23 +450,23 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
         height: frostNovaData.damageHitbox.height
     };
 
-    backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-    backgroundCtx.fillRect(
-        frostNovaHitbox.x - camera.x,
-        frostNovaHitbox.y,
-        frostNovaHitbox.width,
-        frostNovaHitbox.height
-    );
+    // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+    // backgroundCtx.fillRect(
+    //     frostNovaHitbox.x - camera.x,
+    //     frostNovaHitbox.y,
+    //     frostNovaHitbox.width,
+    //     frostNovaHitbox.height
+    // );
 
-    if (isFinite(frostNovaDamageHitbox.x) && !frostNovaData.isDead) {
-        backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-        backgroundCtx.fillRect(
-            frostNovaDamageHitbox.x - camera.x,
-            frostNovaDamageHitbox.y,
-            frostNovaDamageHitbox.width,
-            frostNovaDamageHitbox.height
-        );
-    }
+    // if (isFinite(frostNovaDamageHitbox.x) && !frostNovaData.isDead) {
+    //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+    //     backgroundCtx.fillRect(
+    //         frostNovaDamageHitbox.x - camera.x,
+    //         frostNovaDamageHitbox.y,
+    //         frostNovaDamageHitbox.width,
+    //         frostNovaDamageHitbox.height
+    //     );
+    // }
 }
 
 export function resizeFrostNova(canvas, camera, gl) {

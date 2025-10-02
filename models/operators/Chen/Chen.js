@@ -468,11 +468,6 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
 
         const isColliding = isCollidingWithTower(chenData, targetTower);
 
-        const isNearTower = isFinite(chenHitbox.x) && 
-            chenData.direction === 1 &&
-            chenHitbox.x < towerHitbox.x + towerHitbox.width + 200 &&
-            chenHitbox.x + chenHitbox.width > towerHitbox.x - 200;
-
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
         for (let otherAlly of allAllies) {
@@ -497,7 +492,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
             chenData.currentSkelPath === "assets/operators/Chen/ChenNian/chen_nian_weapon.skel" && 
             !chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
             // console.log(`Chen tại worldX=${chenData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
@@ -575,7 +570,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isNearTower && !isBlockedByFrontAlly && 
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
                    chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
             // console.log(`Chen tại worldX=${chenData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
@@ -635,23 +630,23 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         batcher.end();
         shader.unbind();
 
-        backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        backgroundCtx.fillRect(
-            chenHitbox.x - camera.x,
-            chenHitbox.y,
-            chenHitbox.width,
-            chenHitbox.height
-        );
+        // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        // backgroundCtx.fillRect(
+        //     chenHitbox.x - camera.x,
+        //     chenHitbox.y,
+        //     chenHitbox.width,
+        //     chenHitbox.height
+        // );
 
-        if (isFinite(chenDamageHitbox.x) && !chenData.isDead) {
-            backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-            backgroundCtx.fillRect(
-                chenDamageHitbox.x - camera.x,
-                chenDamageHitbox.y,
-                chenDamageHitbox.width,
-                chenDamageHitbox.height
-            );
-        }
+        // if (isFinite(chenDamageHitbox.x) && !chenData.isDead) {
+        //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+        //     backgroundCtx.fillRect(
+        //         chenDamageHitbox.x - camera.x,
+        //         chenDamageHitbox.y,
+        //         chenDamageHitbox.width,
+        //         chenDamageHitbox.height
+        //     );
+        // }
     }
 }
 

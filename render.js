@@ -246,7 +246,7 @@ async function init() {
     canvas.addEventListener('mousemove', (event) => {
       const rect = canvas.getBoundingClientRect();
       mouseX = event.clientX - rect.left;
-      console.log('Mouse move', { mouseX });
+      // console.log('Mouse move', { mouseX });
     });
   }
 
@@ -257,58 +257,58 @@ async function init() {
   arrowLeft.addEventListener('mousedown', (event) => {
     event.preventDefault();
     isLeftArrowPressed = true;
-    console.log('Left arrow mousedown');
+    // console.log('Left arrow mousedown');
   });
   arrowLeft.addEventListener('mouseup', () => {
     isLeftArrowPressed = false;
-    console.log('Left arrow mouseup');
+    // console.log('Left arrow mouseup');
   });
   arrowLeft.addEventListener('mouseleave', () => {
     isLeftArrowPressed = false;
-    console.log('Left arrow mouseleave');
+    // console.log('Left arrow mouseleave');
   });
 
   arrowRight.addEventListener('mousedown', (event) => {
     event.preventDefault();
     isRightArrowPressed = true;
-    console.log('Right arrow mousedown');
+    // console.log('Right arrow mousedown');
   });
   arrowRight.addEventListener('mouseup', () => {
     isRightArrowPressed = false;
-    console.log('Right arrow mouseup');
+    // console.log('Right arrow mouseup');
   });
   arrowRight.addEventListener('mouseleave', () => {
     isRightArrowPressed = false;
-    console.log('Right arrow mouseleave');
+    // console.log('Right arrow mouseleave');
   });
 
   // Sự kiện cảm ứng
   arrowLeft.addEventListener('touchstart', (event) => {
     event.preventDefault();
     isLeftArrowPressed = true;
-    console.log('Left arrow touchstart', { cameraX: camera.x });
+    // console.log('Left arrow touchstart', { cameraX: camera.x });
   });
   arrowLeft.addEventListener('touchend', () => {
     isLeftArrowPressed = false;
-    console.log('Left arrow touchend', { cameraX: camera.x });
+    // console.log('Left arrow touchend', { cameraX: camera.x });
   });
   arrowLeft.addEventListener('touchcancel', () => {
     isLeftArrowPressed = false;
-    console.log('Left arrow touchcancel', { cameraX: camera.x });
+    // console.log('Left arrow touchcancel', { cameraX: camera.x });
   });
 
   arrowRight.addEventListener('touchstart', (event) => {
     event.preventDefault();
     isRightArrowPressed = true;
-    console.log('Right arrow touchstart', { cameraX: camera.x });
+    // console.log('Right arrow touchstart', { cameraX: camera.x });
   });
   arrowRight.addEventListener('touchend', () => {
     isRightArrowPressed = false;
-    console.log('Right arrow touchend', { cameraX: camera.x });
+    // console.log('Right arrow touchend', { cameraX: camera.x });
   });
   arrowRight.addEventListener('touchcancel', () => {
     isRightArrowPressed = false;
-    console.log('Right arrow touchcancel', { cameraX: camera.x });
+    // console.log('Right arrow touchcancel', { cameraX: camera.x });
   });
 
   lastFrameTime = Date.now() / 1000;
@@ -499,12 +499,12 @@ function render() {
   if (isLeftArrowPressed && camera.x > 0) {
     camera.x -= cameraDelta;
     if (camera.x < 0) camera.x = 0;
-    console.log('Camera moving left (button)', { cameraX: camera.x, delta });
+    // console.log('Camera moving left (button)', { cameraX: camera.x, delta });
   }
   if (isRightArrowPressed && camera.x < WORLD_WIDTH - canvas.width) {
     camera.x += cameraDelta;
     if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
-    console.log('Camera moving right (button)', { cameraX: camera.x, delta });
+    // console.log('Camera moving right (button)', { cameraX: camera.x, delta });
   }
 
   // Chỉ xử lý di chuyển camera bằng chuột nếu không phải thiết bị cảm ứng
@@ -512,11 +512,11 @@ function render() {
     if (mouseX < canvas.width * EDGE_THRESHOLD && camera.x > 0) {
       camera.x -= cameraDelta;
       if (camera.x < 0) camera.x = 0;
-      console.log('Camera moving left (mouse)', { cameraX: camera.x, mouseX });
+      // console.log('Camera moving left (mouse)', { cameraX: camera.x, mouseX });
     } else if (mouseX > canvas.width * (1 - EDGE_THRESHOLD) && camera.x < WORLD_WIDTH - canvas.width) {
       camera.x += cameraDelta;
       if (camera.x > WORLD_WIDTH - canvas.width) camera.x = WORLD_WIDTH - canvas.width;
-      console.log('Camera moving right (mouse)', { cameraX: camera.x, mouseX });
+      // console.log('Camera moving right (mouse)', { cameraX: camera.x, mouseX });
     }
   }
 
@@ -561,8 +561,8 @@ function render() {
 
       const hitboxX = drawX + tower.hitbox.offsetX - tower.hitbox.width / 2;
       const hitboxY = drawY + tower.hitbox.offsetY - tower.hitbox.height / 2;
-      backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-      backgroundCtx.fillRect(hitboxX, hitboxY, tower.hitbox.width, tower.hitbox.height);
+      // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+      // backgroundCtx.fillRect(hitboxX, hitboxY, tower.hitbox.width, tower.hitbox.height);
 
       if (index === 0) {
         backgroundCtx.translate(drawX + width / 2, drawY + height / 2);
@@ -634,12 +634,12 @@ function render() {
   }
 
   // Vẽ line
-  backgroundCtx.beginPath();
-  backgroundCtx.moveTo(0, LINE_Y);
-  backgroundCtx.lineTo(canvas.width, LINE_Y);
-  backgroundCtx.strokeStyle = LINE_COLOR;
-  backgroundCtx.lineWidth = LINE_WIDTH;
-  backgroundCtx.stroke();
+  // backgroundCtx.beginPath();
+  // backgroundCtx.moveTo(0, LINE_Y);
+  // backgroundCtx.lineTo(canvas.width, LINE_Y);
+  // backgroundCtx.strokeStyle = LINE_COLOR;
+  // backgroundCtx.lineWidth = LINE_WIDTH;
+  // backgroundCtx.stroke();
 
   // const playerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
   const botUnits = getBotUnits();

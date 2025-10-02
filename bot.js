@@ -126,6 +126,8 @@ function tryAddBotUnit(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH) {
   newUnit.velocity = 50;
   newUnit.tower = TOWER_POSITIONS[0];
 
+  botDP -= stats.dp;
+  botLastDeployTime[characterName] = now;
   botArray.push(newUnit);
   console.log(`Bot thả ${characterName} tại worldX=${newWorldX}, HP=${newUnit.hp}/${newUnit.maxHp}. Tổng bot: ${allBots.length + 1}`);
 }
