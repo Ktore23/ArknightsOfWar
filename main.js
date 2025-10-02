@@ -100,22 +100,22 @@ function updateCharacterInfo() {
         <li>CD: ${data.cd}s</li>
       </ul>
     `;
-    // infoSkills.innerHTML = `
-    //   <h5>Kỹ năng</h5>
-    //   <ul>
-    //     <li>${data.skill1}</li>
-    //     <li>${data.skill2}</li>
-    //     <li>${data.skill3}</li>
-    //   </ul>
-    // `;
-    // infoTalent.innerHTML = `
-    //   <h5>Thiên phú</h5>
-    //   <p>${data.talent}</p>
-    // `;
-    // infoTrait.innerHTML = `
-    //   <h5>Đặc tính</h5>
-    //   <p>${data.trait}</p>
-    // `;
+    infoSkills.innerHTML = `
+      <h5>Kỹ năng</h5>
+      <ul>
+        <li>${data.skill1}</li>
+        <li>${data.skill2}</li>
+        <li>${data.skill3}</li>
+      </ul>
+    `;
+    infoTalent.innerHTML = `
+      <h5>Thiên phú</h5>
+      <p>${data.talent}</p>
+    `;
+    infoTrait.innerHTML = `
+      <h5>Đặc tính</h5>
+      <p>${data.trait}</p>
+    `;
     infoContent.style.display = 'block';
     document.querySelector('.character-info h3').style.display = 'none';
   } else {

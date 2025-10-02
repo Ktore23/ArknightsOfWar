@@ -49,11 +49,16 @@ export const characterData = [
     50, // DP
     // 8, // Cooldown
     60, // Cooldown
-    "Kỹ năng 1: <em>Hỏa Cầu</em> - Gây <span style='color: red;'>200 sát thương</span> diện rộng.",
-    "Kỹ năng 2: <em>Bùng Nổ</em> - Tăng <span style='color: orange;'>20% sát thương</span> trong <u>8 giây</u>.",
-    "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",
-    "Thiên phú: <em>Cuồng Nộ</em> - Tăng <span style='color: red;'>10% tấn công</span> khi HP dưới 50%.",
-    "Đặc tính: <em>Sát Thủ</em> - Gây thêm <u>15% sát thương</u> vào kẻ địch dưới 30% HP."
+    // "Kỹ năng 1: <em>Hỏa Cầu</em> - Gây <span style='color: red;'>200 sát thương</span> diện rộng.",
+    // "Kỹ năng 2: <em>Bùng Nổ</em> - Tăng <span style='color: orange;'>20% sát thương</span> trong <u>8 giây</u>.",
+    // "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",
+    // "Thiên phú: <em>Cuồng Nộ</em> - Tăng <span style='color: red;'>10% tấn công</span> khi HP dưới 50%.",
+    // "Đặc tính: <em>Sát Thủ</em> - Gây thêm <u>15% sát thương</u> vào kẻ địch dưới 30% HP."
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
   new Character(
     "Shu",
@@ -66,11 +71,16 @@ export const characterData = [
     479, // ATK
     10, // DP
     7, // Cooldown
-    "Kỹ năng 1: <em>Lá Chắn</em> - Giảm <span style='color: blue;'>50% sát thương</span> nhận vào trong <u>10 giây</u>.",
-    "Kỹ năng 2: <em>Hồi Phục</em> - Hồi <span style='color: green;'>300 HP</span> cho bản thân.",
-    "Kỹ năng 3: <em>Phòng Thủ</em> - Tăng <span style='color: blue;'>30% kháng vật lý</span> cho đồng đội.",
-    "Thiên phú: <em>Bền Bỉ</em> - Hồi <span style='color: green;'>5% HP</span> mỗi 10 giây.",
-    "Đặc tính: <em>Hộ Vệ</em> - Giảm <u>10% sát thương</u> cho đồng đội gần kề."
+    // "Kỹ năng 1: <em>Lá Chắn</em> - Giảm <span style='color: blue;'>50% sát thương</span> nhận vào trong <u>10 giây</u>.",
+    // "Kỹ năng 2: <em>Hồi Phục</em> - Hồi <span style='color: green;'>300 HP</span> cho bản thân.",
+    // "Kỹ năng 3: <em>Phòng Thủ</em> - Tăng <span style='color: blue;'>30% kháng vật lý</span> cho đồng đội.",
+    // "Thiên phú: <em>Bền Bỉ</em> - Hồi <span style='color: green;'>5% HP</span> mỗi 10 giây.",
+    // "Đặc tính: <em>Hộ Vệ</em> - Giảm <u>10% sát thương</u> cho đồng đội gần kề."
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
   new Character(
     "Frost Nova",
@@ -83,11 +93,16 @@ export const characterData = [
     440, // ATK
     10, // DP
     7, // Cooldown
-    "Kỹ năng 1: <em>Tàng Hình</em> - <span style='color: purple;'>Ẩn thân</span> trong <u>8 giây</u>.",
-    "Kỹ năng 2: <em>Tốc Biến</em> - Tăng <span style='color: yellow;'>50% tốc chạy</span> trong <u>5 giây</u>.",
-    "Kỹ năng 3: <em>Đâm Lén</em> - Gây <span style='color: purple;'>300 sát thương</span> từ phía sau.",
-    "Thiên phú: <em>Nhanh Nhẹn</em> - Tăng <span style='color: yellow;'>15% tốc đánh</span> khi không bị tấn công.",
-    "Đặc tính: <em>Thích Khách</em> - Tăng <u>20% sát thương chí mạng</u>."
+    // "Kỹ năng 1: <em>Tàng Hình</em> - <span style='color: purple;'>Ẩn thân</span> trong <u>8 giây</u>.",
+    // "Kỹ năng 2: <em>Tốc Biến</em> - Tăng <span style='color: yellow;'>50% tốc chạy</span> trong <u>5 giây</u>.",
+    // "Kỹ năng 3: <em>Đâm Lén</em> - Gây <span style='color: purple;'>300 sát thương</span> từ phía sau.",
+    // "Thiên phú: <em>Nhanh Nhẹn</em> - Tăng <span style='color: yellow;'>15% tốc đánh</span> khi không bị tấn công.",
+    // "Đặc tính: <em>Thích Khách</em> - Tăng <u>20% sát thương chí mạng</u>."
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
   new Character(
     "Ch'en",
@@ -100,11 +115,16 @@ export const characterData = [
     610, // ATK
     15, // DP
     10, // Cooldown
-    "Kỹ năng 1: <em>Sấm Sét</em> - Gây <span style='color: yellow;'>250 sát thương</span> đơn mục tiêu.",
-    "Kỹ năng 2: <em>Điện Từ</em> - Làm chậm <span style='color: blue;'>30% tốc chạy</span> của kẻ địch trong <u>6 giây</u>.",
-    "Kỹ năng 3: <em>Cơn Bão</em> - Gây <span style='color: yellow;'>150 sát thương</span> diện rộng liên tục.",
-    "Thiên phú: <em>Năng Lượng</em> - Hồi <span style='color: blue;'>10% mana</span> mỗi 5 giây.",
-    "Đặc tính: <em>Pháp Sư</em> - Tăng <u>15% sát thương phép</u>."
+    // "Kỹ năng 1: <em>Sấm Sét</em> - Gây <span style='color: yellow;'>250 sát thương</span> đơn mục tiêu.",
+    // "Kỹ năng 2: <em>Điện Từ</em> - Làm chậm <span style='color: blue;'>30% tốc chạy</span> của kẻ địch trong <u>6 giây</u>.",
+    // "Kỹ năng 3: <em>Cơn Bão</em> - Gây <span style='color: yellow;'>150 sát thương</span> diện rộng liên tục.",
+    // "Thiên phú: <em>Năng Lượng</em> - Hồi <span style='color: blue;'>10% mana</span> mỗi 5 giây.",
+    // "Đặc tính: <em>Pháp Sư</em> - Tăng <u>15% sát thương phép</u>."
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
   new Character(
     "Exusiai",
@@ -117,26 +137,37 @@ export const characterData = [
     540, // ATK
     12, // DP
     8, // Cooldown
-    "Kỹ năng 1: <em>Cơn Thịnh Nộ</em> - Tăng <span style='color: orange;'>30% sát thương</span> trong <u>12 giây</u>.",
-    "Kỹ năng 2: <em>Chí Mạng</em> - Gây <span style='color: red;'>400 sát thương</span> với <u>50% tỉ lệ chí mạng</u>.",
-    "Kỹ năng 3: <em>Hủy Diệt</em> - Gây <span style='color: red;'>600 sát thương</span> đơn mục tiêu.",
-    "Thiên phú: <em>Cuồng Loạn</em> - Tăng <span style='color: red;'>20% tốc đánh</span> khi HP dưới 30%.",
-    "Đặc tính: <em>Chiến Binh</em> - Tăng <u>10% sát thương</u> khi tấn công liên tục."
+    // "Kỹ năng 1: <em>Cơn Thịnh Nộ</em> - Tăng <span style='color: orange;'>30% sát thương</span> trong <u>12 giây</u>.",
+    // "Kỹ năng 2: <em>Chí Mạng</em> - Gây <span style='color: red;'>400 sát thương</span> với <u>50% tỉ lệ chí mạng</u>.",
+    // "Kỹ năng 3: <em>Hủy Diệt</em> - Gây <span style='color: red;'>600 sát thương</span> đơn mục tiêu.",
+    // "Thiên phú: <em>Cuồng Loạn</em> - Tăng <span style='color: red;'>20% tốc đánh</span> khi HP dưới 30%.",
+    // "Đặc tính: <em>Chiến Binh</em> - Tăng <u>10% sát thương</u> khi tấn công liên tục."
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
   new Character(
-    "Nhân Vật 6",
-    "https://via.placeholder.com/150?text=Char6",
-    1300, // HP
-    85, // DEF
-    75, // RES
+    "Kroos",
+    "./assets/avatars/operators/Kroos/KroosWitch/kroos_witch.png",
+    1060, // HP
+    126, // DEF
+    0, // RES
     55, // SPD
     1.0, // SPDATK
-    90, // ATK
-    "Kỹ năng 1: <em>Hồi Phục</em> - Hồi <span style='color: green;'>400 HP</span> cho đồng đội.",
-    "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
-    "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
-    "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",
-    "Đặc tính: <em>Hỗ Trợ</em> - Tăng <u>15% hiệu quả hồi máu</u>."
+    375, // ATK
+    5, // DP
+    5, // Cooldown
+    "Kỹ năng 1: Sau mỗi 3 đòn đánh gây <span style='color: red;'>X2 sát thương</span> lên kẻ địch.",
+    // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
+    // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
+    // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",
+    // "Đặc tính: <em>Hỗ Trợ</em> - Tăng <u>15% hiệu quả hồi máu</u>."
+    "Không có dữ liệu.",
+    "Không có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
   ),
 ];
 
