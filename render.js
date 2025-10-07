@@ -36,14 +36,18 @@ const TOWER_POSITIONS = [
     y: GROUND_Y - 35,
     hitbox: { width: 200, height: 400, offsetX: 250, offsetY: 250 },
     hp: 10000,
-    maxHp: 10000
+    maxHp: 10000,
+    def: 200,
+    res: 20
   },
   {
     x: WORLD_WIDTH - 400,
     y: GROUND_Y - 35,
     hitbox: { width: 200, height: 400, offsetX: 250, offsetY: 250 },
     hp: 10000,
-    maxHp: 10000
+    maxHp: 10000,
+    def: 200,
+    res: 20
   }
 ];
 const LINE_Y = GROUND_Y + 420;

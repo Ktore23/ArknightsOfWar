@@ -37,18 +37,14 @@ export const characterData = [
   new Character(
     "Surtr",
     "./assets/avatars/operators/Surtr/SurtrSummer/surtr_summer.png",
-    // 2916, // HP
-    1000000, // HP
+    2916, // HP
     414, // DEF
     15, // RES
     70, // SPD
     1.5, // SPDATK
-    // 672, // ATK
-    1000000, // ATK
-    // 12, // DP
-    50, // DP
-    // 8, // Cooldown
-    60, // Cooldown
+    672, // ATK
+    12, // DP
+    8, // Cooldown
     // "Kỹ năng 1: <em>Hỏa Cầu</em> - Gây <span style='color: red;'>200 sát thương</span> diện rộng.",
     // "Kỹ năng 2: <em>Bùng Nổ</em> - Tăng <span style='color: orange;'>20% sát thương</span> trong <u>8 giây</u>.",
     // "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",
@@ -69,8 +65,8 @@ export const characterData = [
     60, // SPD
     1.2, // SPDATK
     479, // ATK
-    10, // DP
-    7, // Cooldown
+    21, // DP
+    10, // Cooldown
     // "Kỹ năng 1: <em>Lá Chắn</em> - Giảm <span style='color: blue;'>50% sát thương</span> nhận vào trong <u>10 giây</u>.",
     // "Kỹ năng 2: <em>Hồi Phục</em> - Hồi <span style='color: green;'>300 HP</span> cho bản thân.",
     // "Kỹ năng 3: <em>Phòng Thủ</em> - Tăng <span style='color: blue;'>30% kháng vật lý</span> cho đồng đội.",
@@ -91,8 +87,8 @@ export const characterData = [
     90, // SPD
     1.8, // SPDATK
     440, // ATK
-    10, // DP
-    7, // Cooldown
+    20, // DP
+    30, // Cooldown
     // "Kỹ năng 1: <em>Tàng Hình</em> - <span style='color: purple;'>Ẩn thân</span> trong <u>8 giây</u>.",
     // "Kỹ năng 2: <em>Tốc Biến</em> - Tăng <span style='color: yellow;'>50% tốc chạy</span> trong <u>5 giây</u>.",
     // "Kỹ năng 3: <em>Đâm Lén</em> - Gây <span style='color: purple;'>300 sát thương</span> từ phía sau.",
@@ -113,7 +109,7 @@ export const characterData = [
     65, // SPD
     1.4, // SPDATK
     610, // ATK
-    15, // DP
+    23, // DP
     10, // Cooldown
     // "Kỹ năng 1: <em>Sấm Sét</em> - Gây <span style='color: yellow;'>250 sát thương</span> đơn mục tiêu.",
     // "Kỹ năng 2: <em>Điện Từ</em> - Làm chậm <span style='color: blue;'>30% tốc chạy</span> của kẻ địch trong <u>6 giây</u>.",
@@ -135,8 +131,8 @@ export const characterData = [
     75, // SPD
     1.6, // SPDATK
     540, // ATK
-    12, // DP
-    8, // Cooldown
+    14, // DP
+    20, // Cooldown
     // "Kỹ năng 1: <em>Cơn Thịnh Nộ</em> - Tăng <span style='color: orange;'>30% sát thương</span> trong <u>12 giây</u>.",
     // "Kỹ năng 2: <em>Chí Mạng</em> - Gây <span style='color: red;'>400 sát thương</span> với <u>50% tỉ lệ chí mạng</u>.",
     // "Kỹ năng 3: <em>Hủy Diệt</em> - Gây <span style='color: red;'>600 sát thương</span> đơn mục tiêu.",
@@ -159,7 +155,7 @@ export const characterData = [
     375, // ATK
     5, // DP
     5, // Cooldown
-    "Kỹ năng 1: Sau mỗi 3 đòn đánh gây <span style='color: red;'>X2 sát thương</span> lên kẻ địch.",
+    "Kỹ năng 1: Sau mỗi 4 đòn đánh gây <span style='color: red;'>2 lần sát thương mỗi đòn gây 140%</span> lên kẻ địch.",
     // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
     // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
     // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",

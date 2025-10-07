@@ -98,9 +98,9 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
     });
 
     const hitbox = {
-        width: isFinite(bounds.size.x) ? bounds.size.x * 0.5 : 100,
+        width: isFinite(bounds.size.x) ? bounds.size.x * 0.4 : 100,
         height: isFinite(bounds.size.y) ? bounds.size.y * 0.67 - 2 : 200,
-        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 50) ? bounds.offset.x + bounds.size.x / 2 - 35 : 50,
+        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 50) ? bounds.offset.x + bounds.size.x / 2 - 25 : 50,
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 50) ? bounds.offset.y + bounds.size.y * 0.2 + 100 : 50
     };
 

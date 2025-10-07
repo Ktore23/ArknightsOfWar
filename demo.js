@@ -57,13 +57,13 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
       height: unit.hitbox.height
     };
     return !(newHitbox.x + newHitbox.width <= unitHitbox.x ||
-             newHitbox.x >= unitHitbox.x + unitHitbox.width ||
-             newHitbox.y + newHitbox.height <= unitHitbox.y ||
-             newHitbox.y >= unitHitbox.y + unitHitbox.height);
+      newHitbox.x >= unitHitbox.x + unitHitbox.width ||
+      newHitbox.y + newHitbox.height <= unitHitbox.y ||
+      newHitbox.y >= unitHitbox.y + unitHitbox.height);
   });
 }
 
-// Hàm mới để render Kroos bot ở trạng thái idle
+// Hàm để render Kroos bot ở trạng thái idle
 function addKroosBotForTesting() {
   const char = "Kroos";
   const module = importedModules[char];
@@ -77,14 +77,15 @@ function addKroosBotForTesting() {
   const isLoadingComplete = module[`is${moduleName}LoadingComplete`];
 
   if (!isLoadingComplete()) {
-    console.log(`Assets ${char} chưa load xong`);
+    console.error(`Assets ${char} chưa load xong`);
     return;
   }
 
-  // Tạo bot tại vị trí cố định (bên phải màn hình)
-  const botWorldX = WORLD_WIDTH - 3700; // Cách tower phải 600px
+  // Tìm unit Kroos được thả gần nhất
+  let botWorldX = 1500;
+
   const newHitbox = {
-    x: botWorldX + 0 - 100 / 2, // Giả sử hitbox mặc định
+    x: botWorldX + 0 - 100 / 2,
     y: GROUND_Y + 0 - 200 / 2,
     width: 100,
     height: 200
@@ -92,8 +93,9 @@ function addKroosBotForTesting() {
 
   // Kiểm tra overlap
   if (isOverlappingWithOtherUnit(newHitbox, playerUnits)) {
-    console.log(`Vị trí bot chồng chéo, không thể thêm`);
-    return;
+    console.log(`Vị trí bot chồng chéo, thử offset...`);
+    botWorldX += newHitbox.width + 50;
+    newHitbox.x = botWorldX + 0 - 100 / 2;
   }
 
   const botUnit = loadFunc(botWorldX, true); // isBot = true
@@ -106,24 +108,32 @@ function addKroosBotForTesting() {
   botUnit.type = char;
   botUnit.worldX = botWorldX;
   botUnit.x = botWorldX;
-  botUnit.hp = characterDataObj[char].hp;
+  botUnit.hp = 1000000;
   botUnit.maxHp = characterDataObj[char].hp;
-  botUnit.direction = -1; // Hướng trái (đối diện player)
-  botUnit.skeleton.scaleX = -1; // Lật sprite
+  botUnit.direction = -1;
+  botUnit.skeleton.scaleX = -1;
   botUnit.skeleton.scaleY = 1;
-  botUnit.velocity = 0; // Đứng yên để test
-  botUnit.tower = TOWER_POSITIONS[0]; // Nhắm vào tower của player
+  botUnit.velocity = 0;
+  botUnit.tower = TOWER_POSITIONS[0];
+  botUnit.isBot = true; // Thêm thuộc tính để xác định bot
 
-  // Set animation idle
+  // Set animation Idle và khóa trạng thái
   try {
-    botUnit.skeleton.state.setAnimation(0, "Idle", true);
+    if (!botUnit.skeleton || (!botUnit.state && !botUnit.skeleton.state)) {
+      throw new Error("Skeleton hoặc state không được khởi tạo cho bot");
+    }
+    // Sử dụng botUnit.state nếu tồn tại (cho module thực tế), fallback skeleton.state nếu không
+    const animState = botUnit.state || botUnit.skeleton.state;
+    animState.setAnimation(0, "Idle", true);
+    animState.isLockedIdle = true;
     console.log(`Đã set animation Idle cho Kroos bot`);
   } catch (error) {
     console.error(`Lỗi khi set animation Idle cho bot:`, error);
+    // Fallback: Không set animation, bot vẫn hiển thị với render fallback
   }
 
   playerUnits.push(botUnit);
-  console.log(`Đã thêm Kroos bot tại x=${botWorldX}. Hitbox:`, newHitbox);
+  // console.log(`Đã thêm Kroos bot tại x=${botWorldX}. Hitbox:`, newHitbox);
 }
 
 async function init() {
@@ -144,7 +154,7 @@ async function init() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  // Load module cho Surtr
+  // Load module cho Kroos
   const char = "Kroos";
   try {
     const modulePath = characterModules[char];
@@ -163,7 +173,7 @@ async function init() {
       loadSurtrSkeleton: (x, isBot) => ({
         worldX: x,
         x: x,
-        skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => {} } },
+        skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => { } } },
         hitbox: { offsetX: 0, offsetY: 0, width: 100, height: 200 },
         direction: isBot ? -1 : 1,
         velocity: 50,
@@ -178,6 +188,17 @@ async function init() {
     console.log(`Dùng fallback cho để test hitbox`);
   }
 
+  // Đợi tài nguyên Kroos load xong rồi thêm bot
+  const waitForKroosAssets = setInterval(() => {
+    const module = importedModules[char];
+    if (module && module.isKroosLoadingComplete && module.isKroosLoadingComplete()) {
+      clearInterval(waitForKroosAssets); // Dừng interval khi load xong
+      addKroosBotForTesting(); // Thêm bot
+    } else {
+      console.log(`Đang đợi tài nguyên Kroos load...`);
+    }
+  }, 100); // Kiểm tra mỗi 100ms
+
   // Regenerate DP
   setInterval(() => {
     if (playerDP < MAX_DP) {
@@ -188,9 +209,6 @@ async function init() {
 
   // Event thả nhân vật test
   document.getElementById('deployButton').addEventListener('click', () => tryAddUnit(char));
-
-  // Thêm Kroos bot để test
-  addKroosBotForTesting();
 
   // Hiển thị danh sách animation
   const module = importedModules[char];
@@ -258,15 +276,12 @@ function tryAddUnit(char) {
   }
 
   // Thả ở giữa màn hình
-  let newWorldX = window.innerWidth / 2 - 500;
+  let newWorldX = window.innerWidth / 2;
   const tempUnit = loadFunc(newWorldX, false);
   if (!tempUnit) {
     console.error(`Không thể load ${char} skeleton`);
     return;
   }
-
-  // Log kích thước skeleton và hitbox
-  console.log(`TempUnit skeleton:`, tempUnit.skeleton, `Hitbox:`, tempUnit.hitbox);
 
   const newHitbox = {
     x: newWorldX + tempUnit.hitbox.offsetX - tempUnit.hitbox.width / 2,
@@ -301,9 +316,8 @@ function tryAddUnit(char) {
 
   playerUnits.push(newUnit);
   playerDP -= stats.dp;
-  lastDeployTime[char] = Date().now;
+  lastDeployTime[char] = Date.now();
   updateDPDisplay();
-  console.log(`Thả ${char} tại x=${newWorldX}. Hitbox:`, newHitbox, `Unit:`, newUnit);
 }
 
 function updateDPDisplay() {
@@ -314,6 +328,16 @@ function updateDPDisplay() {
 function render(now) {
   const delta = (now - lastFrameTime) / 1000 || 0;
   lastFrameTime = now;
+
+  // Tạo danh sách enemyUnits (bot)
+  const enemyUnits = playerUnits.filter(unit => unit.isBot);
+
+  // Cập nhật camera để hiển thị bot
+  const bot = playerUnits.find(unit => unit.type === "Kroos" && unit.direction === -1);
+  if (bot) {
+    camera.x = Math.max(0, Math.min(bot.worldX - window.innerWidth / 2, WORLD_WIDTH - window.innerWidth));
+    // console.log(`Camera di chuyển đến bot: x=${camera.x}`);
+  }
 
   backgroundCtx.clearRect(0, 0, backgroundCanvas.width, backgroundCanvas.height);
   gl.clear(gl.COLOR_BUFFER_BIT);
@@ -331,14 +355,13 @@ function render(now) {
     const renderFunc = module[`render${moduleName}Skeleton`];
 
     // Log unit để debug
-    console.log(`Rendering unit:`, unit, `Skeleton scale:`, { scaleX: unit.skeleton.scaleX, scaleY: unit.skeleton.scaleY });
+    // console.log(`Rendering unit:`, unit, `Skeleton scale:`, { scaleX: unit.skeleton.scaleX, scaleY: unit.skeleton.scaleY });
 
     // Render nhân vật
     try {
-      renderFunc(unit, delta, camera, canvas, groundTileImage, WORLD_WIDTH, GROUND_Y, TOWER_POSITIONS, backgroundCtx, gl, playerUnits, []);
+      renderFunc(unit, delta, camera, canvas, groundTileImage, WORLD_WIDTH, GROUND_Y, TOWER_POSITIONS, backgroundCtx, gl, playerUnits, enemyUnits);
     } catch (error) {
       console.error(`Lỗi render ${char}:`, error);
-      // Fallback render
       backgroundCtx.fillStyle = "blue";
       backgroundCtx.fillRect(unit.worldX - camera.x - 50, GROUND_Y - 100, 100, 200);
     }
@@ -350,7 +373,7 @@ function render(now) {
     backgroundCtx.lineWidth = 2;
     backgroundCtx.strokeRect(hitboxX, hitboxY, unit.hitbox.width, unit.hitbox.height);
 
-    // Hiển thị kích thước hitbox trên canvas
+    // Hiển thị kích thước hitbox
     backgroundCtx.fillStyle = "black";
     backgroundCtx.font = "12px Arial";
     backgroundCtx.textAlign = "center";

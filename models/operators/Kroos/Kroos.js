@@ -5,11 +5,14 @@ let debugRenderer, debugShader, shapes;
 let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
 let velocity = 50;
 let direction = 1;
-let currentSkelPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel"; // Bắt đầu với file chứa "Start"
+let currentSkelPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel";
 let currentAtlasPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedKroosPosition = false;
 let fixedDamageHitbox = null;
+let projectileImages = [];
+// Lưu thông tin animation Attack
+let attackAnimationInfo = null;
 
 export function initKroos(webglContext) {
     if (!webglContext) {
@@ -33,10 +36,27 @@ export function initKroos(webglContext) {
     assetManager.loadBinary("assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel");
     assetManager.loadTextureAtlas("assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas");
     assetManager.loadTexture("assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.png");
+
+    const projectileSources = [
+        "assets/operators/Kroos/KroosWitch/C_Sugar_1.png",
+        "assets/operators/Kroos/KroosWitch/C_Sugar_2.png",
+        "assets/operators/Kroos/KroosWitch/C_Sugar_3.png"
+    ];
+    projectileImages = projectileSources.map(src => {
+        const img = new Image();
+        img.src = src;
+        img.onload = () => {
+            console.log(`Hình ảnh ${src} đã được tải thành công`);
+        };
+        img.onerror = () => {
+            console.error(`Không thể tải hình ảnh ${src}`);
+        };
+        return img;
+    });
 }
 
 export function isKroosLoadingComplete() {
-    return assetManager && assetManager.isLoadingComplete();
+    return assetManager && assetManager.isLoadingComplete() && projectileImages.every(img => img && img.complete);
 }
 
 export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
@@ -60,6 +80,20 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         return null;
     }
 
+    // Lấy thông tin animation Attack
+    const attackAnim = skeletonDataRaw.animations.find(anim => anim.name === "Attack");
+    if (attackAnim) {
+        const onAttackEvent = attackAnim.events?.find(e => e.data.name === "OnAttack");
+        attackAnimationInfo = {
+            duration: attackAnim.duration,
+            onAttackTime: onAttackEvent ? onAttackEvent.time : 0
+        };
+        console.log(`Animation Attack: Duration=${attackAnimationInfo.duration} giây, OnAttack tại=${attackAnimationInfo.onAttackTime} giây`);
+    } else {
+        console.warn("Animation Attack không tìm thấy, sử dụng giá trị mặc định");
+        attackAnimationInfo = { duration: 1.8, onAttackTime: 0.5 }; // Giá trị dự phòng
+    }
+
     const skeleton = new spine.Skeleton(skeletonDataRaw);
     skeleton.setSkinByName("default");
 
@@ -71,7 +105,7 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     if (!animationToUse) {
         console.error(`Initial animation ${initialAnimation} not found in ${currentSkelPath}. Available animations: ${skeletonDataRaw.animations.map(a => a.name).join(", ")}`);
     }
-    animationState.setAnimation(0, animationToUse || "Idle", false); // Chạy "Start" không lặp, fallback sang "Idle" nếu không có
+    animationState.setAnimation(0, animationToUse || "Idle", false);
 
     const kroosData = {
         skeleton,
@@ -94,27 +128,26 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         attackCount: 0,
         tower: null,
         isInAttackState: false,
-        isInStartAnimation: true, // Theo dõi trạng thái animation Start
+        isInStartAnimation: true,
         currentSkelPath,
         currentAtlasPath,
         direction: 1,
-        velocity: 0, // Tạm dừng di chuyển khi bắt đầu
+        velocity: 0,
         target: null,
         isAttackingEnemy: false,
         isDead: false,
         deathAnimationTimer: 0,
         deathAnimationComplete: false,
         groundY: GROUND_Y,
-        type: "Kroos"
+        type: "Kroos",
+        projectiles: []
     };
 
     animationState.addListener({
         complete: function (trackIndex, count) {
             const currentAnimation = animationState.getCurrent(0)?.animation?.name.toLowerCase();
             if (currentAnimation === "start" && !kroosData.isDead) {
-                // console.log(`Animation Start hoàn tất, chuyển sang skeleton build_char_124_kroos_witch1.skel và animation Move cho Kroos tại worldX=${kroosData.worldX}`);
                 kroosData.isInStartAnimation = false;
-                // Chuyển skeleton sang file chứa "Move"
                 switchSkeletonFile(
                     kroosData,
                     "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
@@ -122,41 +155,99 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     "Move",
                     (success) => {
                         if (success) {
-                            kroosData.velocity = 50; // Khôi phục vận tốc
+                            kroosData.velocity = 50;
                             console.log("Kroos switched to Move animation");
                         } else {
                             console.error("Failed to switch to Move skeleton for Kroos");
-                            kroosData.state.setAnimation(0, "Idle", true); // Fallback sang Idle
+                            kroosData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
             if (kroosData.isDead && currentAnimation === "die") {
                 kroosData.deathAnimationComplete = true;
-                // console.log(`Animation Die hoàn tất cho Kroos tại worldX=${kroosData.worldX}`);
             }
         },
         event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && kroosData.isInAttackState && kroosData) {
-                kroosData.attackCount++;  // Tăng bộ đếm mỗi lần OnAttack
-                let damage = characterDataObj["Kroos"].atk;
-                if (kroosData.attackCount === 4) {  // Đòn thứ 4: gấp đôi sát thương
-                    damage *= 2;
-                    kroosData.attackCount = 0;  // Reset bộ đếm
-                    // console.log(`Kroos tại worldX=${kroosData.worldX} gây sát thương gấp đôi (${damage}) ở đòn thứ 4!`);
-                } else {
-                    // console.log(`Kroos tại worldX=${kroosData.worldX} gây sát thương bình thường (${damage}) ở đòn thứ ${kroosData.attackCount}`);
-                }
+                kroosData.attackCount++;
+                let baseDamage = characterDataObj["Kroos"].atk;
+                let finalDamage;
+
+                // Tính sát thương dựa trên mục tiêu
                 if (kroosData.target && kroosData.isAttackingEnemy) {
-                    kroosData.target.hp = Math.max(0, kroosData.target.hp - damage);
-                    // console.log(`Kroos tại worldX=${kroosData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${kroosData.target.worldX}. HP kẻ địch còn: ${kroosData.target.hp}`);
+                    // Mục tiêu là kẻ địch
+                    const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
+                    finalDamage = Math.max(baseDamage * 0.05, baseDamage - targetDef);
+                    if (kroosData.attackCount === 5) {
+                        finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - targetDef);
+                        kroosData.attackCount = 0;
+                    }
                 } else {
-                    const targetTower = kroosData.tower;
-                    if (targetTower && isCollidingWithTower(kroosData, targetTower)) {
-                        targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        // console.log(`Sự kiện OnAttack: Kroos tại worldX=${kroosData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                    // Mục tiêu là tháp (giả sử tháp có def = 0 nếu không có dữ liệu)
+                    const towerDef = 0; // Có thể thay đổi nếu tháp có def cụ thể
+                    finalDamage = Math.max(baseDamage * 0.05, baseDamage - towerDef);
+                    if (kroosData.attackCount === 5) {
+                        finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - towerDef);
+                        kroosData.attackCount = 0;
                     }
                 }
+
+                let targetHitbox;
+                let targetCenterX, targetCenterY;
+                if (kroosData.target && kroosData.isAttackingEnemy) {
+                    targetHitbox = {
+                        x: isFinite(kroosData.target.worldX + kroosData.target.hitbox.offsetX * (kroosData.target.skeleton.scaleX || 1) - kroosData.target.hitbox.width / 2) ?
+                            kroosData.target.worldX + kroosData.target.hitbox.offsetX * (kroosData.target.skeleton.scaleX || 1) - kroosData.target.hitbox.width / 2 :
+                            kroosData.target.worldX,
+                        y: kroosData.target.groundY + 220 + kroosData.target.hitbox.offsetY - kroosData.target.hitbox.height / 2,
+                        width: kroosData.target.hitbox.width,
+                        height: kroosData.target.hitbox.height
+                    };
+                } else {
+                    const targetTower = kroosData.tower;
+                    targetHitbox = {
+                        x: targetTower.x + targetTower.hitbox.offsetX - targetTower.hitbox.width / 2,
+                        y: targetTower.y + targetTower.hitbox.offsetY - targetTower.hitbox.height / 2,
+                        width: targetTower.hitbox.width,
+                        height: targetTower.hitbox.height
+                    };
+                }
+                targetCenterX = targetHitbox.x + targetHitbox.width / 2;
+                targetCenterY = targetHitbox.y + targetHitbox.height / 2;
+
+                const kroosHitbox = {
+                    x: isFinite(kroosData.worldX + kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1) - kroosData.hitbox.width / 2) ?
+                        kroosData.worldX + kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1) - kroosData.hitbox.width / 2 :
+                        kroosData.worldX,
+                    y: kroosData.groundY + 220 + kroosData.hitbox.offsetY - kroosData.hitbox.height / 2,
+                    width: kroosData.hitbox.width,
+                    height: kroosData.hitbox.height
+                };
+                const projectileX = kroosData.direction === 1 ? 
+                    kroosHitbox.x + kroosHitbox.width : kroosHitbox.x;
+                const projectileY = kroosHitbox.y + kroosHitbox.height / 2 - 15;
+                const dx = targetCenterX - projectileX;
+                const dy = targetCenterY - projectileY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                // Tính tốc độ sao cho đạn đến mục tiêu đúng lúc animation Attack kết thúc
+                const timeToEnd = attackAnimationInfo.duration - attackAnimationInfo.onAttackTime;
+                const speed = distance > 0 ? distance / timeToEnd : 0;
+                const randomImage = projectileImages[Math.floor(Math.random() * projectileImages.length)];
+                const projectile = {
+                    worldX: projectileX,
+                    y: projectileY,
+                    velocityX: distance > 0 ? (dx / distance) * speed : 0,
+                    velocityY: distance > 0 ? (dy / distance) * speed : 0,
+                    active: true,
+                    damage: finalDamage,
+                    target: kroosData.target,
+                    targetCenterX: targetCenterX,
+                    targetCenterY: targetCenterY,
+                    image: randomImage
+                };
+                kroosData.projectiles.push(projectile);
+                console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, sát thương ${finalDamage}`);
             }
         }
     });
@@ -167,7 +258,6 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
 
 function isCollidingWithTower(kroosData, targetTower) {
     if (!kroosData.damageHitbox || !isFinite(kroosData.worldX) || !isFinite(kroosData.damageHitbox.offsetX)) {
-        // console.warn("Invalid damageHitbox or worldX, skipping tower collision check");
         return false;
     }
 
@@ -210,7 +300,6 @@ function isCollidingWithTower(kroosData, targetTower) {
 
 export function isCollidingWithEnemy(kroosData, enemyKroos) {
     if (!kroosData.damageHitbox || !enemyKroos.hitbox || !isFinite(kroosData.worldX) || !isFinite(enemyKroos.worldX)) {
-        // console.warn("Invalid hitbox or worldX, skipping enemy collision check");
         return false;
     }
 
@@ -264,17 +353,14 @@ function calculateSetupPoseBounds(skeleton) {
 
 function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimation, callback) {
     if (isSwitchingSkeleton) {
-        // console.log(`Switching skeleton in progress for ${newSkelPath}, skipping`);
         if (callback) callback(false);
         return false;
     }
 
     if (kroosData.currentSkelPath === newSkelPath && kroosData.currentAtlasPath === newAtlasPath) {
-        // console.log(`Already using skeleton ${newSkelPath}, skipping switch`);
         const animationToUse = kroosData.skeleton.data.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
         if (animationToUse) {
             kroosData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
-            // console.log(`Reapplied animation ${animationToUse} for ${newSkelPath}`);
         }
         if (callback) callback(true);
         return true;
@@ -288,7 +374,6 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
     const maxRetries = 10;
     function attemptSwitch() {
         if (retryCount >= maxRetries) {
-            // console.error(`Failed to load assets for ${newSkelPath} after ${maxRetries} retries`);
             isSwitchingSkeleton = false;
             if (callback) callback(false);
             return;
@@ -300,7 +385,6 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
             try {
                 const atlas = atlasData;
                 if (!atlas) {
-                    // console.error(`Atlas not loaded for ${newAtlasPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
@@ -311,20 +395,32 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
 
                 const binaryData = skelData;
                 if (!binaryData) {
-                    // console.error(`Skeleton binary not loaded for ${newSkelPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
                 const newSkeletonData = skeletonBinary.readSkeletonData(binaryData);
                 if (!newSkeletonData) {
-                    // console.error(`Failed to parse skeleton from ${newSkelPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
 
-                // console.log(`Animations in ${newSkelPath}: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
+                // Lấy thông tin animation Attack cho skeleton mới
+                if (newSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel") {
+                    const attackAnim = newSkeletonData.animations.find(anim => anim.name === "Attack");
+                    if (attackAnim) {
+                        const onAttackEvent = attackAnim.events?.find(e => e.data.name === "OnAttack");
+                        attackAnimationInfo = {
+                            duration: attackAnim.duration,
+                            onAttackTime: onAttackEvent ? onAttackEvent.time : 0
+                        };
+                        console.log(`Animation Attack (new skeleton): Duration=${attackAnimationInfo.duration} giây, OnAttack tại=${attackAnimationInfo.onAttackTime} giây`);
+                    } else {
+                        console.warn("Animation Attack không tìm thấy trong skeleton mới, giữ giá trị hiện tại");
+                    }
+                }
+
                 const animationToUse = newSkeletonData.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
                 if (!animationToUse) {
                     console.error(`Animation ${initialAnimation} not found in ${newSkelPath}. Available animations: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
@@ -355,31 +451,89 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                 animationState.addListener({
                     event: function (trackIndex, event) {
                         if (event.data.name === "OnAttack" && kroosData.isInAttackState && kroosData) {
-                            kroosData.attackCount++;  // Tăng bộ đếm mỗi lần OnAttack
-                            let damage = characterDataObj["Kroos"].atk;
-                            if (kroosData.attackCount === 4) {  // Đòn thứ 4: gấp đôi sát thương
-                                damage *= 2;
-                                kroosData.attackCount = 0;  // Reset bộ đếm
-                                // console.log(`Kroos tại worldX=${kroosData.worldX} gây sát thương gấp đôi (${damage}) ở đòn thứ 4!`);
-                            } else {
-                                // console.log(`Kroos tại worldX=${kroosData.worldX} gây sát thương bình thường (${damage}) ở đòn thứ ${kroosData.attackCount}`);
-                            }
+                            kroosData.attackCount++;
+                            let baseDamage = characterDataObj["Kroos"].atk;
+                            let finalDamage;
+
+                            // Tính sát thương dựa trên mục tiêu
                             if (kroosData.target && kroosData.isAttackingEnemy) {
-                                kroosData.target.hp = Math.max(0, kroosData.target.hp - damage);
-                                // console.log(`Kroos tại worldX=${kroosData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${kroosData.target.worldX}. HP kẻ địch còn: ${kroosData.target.hp}`);
+                                // Mục tiêu là kẻ địch
+                                const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
+                                finalDamage = Math.max(baseDamage * 0.05, baseDamage - targetDef);
+                                if (kroosData.attackCount === 5) {
+                                    finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - targetDef);
+                                    kroosData.attackCount = 0;
+                                }
                             } else {
-                                const targetTower = kroosData.tower;
-                                if (targetTower && isCollidingWithTower(kroosData, targetTower)) {
-                                    targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    // console.log(`Sự kiện OnAttack: Kroos tại worldX=${kroosData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                                // Mục tiêu là tháp
+                                const towerDef = 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
+                                finalDamage = Math.max(baseDamage * 0.05, baseDamage - towerDef);
+                                if (kroosData.attackCount === 5) {
+                                    finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - towerDef);
+                                    kroosData.attackCount = 0;
                                 }
                             }
+
+                            let targetHitbox;
+                            let targetCenterX, targetCenterY;
+                            if (kroosData.target && kroosData.isAttackingEnemy) {
+                                targetHitbox = {
+                                    x: isFinite(kroosData.target.worldX + kroosData.target.hitbox.offsetX * (kroosData.target.skeleton.scaleX || 1) - kroosData.target.hitbox.width / 2) ?
+                                        kroosData.target.worldX + kroosData.target.hitbox.offsetX * (kroosData.target.skeleton.scaleX || 1) - kroosData.target.hitbox.width / 2 :
+                                        kroosData.target.worldX,
+                                    y: kroosData.target.groundY + 220 + kroosData.target.hitbox.offsetY - kroosData.target.hitbox.height / 2,
+                                    width: kroosData.target.hitbox.width,
+                                    height: kroosData.target.hitbox.height
+                                };
+                            } else {
+                                const targetTower = kroosData.tower;
+                                targetHitbox = {
+                                    x: targetTower.x + targetTower.hitbox.offsetX - targetTower.hitbox.width / 2,
+                                    y: targetTower.y + targetTower.hitbox.offsetY - targetTower.hitbox.height / 2,
+                                    width: targetTower.hitbox.width,
+                                    height: targetTower.hitbox.height
+                                };
+                            }
+                            targetCenterX = targetHitbox.x + targetHitbox.width / 2;
+                            targetCenterY = targetHitbox.y + targetHitbox.height / 2;
+
+                            const kroosHitbox = {
+                                x: isFinite(kroosData.worldX + kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1) - kroosData.hitbox.width / 2) ?
+                                    kroosData.worldX + kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1) - kroosData.hitbox.width / 2 :
+                                    kroosData.worldX,
+                                y: kroosData.groundY + 220 + kroosData.hitbox.offsetY - kroosData.hitbox.height / 2,
+                                width: kroosData.hitbox.width,
+                                height: kroosData.hitbox.height
+                            };
+                            const projectileX = kroosData.direction === 1 ? 
+                                kroosHitbox.x + kroosHitbox.width : kroosHitbox.x;
+                            const projectileY = kroosHitbox.y + kroosHitbox.height / 2 - 15;
+                            const dx = targetCenterX - projectileX;
+                            const dy = targetCenterY - projectileY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            // Tính tốc độ sao cho đạn đến mục tiêu đúng lúc animation Attack kết thúc
+                            const timeToEnd = attackAnimationInfo.duration - attackAnimationInfo.onAttackTime;
+                            const speed = distance > 0 ? distance / timeToEnd : 0;
+                            const randomImage = projectileImages[Math.floor(Math.random() * projectileImages.length)];
+                            const projectile = {
+                                worldX: projectileX,
+                                y: projectileY,
+                                velocityX: distance > 0 ? (dx / distance) * speed : 0,
+                                velocityY: distance > 0 ? (dy / distance) * speed : 0,
+                                active: true,
+                                damage: finalDamage,
+                                target: kroosData.target,
+                                targetCenterX: targetCenterX,
+                                targetCenterY: targetCenterY,
+                                image: randomImage
+                            };
+                            kroosData.projectiles.push(projectile);
+                            console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, sát thương ${finalDamage}`);
                         }
                     },
                     complete: function (trackIndex, count) {
                         if (kroosData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
                             kroosData.deathAnimationComplete = true;
-                            // console.log(`Animation Die hoàn tất cho Kroos tại worldX=${kroosData.worldX}`);
                         }
                     }
                 });
@@ -392,15 +546,12 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                 kroosData.currentSkelPath = newSkelPath;
                 kroosData.currentAtlasPath = newAtlasPath;
                 isSwitchingSkeleton = false;
-                // console.log(`Successfully switched to ${newSkelPath} with animation ${animationToUse}`);
                 if (callback) callback(true);
             } catch (e) {
-                // console.error(`Error switching skeleton file: ${e.message}`);
                 isSwitchingSkeleton = false;
                 if (callback) callback(false);
             }
         } else {
-            // console.warn(`Assets for ${newSkelPath} not yet loaded, retrying... (attempt ${retryCount + 1}/${maxRetries})`);
             retryCount++;
             requestAnimationFrame(attemptSwitch);
         }
@@ -419,7 +570,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
     const { skeleton, state, premultipliedAlpha, bounds, worldX, hitbox, damageHitbox } = kroosData;
     state.update(delta);
 
-    // Kiểm tra trạng thái chết
     if (kroosData.hp <= 0 && !kroosData.isDead && !isSwitchingSkeleton) {
         console.log(`Kroos tại worldX=${kroosData.worldX} đã chết, chuyển sang animation Die`);
         kroosData.isDead = true;
@@ -442,7 +592,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         );
     }
 
-    // Cập nhật timer cho animation Die
     if (kroosData.isDead && !kroosData.deathAnimationComplete) {
         kroosData.deathAnimationTimer += delta;
         if (kroosData.deathAnimationTimer >= 1.0) {
@@ -451,7 +600,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         }
     }
 
-    // Tiếp tục render nếu chưa hoàn tất animation Die
     if (!kroosData.deathAnimationComplete) {
         state.apply(skeleton);
         kroosData.tower = kroosData.direction === 1 ? TOWER_POSITIONS[1] : TOWER_POSITIONS[0];
@@ -481,14 +629,12 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         }
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
-        // console.log(`Kiểm tra va chạm kẻ địch cho Kroos tại worldX=${kroosData.worldX}, direction=${kroosData.direction}, số lượng kẻ địch: ${validEnemies.length}`);
 
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
             if (enemy && enemy.hp > 0 && isCollidingWithEnemy(kroosData, enemy)) {
                 const distance = Math.abs(kroosData.worldX - enemy.worldX);
-                // console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestEnemy = enemy;
@@ -534,7 +680,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
             }
         }
 
-        // Chỉ xử lý các trạng thái khác nếu không trong animation Start
         if (!kroosData.isInStartAnimation && !kroosData.isDead && !isSwitchingSkeleton) {
             if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
                 kroosData.currentSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel" &&
@@ -632,7 +777,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
             }
         }
 
-        // Chỉ di chuyển nếu không trong animation Start và không bị chặn
         if (!kroosData.isInStartAnimation && !kroosData.isDead && !isSwitchingSkeleton &&
             !isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly) {
             kroosData.worldX += kroosData.velocity * delta * kroosData.direction;
@@ -682,6 +826,15 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         //     kroosHitbox.height
         // );
 
+        // backgroundCtx.fillStyle = "blue";
+        // const dotRadius = 5;
+        // const dotX = kroosData.direction === 1 ? 
+        //     kroosHitbox.x + kroosHitbox.width - camera.x : kroosHitbox.x - camera.x;
+        // const dotY = kroosHitbox.y + kroosHitbox.height / 2 - 15;
+        // backgroundCtx.beginPath();
+        // backgroundCtx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
+        // backgroundCtx.fill();
+
         // if (isFinite(kroosDamageHitbox.x) && !kroosData.isDead) {
         //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
         //     backgroundCtx.fillRect(
@@ -691,6 +844,35 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         //         kroosDamageHitbox.height
         //     );
         // }
+
+        if (projectileImages.every(img => img && img.complete)) {
+            kroosData.projectiles = kroosData.projectiles.filter(projectile => projectile.active);
+            kroosData.projectiles.forEach(projectile => {
+                projectile.worldX += projectile.velocityX * delta;
+                projectile.y += projectile.velocityY * delta;
+
+                if (projectile.worldX < camera.x || projectile.worldX > camera.x + canvas.width) {
+                    projectile.active = false;
+                    console.log("Projectile bị xóa vì ra ngoài màn hình");
+                } else if (projectile.target && projectile.target.hp > 0) {
+                    const dx = projectile.worldX - projectile.targetCenterX;
+                    const dy = projectile.y - projectile.targetCenterY;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const threshold = 5;
+                    if (distance < threshold) {
+                        projectile.target.hp = Math.max(0, projectile.target.hp - projectile.damage);
+                        projectile.active = false;
+                        console.log(`Projectile đến tâm target tại (${projectile.targetCenterX}, ${projectile.targetCenterY}), gây ${projectile.damage} sát thương`);
+                    }
+                }
+
+                const scaledWidth = projectile.image.width * 0.5;
+                const scaledHeight = projectile.image.height * 0.5;
+                backgroundCtx.drawImage(projectile.image, projectile.worldX - camera.x, projectile.y, scaledWidth, scaledHeight);
+            });
+        } else {
+            console.warn("Một hoặc nhiều hình ảnh projectile chưa tải hoàn tất, bỏ qua vẽ projectile");
+        }
     }
 }
 
