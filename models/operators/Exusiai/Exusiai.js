@@ -1,4 +1,5 @@
 import { characterDataObj } from '../../../character.js';
+import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let debugRenderer, debugShader, shapes;
@@ -79,11 +80,13 @@ export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 let damage = characterDataObj["Exusiai"].atk;
                 if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
                     exusiaiData.target.hp = Math.max(0, exusiaiData.target.hp - damage);
+                    createDamageText(exusiaiData.target.worldX, GROUND_Y + 300, damage);
                     // console.log(`Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${exusiaiData.target.worldX}. HP kẻ địch còn: ${exusiaiData.target.hp}`);
                 } else {
                     const targetTower = exusiaiData.tower;
                     if (targetTower && isCollidingWithTower(exusiaiData, targetTower)) {
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
                         // console.log(`Sự kiện OnAttack: Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
@@ -329,11 +332,13 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
                             let damage = characterDataObj["Exusiai"].atk;
                             if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
                                 exusiaiData.target.hp = Math.max(0, exusiaiData.target.hp - damage);
+                                createDamageText(exusiaiData.target.worldX, GROUND_Y + 300, damage);
                                 // console.log(`Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${exusiaiData.target.worldX}. HP kẻ địch còn: ${exusiaiData.target.hp}`);
                             } else {
                                 const targetTower = exusiaiData.tower;
                                 if (targetTower && isCollidingWithTower(exusiaiData, targetTower)) {
                                     targetTower.hp = Math.max(0, targetTower.hp - damage);
+                                    createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
                                     // console.log(`Sự kiện OnAttack: Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                                 }
                             }

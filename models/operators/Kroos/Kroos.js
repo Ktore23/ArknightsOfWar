@@ -1,4 +1,5 @@
 import { characterDataObj } from '../../../character.js';
+import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let debugRenderer, debugShader, shapes;
@@ -172,24 +173,35 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
             if (event.data.name === "OnAttack" && kroosData.isInAttackState && kroosData) {
                 kroosData.attackCount++;
                 let baseDamage = characterDataObj["Kroos"].atk;
-                let finalDamage;
+                let damage1, damage2, totalDamage;
 
                 // Tính sát thương dựa trên mục tiêu
                 if (kroosData.target && kroosData.isAttackingEnemy) {
                     // Mục tiêu là kẻ địch
                     const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
-                    finalDamage = Math.max(baseDamage * 0.05, baseDamage - targetDef);
                     if (kroosData.attackCount === 5) {
-                        finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - targetDef);
+                        damage1 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef);
+                        damage2 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef);
+                        totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
+                    } else {
+                        damage1 = Math.max(baseDamage * 0.2, baseDamage - targetDef);
+                        damage2 = 0;
+                        totalDamage = damage1;
                     }
                 } else {
-                    // Mục tiêu là tháp (giả sử tháp có def = 0 nếu không có dữ liệu)
-                    const towerDef = 0; // Có thể thay đổi nếu tháp có def cụ thể
-                    finalDamage = Math.max(baseDamage * 0.05, baseDamage - towerDef);
+                    // Mục tiêu là tháp
+                    const targetTower = kroosData.tower;
+                    const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                     if (kroosData.attackCount === 5) {
-                        finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - towerDef);
+                        damage1 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef);
+                        damage2 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef);
+                        totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
+                    } else {
+                        damage1 = Math.max(baseDamage * 0.2, baseDamage - towerDef);
+                        damage2 = 0;
+                        totalDamage = damage1;
                     }
                 }
 
@@ -224,15 +236,13 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     width: kroosData.hitbox.width,
                     height: kroosData.hitbox.height
                 };
-                const projectileX = kroosData.direction === 1 ? 
+                const projectileX = kroosData.direction === 1 ?
                     kroosHitbox.x + kroosHitbox.width : kroosHitbox.x;
                 const projectileY = kroosHitbox.y + kroosHitbox.height / 2 - 15;
                 const dx = targetCenterX - projectileX;
                 const dy = targetCenterY - projectileY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
-                // Tính tốc độ sao cho đạn đến mục tiêu đúng lúc animation Attack kết thúc
-                const timeToEnd = attackAnimationInfo.duration - attackAnimationInfo.onAttackTime;
-                const speed = distance > 0 ? distance / timeToEnd : 0;
+                const speed = 500; // Tốc độ cố định 500 pixel/giây
                 const randomImage = projectileImages[Math.floor(Math.random() * projectileImages.length)];
                 const projectile = {
                     worldX: projectileX,
@@ -240,14 +250,16 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     velocityX: distance > 0 ? (dx / distance) * speed : 0,
                     velocityY: distance > 0 ? (dy / distance) * speed : 0,
                     active: true,
-                    damage: finalDamage,
+                    damage: totalDamage,
+                    damage1: damage1, // Lưu sát thương riêng cho lần 1
+                    damage2: damage2, // Lưu sát thương riêng cho lần 2
                     target: kroosData.target,
                     targetCenterX: targetCenterX,
                     targetCenterY: targetCenterY,
                     image: randomImage
                 };
                 kroosData.projectiles.push(projectile);
-                console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, sát thương ${finalDamage}`);
+                console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, tổng sát thương ${totalDamage} (damage1: ${damage1}, damage2: ${damage2})`);
             }
         }
     });
@@ -360,7 +372,7 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
     if (kroosData.currentSkelPath === newSkelPath && kroosData.currentAtlasPath === newAtlasPath) {
         const animationToUse = kroosData.skeleton.data.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
         if (animationToUse) {
-            kroosData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
+            kroosData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "Die" ? false : true);
         }
         if (callback) callback(true);
         return true;
@@ -453,24 +465,35 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                         if (event.data.name === "OnAttack" && kroosData.isInAttackState && kroosData) {
                             kroosData.attackCount++;
                             let baseDamage = characterDataObj["Kroos"].atk;
-                            let finalDamage;
+                            let damage1, damage2, totalDamage;
 
                             // Tính sát thương dựa trên mục tiêu
                             if (kroosData.target && kroosData.isAttackingEnemy) {
                                 // Mục tiêu là kẻ địch
                                 const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
-                                finalDamage = Math.max(baseDamage * 0.05, baseDamage - targetDef);
                                 if (kroosData.attackCount === 5) {
-                                    finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - targetDef);
+                                    damage1 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef);
+                                    damage2 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef);
+                                    totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
+                                } else {
+                                    damage1 = Math.max(baseDamage * 0.2, baseDamage - targetDef);
+                                    damage2 = 0;
+                                    totalDamage = damage1;
                                 }
                             } else {
                                 // Mục tiêu là tháp
-                                const towerDef = 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
-                                finalDamage = Math.max(baseDamage * 0.05, baseDamage - towerDef);
+                                const targetTower = kroosData.tower;
+                                const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                                 if (kroosData.attackCount === 5) {
-                                    finalDamage = Math.max(baseDamage * 0.05, (baseDamage * 1.4 * 2) - towerDef);
+                                    damage1 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef);
+                                    damage2 = Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef);
+                                    totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
+                                } else {
+                                    damage1 = Math.max(baseDamage * 0.2, baseDamage - towerDef);
+                                    damage2 = 0;
+                                    totalDamage = damage1;
                                 }
                             }
 
@@ -505,15 +528,13 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 width: kroosData.hitbox.width,
                                 height: kroosData.hitbox.height
                             };
-                            const projectileX = kroosData.direction === 1 ? 
+                            const projectileX = kroosData.direction === 1 ?
                                 kroosHitbox.x + kroosHitbox.width : kroosHitbox.x;
                             const projectileY = kroosHitbox.y + kroosHitbox.height / 2 - 15;
                             const dx = targetCenterX - projectileX;
                             const dy = targetCenterY - projectileY;
                             const distance = Math.sqrt(dx * dx + dy * dy);
-                            // Tính tốc độ sao cho đạn đến mục tiêu đúng lúc animation Attack kết thúc
-                            const timeToEnd = attackAnimationInfo.duration - attackAnimationInfo.onAttackTime;
-                            const speed = distance > 0 ? distance / timeToEnd : 0;
+                            const speed = 500; // Tốc độ cố định 500 pixel/giây
                             const randomImage = projectileImages[Math.floor(Math.random() * projectileImages.length)];
                             const projectile = {
                                 worldX: projectileX,
@@ -521,18 +542,20 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 velocityX: distance > 0 ? (dx / distance) * speed : 0,
                                 velocityY: distance > 0 ? (dy / distance) * speed : 0,
                                 active: true,
-                                damage: finalDamage,
+                                damage: totalDamage,
+                                damage1: damage1,
+                                damage2: damage2,
                                 target: kroosData.target,
                                 targetCenterX: targetCenterX,
                                 targetCenterY: targetCenterY,
                                 image: randomImage
                             };
                             kroosData.projectiles.push(projectile);
-                            console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, sát thương ${finalDamage}`);
+                            console.log(`Projectile bắn ra từ Kroos tại (${projectileX}, ${projectileY}) hướng đến (${targetCenterX}, ${targetCenterY}) với tốc độ ${speed} pixel/giây, tổng sát thương ${totalDamage} (damage1: ${damage1}, damage2: ${damage2})`);
                         }
                     },
                     complete: function (trackIndex, count) {
-                        if (kroosData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
+                        if (kroosData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "Die") {
                             kroosData.deathAnimationComplete = true;
                         }
                     }
@@ -851,24 +874,35 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                 projectile.worldX += projectile.velocityX * delta;
                 projectile.y += projectile.velocityY * delta;
 
-                if (projectile.worldX < camera.x || projectile.worldX > camera.x + canvas.width) {
+                // Kiểm tra nếu mục tiêu đã chết
+                if (projectile.target && projectile.target.hp <= 0) {
                     projectile.active = false;
-                    console.log("Projectile bị xóa vì ra ngoài màn hình");
+                    console.log("Projectile bị xóa vì mục tiêu đã chết");
                 } else if (projectile.target && projectile.target.hp > 0) {
+                    // Kiểm tra nếu đạn chạm mục tiêu
                     const dx = projectile.worldX - projectile.targetCenterX;
                     const dy = projectile.y - projectile.targetCenterY;
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const threshold = 5;
                     if (distance < threshold) {
                         projectile.target.hp = Math.max(0, projectile.target.hp - projectile.damage);
+                        // Hiển thị damage text cho damage1
+                        createDamageText(projectile.targetCenterX, GROUND_Y + 300, projectile.damage1);
+                        // Nếu có damage2 (tức là đòn thứ 5), hiển thị damage text thứ hai với offset nhẹ
+                        if (projectile.damage2 > 0) {
+                            createDamageText(projectile.targetCenterX, GROUND_Y + 320, projectile.damage2);
+                        }
                         projectile.active = false;
-                        console.log(`Projectile đến tâm target tại (${projectile.targetCenterX}, ${projectile.targetCenterY}), gây ${projectile.damage} sát thương`);
+                        console.log(`Projectile đến tâm target tại (${projectile.targetCenterX}, ${projectile.targetCenterY}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
                     }
                 }
 
-                const scaledWidth = projectile.image.width * 0.5;
-                const scaledHeight = projectile.image.height * 0.5;
-                backgroundCtx.drawImage(projectile.image, projectile.worldX - camera.x, projectile.y, scaledWidth, scaledHeight);
+                // Vẽ đạn nếu vẫn hoạt động
+                if (projectile.active) {
+                    const scaledWidth = projectile.image.width * 0.5;
+                    const scaledHeight = projectile.image.height * 0.5;
+                    backgroundCtx.drawImage(projectile.image, projectile.worldX - camera.x, projectile.y, scaledWidth, scaledHeight);
+                }
             });
         } else {
             console.warn("Một hoặc nhiều hình ảnh projectile chưa tải hoàn tất, bỏ qua vẽ projectile");

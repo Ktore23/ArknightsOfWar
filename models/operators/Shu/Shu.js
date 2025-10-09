@@ -1,4 +1,5 @@
 import { characterDataObj } from '../../../character.js';
+import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let debugRenderer, debugShader, shapes;
@@ -79,11 +80,13 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                 let damage = characterDataObj["Shu"].atk;
                 if (shuData.target && shuData.isAttackingEnemy) {
                     shuData.target.hp = Math.max(0, shuData.target.hp - damage);
+                    createDamageText(shuData.target.worldX, GROUND_Y + 300, damage);
                     // console.log(`Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${shuData.target.worldX}. HP kẻ địch còn: ${shuData.target.hp}`);
                 } else {
                     const targetTower = shuData.tower;
                     if (targetTower && isCollidingWithTower(shuData, targetTower)) { // Sử dụng shuData.groundY
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
                         // console.log(`Sự kiện OnAttack: Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }

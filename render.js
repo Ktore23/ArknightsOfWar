@@ -24,11 +24,12 @@ const DP_REGEN_RATE = 1; // +1 DP mỗi giây
 let isLeftArrowPressed = false;
 let isRightArrowPressed = false;
 const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0; // Kiểm tra thiết bị cảm ứng
+let damageTexts = []; // Mảng lưu các damage popup
 
 const WORLD_WIDTH = 4000;
 const CAMERA_SPEED = 1000;
 const EDGE_THRESHOLD = 0.01;
-const GROUND_Y = 0;
+export const GROUND_Y = 0; // Export GROUND_Y
 const TILE_SCALE = 3;
 const TOWER_POSITIONS = [
   {
@@ -88,6 +89,19 @@ export const characterModuleNameMap = {
   "Kroos": "Kroos"
   // Thêm nhân vật mới nếu cần, ví dụ: "Some'Char": "SomeChar"
 };
+
+// Hàm tạo damage text mới
+export function createDamageText(worldX, y, damage, color = 'red') {
+  damageTexts.push({
+    worldX: worldX,      // Vị trí worldX (để theo camera)
+    y: y,                // Vị trí Y ban đầu (thường là vị trí hitbox của target)
+    value: Math.floor(damage),  // Giá trị sát thương (làm tròn)
+    timer: 1.0,          // Thời gian sống (giây), ví dụ: 1 giây
+    velocityY: -50,      // Tốc độ nổi lên (âm để đi lên)
+    alpha: 1.0,          // Độ mờ ban đầu
+    color: color         // Màu text (red cho vật lý, blue cho phép, v.v.)
+  });
+}
 
 async function init() {
   canvas = document.getElementById("canvas");
@@ -648,7 +662,6 @@ function render() {
   // backgroundCtx.lineWidth = LINE_WIDTH;
   // backgroundCtx.stroke();
 
-  // const playerUnits = [...surtrs, ...shus, ...chens, ...frostNovas];
   const botUnits = getBotUnits();
 
   // Cập nhật hiển thị CD và opacity cho mỗi avatar
@@ -725,9 +738,46 @@ function render() {
     showGameOverMessage("bot");
   }
 
+  // Update và vẽ damage texts
+  damageTexts.forEach((text, index) => {
+    text.y += text.velocityY * delta;
+    text.timer -= delta;
+    text.alpha = text.timer > 0 ? text.timer : 0;
+    if (text.timer <= 0) {
+      damageTexts.splice(index, 1);
+      return;
+    }
+    backgroundCtx.fillStyle = `rgba(${parseColor(text.color)}, ${text.alpha})`; // Sử dụng màu từ text.color
+    backgroundCtx.font = "bold 24px Arial";
+    backgroundCtx.textAlign = "center";
+    backgroundCtx.textBaseline = "middle";
+    const screenX = text.worldX - camera.x;
+    backgroundCtx.fillText(text.value, screenX, text.y);
+  });
+
   if (!isGameOver) {
     requestAnimationFrame(render);
   }
+}
+
+// Hàm hỗ trợ chuyển đổi tên màu hoặc mã màu thành RGB
+function parseColor(color) {
+  if (color.startsWith('#')) {
+    // Chuyển mã hex thành RGB
+    const r = parseInt(color.slice(1, 3), 16);
+    const g = parseInt(color.slice(3, 5), 16);
+    const b = parseInt(color.slice(5, 7), 16);
+    return `${r}, ${g}, ${b}`;
+  }
+  // Ánh xạ tên màu sang RGB
+  const colorMap = {
+    'red': '255, 0, 0',
+    'purple': '128, 0, 128', // Màu tím
+    'blue': '0, 0, 255',
+    'yellow': '255, 255, 0',
+    'green': '0, 128, 0'
+  };
+  return colorMap[color.toLowerCase()] || '255, 0, 0'; // Mặc định là đỏ nếu không tìm thấy
 }
 
 function resize() {

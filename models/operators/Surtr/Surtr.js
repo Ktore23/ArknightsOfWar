@@ -1,4 +1,5 @@
 import { characterDataObj } from '../../../character.js';
+import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let debugRenderer, debugShader, shapes;
@@ -74,22 +75,33 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     animationState.setAnimation(0, animationToUse || "Move", true);
 
     animationState.addListener({
-        event: function(trackIndex, event) {
+        event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && surtrData.isInAttackState && surtrData) {
-                let damage = characterDataObj["Surtr"].atk;
+                let atk = characterDataObj["Surtr"].atk;
+                let damage;
                 if (surtrData.target && surtrData.isAttackingEnemy) {
+                    // Tính sát thương phép cho enemy: ATK × (1 - (RES / 100))
+                    const targetRes = characterDataObj[surtrData.target.type]?.res || 0;
+                    damage = Math.max(0, atk * (1 - (targetRes / 100)));
                     surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
-                    // console.log(`Surtr tại worldX=${surtrData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${surtrData.target.worldX}. HP kẻ địch còn: ${surtrData.target.hp}`);
+                    // Thêm damage text tại vị trí target
+                    createDamageText(surtrData.target.worldX, GROUND_Y + 300, Math.round(damage), 'purple');  // Làm tròn damage để hiển thị
+                    // console.log(`Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên kẻ địch tại worldX=${surtrData.target.worldX} (RES: ${targetRes}). HP kẻ địch còn: ${surtrData.target.hp}`);
                 } else {
                     const targetTower = surtrData.tower;
                     if (targetTower && isCollidingWithTower(surtrData, targetTower)) {
+                        // Tính sát thương phép cho tower sử dụng res từ targetTower
+                        const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
+                        damage = Math.max(0, atk * (1 - (towerRes / 100)));
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                        // Thêm damage text tại vị trí tháp
+                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, Math.round(damage), 'purple');
+                        // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên tháp (RES: ${towerRes}). HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
         },
-        complete: function(trackIndex, count) {
+        complete: function (trackIndex, count) {
             if (surtrData.isDead && surtrData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 surtrData.deathAnimationComplete = true; // Đánh dấu animation Die đã hoàn tất
                 // console.log(`Animation Die hoàn tất cho Surtr tại worldX=${surtrData.worldX}`);
@@ -111,15 +123,15 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 120 : 120
     };
 
-    const surtrData = { 
-        skeleton, 
-        state: animationState, 
-        bounds, 
-        premultipliedAlpha: true, 
-        worldX: initialWorldX, 
-        hitbox, 
-        damageHitbox: fixedDamageHitbox, 
-        tower: null, 
+    const surtrData = {
+        skeleton,
+        state: animationState,
+        bounds,
+        premultipliedAlpha: true,
+        worldX: initialWorldX,
+        hitbox,
+        damageHitbox: fixedDamageHitbox,
+        tower: null,
         isInAttackState: false,
         currentSkelPath,
         currentAtlasPath,
@@ -153,8 +165,8 @@ function isCollidingWithTower(surtrData, targetTower) {
 
     const surtrDamageHitbox = {
         x: surtrData.direction === -1 ?
-           surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
-           surtrHitbox.x + surtrHitbox.width,
+            surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
+            surtrHitbox.x + surtrHitbox.width,
         y: surtrData.groundY + surtrData.damageHitbox.offsetY - surtrData.damageHitbox.height / 2 + 258,
         width: surtrData.damageHitbox.width - 50,
         height: surtrData.damageHitbox.height - 75
@@ -168,10 +180,10 @@ function isCollidingWithTower(surtrData, targetTower) {
     };
 
     const isColliding = isFinite(surtrDamageHitbox.x) &&
-                        surtrDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
-                        surtrDamageHitbox.x + surtrDamageHitbox.width > towerHitbox.x &&
-                        surtrDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
-                        surtrDamageHitbox.y + surtrDamageHitbox.height > towerHitbox.y;
+        surtrDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
+        surtrDamageHitbox.x + surtrDamageHitbox.width > towerHitbox.x &&
+        surtrDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
+        surtrDamageHitbox.y + surtrDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
         // console.log(`Surtr tại worldX=${surtrData.worldX} va chạm với tháp tại x=${targetTower.x}`);
@@ -196,8 +208,8 @@ export function isCollidingWithEnemy(surtrData, enemySurtr) {
 
     const surtrDamageHitbox = {
         x: surtrData.direction === -1 ?
-           surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
-           surtrHitbox.x + surtrHitbox.width,
+            surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
+            surtrHitbox.x + surtrHitbox.width,
         y: surtrData.groundY + surtrData.damageHitbox.offsetY - surtrData.damageHitbox.height / 2 + 258,
         width: surtrData.damageHitbox.width - 50,
         height: surtrData.damageHitbox.height - 75
@@ -205,17 +217,17 @@ export function isCollidingWithEnemy(surtrData, enemySurtr) {
 
     const enemyHitbox = {
         x: isFinite(enemySurtr.worldX + enemySurtr.hitbox.offsetX * (enemySurtr.skeleton.scaleX || 1) - enemySurtr.hitbox.width / 2) ?
-           enemySurtr.worldX + enemySurtr.hitbox.offsetX * (enemySurtr.skeleton.scaleX || 1) - enemySurtr.hitbox.width / 2 :
-           enemySurtr.worldX,
+            enemySurtr.worldX + enemySurtr.hitbox.offsetX * (enemySurtr.skeleton.scaleX || 1) - enemySurtr.hitbox.width / 2 :
+            enemySurtr.worldX,
         y: enemySurtr.groundY + 220 + enemySurtr.hitbox.offsetY - enemySurtr.hitbox.height / 2,
         width: enemySurtr.hitbox.width,
         height: enemySurtr.hitbox.height
     };
 
     const isColliding = surtrDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
-                        surtrDamageHitbox.x + surtrDamageHitbox.width > enemyHitbox.x &&
-                        surtrDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
-                        surtrDamageHitbox.y + surtrDamageHitbox.height > enemyHitbox.y;
+        surtrDamageHitbox.x + surtrDamageHitbox.width > enemyHitbox.x &&
+        surtrDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
+        surtrDamageHitbox.y + surtrDamageHitbox.height > enemyHitbox.y;
 
     if (isColliding) {
         // console.log(`Surtr tại worldX=${surtrData.worldX} va chạm với kẻ địch tại worldX=${enemySurtr.worldX}`);
@@ -324,22 +336,33 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                 animationState.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
 
                 animationState.addListener({
-                    event: function(trackIndex, event) {
+                    event: function (trackIndex, event) {
                         if (event.data.name === "OnAttack" && surtrData.isInAttackState && surtrData) {
-                            let damage = characterDataObj["Surtr"].atk;
+                            let atk = characterDataObj["Surtr"].atk;
+                            let damage;
                             if (surtrData.target && surtrData.isAttackingEnemy) {
+                                // Tính sát thương phép cho enemy: ATK × (1 - (RES / 100))
+                                const targetRes = characterDataObj[surtrData.target.type]?.res || 0;
+                                damage = Math.max(0, atk * (1 - (targetRes / 100)));
                                 surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
-                                // console.log(`Surtr tại worldX=${surtrData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${surtrData.target.worldX}. HP kẻ địch còn: ${surtrData.target.hp}`);
+                                // Thêm damage text tại vị trí target
+                                createDamageText(surtrData.target.worldX, GROUND_Y + 300, Math.round(damage), 'purple');  // Làm tròn damage để hiển thị
+                                // console.log(`Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên kẻ địch tại worldX=${surtrData.target.worldX} (RES: ${targetRes}). HP kẻ địch còn: ${surtrData.target.hp}`);
                             } else {
                                 const targetTower = surtrData.tower;
                                 if (targetTower && isCollidingWithTower(surtrData, targetTower)) {
+                                    // Tính sát thương phép cho tower sử dụng res từ targetTower
+                                    const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
+                                    damage = Math.max(0, atk * (1 - (towerRes / 100)));
                                     targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                                    // Thêm damage text tại vị trí tháp
+                                    createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, Math.round(damage), 'purple');
+                                    // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên tháp (RES: ${towerRes}). HP tháp còn lại: ${targetTower.hp}`);
                                 }
                             }
                         }
                     },
-                    complete: function(trackIndex, count) {
+                    complete: function (trackIndex, count) {
                         if (surtrData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
                             surtrData.deathAnimationComplete = true;
                             // console.log(`Animation Die hoàn tất cho Surtr tại worldX=${surtrData.worldX}`);
@@ -420,7 +443,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         surtrData.groundY = GROUND_Y;
 
         const surtrHitbox = {
-            x: isFinite(worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2) ? 
+            x: isFinite(worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2) ?
                 worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2 : worldX,
             y: GROUND_Y + 220 + hitbox.offsetY - hitbox.height / 2,
             width: hitbox.width,
@@ -428,10 +451,10 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         };
 
         const surtrDamageHitbox = {
-            x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ? 
-               (surtrData.direction === -1 ? 
-                  surtrHitbox.x - (damageHitbox.width - 50) : 
-                  surtrHitbox.x + surtrHitbox.width) : worldX,
+            x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ?
+                (surtrData.direction === -1 ?
+                    surtrHitbox.x - (damageHitbox.width - 50) :
+                    surtrHitbox.x + surtrHitbox.width) : worldX,
             y: damageHitbox ? GROUND_Y + damageHitbox.offsetY - damageHitbox.height / 2 + 258 : GROUND_Y + 258,
             width: damageHitbox ? damageHitbox.width - 50 : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
@@ -444,7 +467,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
         // console.log(`Kiểm tra va chạm kẻ địch cho Surtr tại worldX=${surtrData.worldX}, direction=${surtrData.direction}, số lượng kẻ địch: ${validEnemies.length}`);
-        
+
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
@@ -475,7 +498,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
         for (let otherAlly of allAllies) {
-            if (otherAlly !== surtrData && 
+            if (otherAlly !== surtrData &&
                 (surtrData.direction === 1 ? otherAlly.worldX > surtrData.worldX : otherAlly.worldX < surtrData.worldX)) {
                 const otherHitbox = {
                     x: otherAlly.worldX + otherAlly.hitbox.offsetX * (otherAlly.skeleton.scaleX || 1) - otherAlly.hitbox.width / 2,
@@ -483,7 +506,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                     width: otherAlly.hitbox.width,
                     height: otherAlly.hitbox.height
                 };
-                if (surtrData.direction === 1 ? 
+                if (surtrData.direction === 1 ?
                     surtrHitbox.x + surtrHitbox.width >= otherHitbox.x :
                     surtrHitbox.x <= otherHitbox.x + otherHitbox.width) {
                     // Thay vì check weapon.skel, check state chung: nếu front đang attack hoặc idle
@@ -497,8 +520,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-            surtrData.currentSkelPath === "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel" && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            surtrData.currentSkelPath === "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel" &&
             !surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
@@ -575,8 +598,8 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-                   surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            surtrData.isInAttackState && !isSwitchingSkeleton && !surtrData.isDead) {
             // console.log(`Surtr tại worldX=${surtrData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 surtrData,
