@@ -95,7 +95,8 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                         damage = Math.max(0, atk * (1 - (towerRes / 100)));
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
                         // Thêm damage text tại vị trí tháp
-                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, Math.round(damage), 'purple');
+                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                        createDamageText(towerCenterX, GROUND_Y + 200, Math.round(damage), 'purple');
                         // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên tháp (RES: ${towerRes}). HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
@@ -356,7 +357,8 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                                     damage = Math.max(0, atk * (1 - (towerRes / 100)));
                                     targetTower.hp = Math.max(0, targetTower.hp - damage);
                                     // Thêm damage text tại vị trí tháp
-                                    createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, Math.round(damage), 'purple');
+                                    const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                                    createDamageText(towerCenterX, GROUND_Y + 200, Math.round(damage), 'purple');
                                     // console.log(`Sự kiện OnAttack: Surtr tại worldX=${surtrData.worldX} gây ${Math.round(damage)} sát thương phép lên tháp (RES: ${towerRes}). HP tháp còn lại: ${targetTower.hp}`);
                                 }
                             }

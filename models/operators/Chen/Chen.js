@@ -75,7 +75,7 @@ export function loadChenSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     animationState.setAnimation(0, animationToUse || "Move", true);
 
     animationState.addListener({
-        event: function(trackIndex, event) {
+        event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && chenData.isInAttackState && chenData) {
                 let damage = characterDataObj["Ch'en"].atk;
                 if (chenData.target && chenData.isAttackingEnemy) {
@@ -86,13 +86,14 @@ export function loadChenSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     const targetTower = chenData.tower;
                     if (targetTower && isCollidingWithTower(chenData, targetTower)) {
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
+                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                        createDamageText(towerCenterX, GROUND_Y + 200, damage);
                         // console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
         },
-        complete: function(trackIndex, count) {
+        complete: function (trackIndex, count) {
             if (chenData.isDead && chenData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 chenData.deathAnimationComplete = true;
                 console.log(`Animation Die hoàn tất cho Chen tại worldX=${chenData.worldX}`);
@@ -114,15 +115,15 @@ export function loadChenSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 110 : 120
     };
 
-    const chenData = { 
-        skeleton, 
-        state: animationState, 
-        bounds, 
-        premultipliedAlpha: true, 
-        worldX: initialWorldX, 
-        hitbox, 
-        damageHitbox: fixedDamageHitbox, 
-        tower: null, 
+    const chenData = {
+        skeleton,
+        state: animationState,
+        bounds,
+        premultipliedAlpha: true,
+        worldX: initialWorldX,
+        hitbox,
+        damageHitbox: fixedDamageHitbox,
+        tower: null,
         isInAttackState: false,
         currentSkelPath,
         currentAtlasPath,
@@ -156,8 +157,8 @@ function isCollidingWithTower(chenData, targetTower) {
 
     const chenDamageHitbox = {
         x: chenData.direction === -1 ?
-           chenHitbox.x - (chenData.damageHitbox.width - 50) :
-           chenHitbox.x + chenHitbox.width,
+            chenHitbox.x - (chenData.damageHitbox.width - 50) :
+            chenHitbox.x + chenHitbox.width,
         y: chenData.groundY + chenData.damageHitbox.offsetY - chenData.damageHitbox.height / 2 + 258,
         width: chenData.damageHitbox.width - 50,
         height: chenData.damageHitbox.height - 75
@@ -171,10 +172,10 @@ function isCollidingWithTower(chenData, targetTower) {
     };
 
     const isColliding = isFinite(chenDamageHitbox.x) &&
-                        chenDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
-                        chenDamageHitbox.x + chenDamageHitbox.width > towerHitbox.x &&
-                        chenDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
-                        chenDamageHitbox.y + chenDamageHitbox.height > towerHitbox.y;
+        chenDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
+        chenDamageHitbox.x + chenDamageHitbox.width > towerHitbox.x &&
+        chenDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
+        chenDamageHitbox.y + chenDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
         // console.log(`Chen tại worldX=${chenData.worldX} va chạm với tháp tại x=${targetTower.x}`);
@@ -199,8 +200,8 @@ export function isCollidingWithEnemy(chenData, enemyChen) {
 
     const chenDamageHitbox = {
         x: chenData.direction === -1 ?
-           chenHitbox.x - (chenData.damageHitbox.width - 50) :
-           chenHitbox.x + chenHitbox.width,
+            chenHitbox.x - (chenData.damageHitbox.width - 50) :
+            chenHitbox.x + chenHitbox.width,
         y: chenData.groundY + chenData.damageHitbox.offsetY - chenData.damageHitbox.height / 2 + 258,
         width: chenData.damageHitbox.width - 50,
         height: chenData.damageHitbox.height - 75
@@ -208,17 +209,17 @@ export function isCollidingWithEnemy(chenData, enemyChen) {
 
     const enemyHitbox = {
         x: isFinite(enemyChen.worldX + enemyChen.hitbox.offsetX * (enemyChen.skeleton.scaleX || 1) - enemyChen.hitbox.width / 2) ?
-           enemyChen.worldX + enemyChen.hitbox.offsetX * (enemyChen.skeleton.scaleX || 1) - enemyChen.hitbox.width / 2 :
-           enemyChen.worldX,
+            enemyChen.worldX + enemyChen.hitbox.offsetX * (enemyChen.skeleton.scaleX || 1) - enemyChen.hitbox.width / 2 :
+            enemyChen.worldX,
         y: enemyChen.groundY + 220 + enemyChen.hitbox.offsetY - enemyChen.hitbox.height / 2,
         width: enemyChen.hitbox.width,
         height: enemyChen.hitbox.height
     };
 
     const isColliding = chenDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
-                        chenDamageHitbox.x + chenDamageHitbox.width > enemyHitbox.x &&
-                        chenDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
-                        chenDamageHitbox.y + chenDamageHitbox.height > enemyHitbox.y;
+        chenDamageHitbox.x + chenDamageHitbox.width > enemyHitbox.x &&
+        chenDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
+        chenDamageHitbox.y + chenDamageHitbox.height > enemyHitbox.y;
 
     if (isColliding) {
         // console.log(`Chen tại worldX=${chenData.worldX} va chạm với kẻ địch tại worldX=${enemyChen.worldX}`);
@@ -327,7 +328,7 @@ function switchSkeletonFile(chenData, newSkelPath, newAtlasPath, initialAnimatio
                 animationState.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
 
                 animationState.addListener({
-                    event: function(trackIndex, event) {
+                    event: function (trackIndex, event) {
                         if (event.data.name === "OnAttack" && chenData.isInAttackState && chenData) {
                             let damage = characterDataObj["Ch'en"].atk;
                             if (chenData.target && chenData.isAttackingEnemy) {
@@ -338,13 +339,14 @@ function switchSkeletonFile(chenData, newSkelPath, newAtlasPath, initialAnimatio
                                 const targetTower = chenData.tower;
                                 if (targetTower && isCollidingWithTower(chenData, targetTower)) {
                                     targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
+                                    const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                                    createDamageText(towerCenterX, GROUND_Y + 200, damage);
                                     // console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                                 }
                             }
                         }
                     },
-                    complete: function(trackIndex, count) {
+                    complete: function (trackIndex, count) {
                         if (chenData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
                             chenData.deathAnimationComplete = true;
                             // console.log(`Animation Die hoàn tất cho Chen tại worldX=${chenData.worldX}`);
@@ -422,7 +424,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         chenData.groundY = GROUND_Y;
 
         const chenHitbox = {
-            x: isFinite(worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2) ? 
+            x: isFinite(worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2) ?
                 worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2 : worldX,
             y: GROUND_Y + 220 + hitbox.offsetY - hitbox.height / 2,
             width: hitbox.width,
@@ -430,10 +432,10 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         };
 
         const chenDamageHitbox = {
-            x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ? 
-               (chenData.direction === -1 ? 
-                  chenHitbox.x - (damageHitbox.width - 50) : 
-                  chenHitbox.x + chenHitbox.width) : worldX,
+            x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ?
+                (chenData.direction === -1 ?
+                    chenHitbox.x - (damageHitbox.width - 50) :
+                    chenHitbox.x + chenHitbox.width) : worldX,
             y: damageHitbox ? GROUND_Y + damageHitbox.offsetY - damageHitbox.height / 2 + 258 : GROUND_Y + 258,
             width: damageHitbox ? damageHitbox.width - 50 : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
@@ -445,7 +447,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         }
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
-        
+
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
@@ -476,7 +478,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
         for (let otherAlly of allAllies) {
-            if (otherAlly !== chenData && 
+            if (otherAlly !== chenData &&
                 (chenData.direction === 1 ? otherAlly.worldX > chenData.worldX : otherAlly.worldX < chenData.worldX)) {
                 const otherHitbox = {
                     x: otherAlly.worldX + otherAlly.hitbox.offsetX * (otherAlly.skeleton.scaleX || 1) - otherAlly.hitbox.width / 2,
@@ -484,7 +486,7 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                     width: otherAlly.hitbox.width,
                     height: otherAlly.hitbox.height
                 };
-                if (chenData.direction === 1 ? 
+                if (chenData.direction === 1 ?
                     chenHitbox.x + chenHitbox.width >= otherHitbox.x :
                     chenHitbox.x <= otherHitbox.x + otherHitbox.width) {
                     const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
@@ -497,8 +499,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-            chenData.currentSkelPath === "assets/operators/Chen/ChenNian/chen_nian_weapon.skel" && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            chenData.currentSkelPath === "assets/operators/Chen/ChenNian/chen_nian_weapon.skel" &&
             !chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
             // console.log(`Chen tại worldX=${chenData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
@@ -575,8 +577,8 @@ export function renderChenSkeleton(chenData, delta, camera, canvas, groundTileIm
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-                   chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            chenData.isInAttackState && !isSwitchingSkeleton && !chenData.isDead) {
             // console.log(`Chen tại worldX=${chenData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 chenData,

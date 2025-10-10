@@ -72,7 +72,7 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
     animationState.setAnimation(0, animationToUse || "Move", true);
 
     animationState.addListener({
-        event: function(trackIndex, event) {
+        event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && frostNovaData.isInAttackState && frostNovaData) {
                 let damage = characterDataObj["Frost Nova"].atk;
                 if (frostNovaData.target && frostNovaData.isAttackingEnemy) {
@@ -83,13 +83,14 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                     const targetTower = frostNovaData.tower;
                     if (targetTower && isCollidingWithTower(frostNovaData, targetTower)) {
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
+                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                        createDamageText(towerCenterX, GROUND_Y + 200, damage);
                         // console.log(`Sự kiện OnAttack: Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
         },
-        complete: function(trackIndex, count) {
+        complete: function (trackIndex, count) {
             if (frostNovaData.isDead && frostNovaData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 frostNovaData.deathAnimationComplete = true; // Đánh dấu animation Die đã hoàn tất
                 // console.log(`Animation Die hoàn tất cho Frost Nova tại worldX=${frostNovaData.worldX}`);
@@ -111,15 +112,15 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 105 : 120
     };
 
-    const frostNovaData = { 
-        skeleton, 
-        state: animationState, 
-        bounds, 
-        premultipliedAlpha: true, 
-        worldX: initialWorldX, 
-        hitbox, 
-        damageHitbox: fixedDamageHitbox, 
-        tower: null, 
+    const frostNovaData = {
+        skeleton,
+        state: animationState,
+        bounds,
+        premultipliedAlpha: true,
+        worldX: initialWorldX,
+        hitbox,
+        damageHitbox: fixedDamageHitbox,
+        tower: null,
         isInAttackState: false,
         currentSkelPath,
         currentAtlasPath,
@@ -177,9 +178,9 @@ function isCollidingWithTower(frostNovaData, targetTower) {
     };
 
     const isColliding = frostNovaDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
-                        frostNovaDamageHitbox.x + frostNovaDamageHitbox.width > towerHitbox.x &&
-                        frostNovaDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
-                        frostNovaDamageHitbox.y + frostNovaDamageHitbox.height > towerHitbox.y;
+        frostNovaDamageHitbox.x + frostNovaDamageHitbox.width > towerHitbox.x &&
+        frostNovaDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
+        frostNovaDamageHitbox.y + frostNovaDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
         // console.log(`FrostNova tại worldX=${frostNovaData.worldX} va chạm với tháp tại x=${targetTower.x}`);
@@ -208,17 +209,17 @@ export function isCollidingWithEnemy(frostNovaData, enemies) {
 
         const enemyHitbox = {
             x: isFinite(enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2) ?
-               enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
-               enemy.worldX,
+                enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
+                enemy.worldX,
             y: enemy.groundY + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
             width: enemy.hitbox.width,
             height: enemy.hitbox.height
         };
 
         const isColliding = frostNovaDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
-                            frostNovaDamageHitbox.x + frostNovaDamageHitbox.width > enemyHitbox.x &&
-                            frostNovaDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
-                            frostNovaDamageHitbox.y + frostNovaDamageHitbox.height > enemyHitbox.y;
+            frostNovaDamageHitbox.x + frostNovaDamageHitbox.width > enemyHitbox.x &&
+            frostNovaDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
+            frostNovaDamageHitbox.y + frostNovaDamageHitbox.height > enemyHitbox.y;
 
         if (isColliding) {
             const distance = Math.abs(frostNovaData.worldX - enemy.worldX);
@@ -272,8 +273,8 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
 
         const allyHitbox = {
             x: isFinite(ally.worldX + ally.hitbox.offsetX * (ally.skeleton.scaleX || 1) - ally.hitbox.width / 2) ?
-               ally.worldX + ally.hitbox.offsetX * (ally.skeleton.scaleX || 1) - ally.hitbox.width / 2 :
-               ally.worldX,
+                ally.worldX + ally.hitbox.offsetX * (ally.skeleton.scaleX || 1) - ally.hitbox.width / 2 :
+                ally.worldX,
             y: GROUND_Y + 220 + ally.hitbox.offsetY - ally.hitbox.height / 2,
             width: ally.hitbox.width,
             height: ally.hitbox.height
@@ -282,21 +283,21 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
         // Kiểm tra ally ở phía trước đúng hướng
         if ((frostNovaData.direction === 1 && ally.worldX > frostNovaData.worldX) ||
             (frostNovaData.direction === -1 && ally.worldX < frostNovaData.worldX)) {
-            
+
             const thisHitbox = {
                 x: isFinite(frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2) ?
-                   frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
-                   frostNovaData.worldX,
+                    frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
+                    frostNovaData.worldX,
                 y: GROUND_Y + 220 + frostNovaData.hitbox.offsetY - frostNovaData.hitbox.height / 2,
                 width: frostNovaData.hitbox.width,
                 height: frostNovaData.hitbox.height
             };
 
             // Kiểm tra overlap (bỏ SAFE_OFFSET để chạm vừa khít)
-            const overlapX = (frostNovaData.direction === 1) ? 
-                             (thisHitbox.x + thisHitbox.width >= allyHitbox.x) :
-                             (thisHitbox.x <= allyHitbox.x + allyHitbox.width);
-            
+            const overlapX = (frostNovaData.direction === 1) ?
+                (thisHitbox.x + thisHitbox.width >= allyHitbox.x) :
+                (thisHitbox.x <= allyHitbox.x + allyHitbox.width);
+
             if (overlapX) {
                 const frontAnimation = ally.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
                 if (frontAnimation === "attack" || frontAnimation === "idle" || ally.isInAttackState) {
@@ -381,8 +382,8 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     } else if (isStablyBlocked && !frostNovaData.isDead && frontAlly) {
         const thisHitbox = {
             x: isFinite(frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2) ?
-               frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
-               frostNovaData.worldX,
+                frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
+                frostNovaData.worldX,
             y: GROUND_Y + 220 + frostNovaData.hitbox.offsetY - frostNovaData.hitbox.height / 2,
             width: frostNovaData.hitbox.width,
             height: frostNovaData.hitbox.height
@@ -394,17 +395,17 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
             width: frontAlly.hitbox.width,
             height: frontAlly.hitbox.height
         };
-        
+
         let currentDistance;
         if (frostNovaData.direction === 1) {
             currentDistance = otherHitbox.x - (thisHitbox.x + thisHitbox.width);
         } else {
             currentDistance = (thisHitbox.x - otherHitbox.x - otherHitbox.width);
         }
-        
+
         if (Math.abs(currentDistance) > ADJUST_THRESHOLD) {
-            let newWorldX = otherHitbox.x + (frostNovaData.direction === 1 ? -frostNovaData.hitbox.width : otherHitbox.width) 
-                            - frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) + frostNovaData.hitbox.width / 2;
+            let newWorldX = otherHitbox.x + (frostNovaData.direction === 1 ? -frostNovaData.hitbox.width : otherHitbox.width)
+                - frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) + frostNovaData.hitbox.width / 2;
             frostNovaData.worldX = newWorldX;
             console.log(`Frost Nova adjusted position to ${frostNovaData.worldX} (distance was ${currentDistance}, threshold ${ADJUST_THRESHOLD})`);
         } else {
@@ -439,8 +440,8 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
 
     const frostNovaHitbox = {
         x: isFinite(frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2) ?
-           frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
-           frostNovaData.worldX,
+            frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
+            frostNovaData.worldX,
         y: frostNovaData.groundY + 220 + frostNovaData.hitbox.offsetY - frostNovaData.hitbox.height / 2,
         width: frostNovaData.hitbox.width,
         height: frostNovaData.hitbox.height
@@ -480,8 +481,8 @@ export function isOverlappingWithOtherFrostNova(newHitbox, existingFrostNovas, G
     for (let existing of existingFrostNovas) {
         const existingHitbox = {
             x: isFinite(existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2) ?
-               existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2 :
-               existing.worldX,
+                existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2 :
+                existing.worldX,
             y: GROUND_Y + 220 + existing.hitbox.offsetY - existing.hitbox.height / 2,
             width: existing.hitbox.width,
             height: existing.hitbox.height

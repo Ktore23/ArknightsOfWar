@@ -886,14 +886,40 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                     const threshold = 5;
                     if (distance < threshold) {
                         projectile.target.hp = Math.max(0, projectile.target.hp - projectile.damage);
-                        // Hiển thị damage text cho damage1
-                        createDamageText(projectile.targetCenterX, GROUND_Y + 300, projectile.damage1);
-                        // Nếu có damage2 (tức là đòn thứ 5), hiển thị damage text thứ hai với offset nhẹ
-                        if (projectile.damage2 > 0) {
-                            createDamageText(projectile.targetCenterX, GROUND_Y + 320, projectile.damage2);
+
+                        // Phân chia logic hiển thị damage text cho bot và tháp
+                        if (projectile.target !== kroosData.tower) {
+                            // Mục tiêu là tháp
+                            createDamageText(
+                                projectile.targetCenterX,
+                                GROUND_Y + 300, // Đồng bộ độ cao với Surtr
+                                projectile.damage1,
+                            );
+                            if (projectile.damage2 > 0) {
+                                createDamageText(
+                                    projectile.targetCenterX,
+                                    GROUND_Y + 320, // Offset nhẹ cho damage2
+                                    projectile.damage2,
+                                );
+                            }
+                            console.log(`Projectile chạm tháp tại (${projectile.targetCenterX}, ${GROUND_Y + 200}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
+                        } else {
+                            // Mục tiêu là bot
+                            createDamageText(
+                                projectile.targetCenterX,
+                                GROUND_Y + 200, // Giữ độ cao như logic gốc
+                                projectile.damage1,
+                            );
+                            if (projectile.damage2 > 0) {
+                                createDamageText(
+                                    projectile.targetCenterX,
+                                    GROUND_Y + 220, // Offset nhẹ cho damage2
+                                    projectile.damage2,
+                                );
+                            }
+                            console.log(`Projectile chạm bot tại (${projectile.targetCenterX}, ${GROUND_Y + 300}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
                         }
                         projectile.active = false;
-                        console.log(`Projectile đến tâm target tại (${projectile.targetCenterX}, ${projectile.targetCenterY}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
                     }
                 }
 

@@ -75,7 +75,7 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
     animationState.setAnimation(0, animationToUse || "Move", true);
 
     animationState.addListener({
-        event: function(trackIndex, event) {
+        event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && shuData.isInAttackState && shuData) {
                 let damage = characterDataObj["Shu"].atk;
                 if (shuData.target && shuData.isAttackingEnemy) {
@@ -86,13 +86,14 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                     const targetTower = shuData.tower;
                     if (targetTower && isCollidingWithTower(shuData, targetTower)) { // Sử dụng shuData.groundY
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        createDamageText(targetTower.x + targetTower.hitbox.width / 2, GROUND_Y + 200, damage);
+                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
+                        createDamageText(towerCenterX, GROUND_Y + 200, damage);
                         // console.log(`Sự kiện OnAttack: Shu tại worldX=${shuData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }
         },
-        complete: function(trackIndex, count) {
+        complete: function (trackIndex, count) {
             if (shuData.isDead && shuData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
                 shuData.deathAnimationComplete = true;
                 // console.log(`Animation Die hoàn tất cho Shu tại worldX=${shuData.worldX}`);
@@ -114,15 +115,15 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
         offsetY: hitbox.offsetY
     };
 
-    const shuData = { 
-        skeleton, 
-        state: animationState, 
-        bounds, 
-        premultipliedAlpha: true, 
-        worldX: initialWorldX, 
-        hitbox, 
-        damageHitbox: fixedDamageHitbox, 
-        tower: null, 
+    const shuData = {
+        skeleton,
+        state: animationState,
+        bounds,
+        premultipliedAlpha: true,
+        worldX: initialWorldX,
+        hitbox,
+        damageHitbox: fixedDamageHitbox,
+        tower: null,
         isInAttackState: false,
         currentSkelPath,
         currentAtlasPath,
@@ -202,8 +203,8 @@ function isCollidingWithTower(shuData, targetTower) {
 
     const shuHitbox = {
         x: isFinite(shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2) ?
-           shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2 :
-           shuData.worldX,
+            shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2 :
+            shuData.worldX,
         y: shuData.groundY + 220 + shuData.hitbox.offsetY - shuData.hitbox.height / 2, // Sử dụng shuData.groundY
         width: shuData.hitbox.width,
         height: shuData.hitbox.height
@@ -224,10 +225,10 @@ function isCollidingWithTower(shuData, targetTower) {
     };
 
     const isColliding = isFinite(shuDamageHitbox.x) &&
-                        shuDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
-                        shuDamageHitbox.x + shuDamageHitbox.width > towerHitbox.x &&
-                        shuDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
-                        shuDamageHitbox.y + shuDamageHitbox.height > towerHitbox.y;
+        shuDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
+        shuDamageHitbox.x + shuDamageHitbox.width > towerHitbox.x &&
+        shuDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
+        shuDamageHitbox.y + shuDamageHitbox.height > towerHitbox.y;
 
     if (isColliding) {
         // console.log(`Shu tại worldX=${shuData.worldX} va chạm với tháp tại x=${targetTower.x}`);
@@ -238,8 +239,8 @@ function isCollidingWithTower(shuData, targetTower) {
 export function isCollidingWithEnemy(shuData, enemy) {
     const shuHitbox = {
         x: isFinite(shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2) ?
-           shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2 :
-           shuData.worldX,
+            shuData.worldX + shuData.hitbox.offsetX * (shuData.skeleton.scaleX || 1) - shuData.hitbox.width / 2 :
+            shuData.worldX,
         y: shuData.groundY + 220 + shuData.hitbox.offsetY - shuData.hitbox.height / 2, // Sử dụng shuData.groundY
         width: shuData.hitbox.width,
         height: shuData.hitbox.height
@@ -254,18 +255,18 @@ export function isCollidingWithEnemy(shuData, enemy) {
 
     const enemyHitbox = {
         x: isFinite(enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2) ?
-           enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
-           enemy.worldX,
+            enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
+            enemy.worldX,
         y: enemy.groundY + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
         width: enemy.hitbox.width,
         height: enemy.hitbox.height
     };
 
     const isColliding = isFinite(shuDamageHitbox.x) &&
-                        shuDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
-                        shuDamageHitbox.x + shuDamageHitbox.width > enemyHitbox.x &&
-                        shuDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
-                        shuDamageHitbox.y + shuDamageHitbox.height > enemyHitbox.y;
+        shuDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
+        shuDamageHitbox.x + shuDamageHitbox.width > enemyHitbox.x &&
+        shuDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
+        shuDamageHitbox.y + shuDamageHitbox.height > enemyHitbox.y;
 
     if (isColliding) {
         // console.log(`Shu tại worldX=${shuData.worldX} va chạm với kẻ địch tại worldX=${enemy.worldX}`);
@@ -318,8 +319,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
 
         const shuHitbox = {
             x: isFinite(worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2) ?
-            worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2 :
-            worldX,
+                worldX + hitbox.offsetX * (skeleton.scaleX || 1) - hitbox.width / 2 :
+                worldX,
             y: shuData.groundY + 220 + hitbox.offsetY - hitbox.height / 2, // Sử dụng shuData.groundY
             width: hitbox.width,
             height: hitbox.height
@@ -363,7 +364,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
         for (let otherAlly of allAllies) {
-            if (otherAlly !== shuData && 
+            if (otherAlly !== shuData &&
                 (shuData.direction === 1 ? otherAlly.worldX > shuData.worldX : otherAlly.worldX < shuData.worldX)) {
                 const otherHitbox = {
                     x: otherAlly.worldX + otherAlly.hitbox.offsetX * (otherAlly.skeleton.scaleX || 1) - otherAlly.hitbox.width / 2,
@@ -371,7 +372,7 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                     width: otherAlly.hitbox.width,
                     height: otherAlly.hitbox.height
                 };
-                if (shuData.direction === 1 ? 
+                if (shuData.direction === 1 ?
                     shuHitbox.x + shuHitbox.width >= otherHitbox.x :
                     shuHitbox.x <= otherHitbox.x + otherHitbox.width) {
                     // Thay vì check weapon.skel, check state chung: nếu front đang attack hoặc idle
@@ -385,8 +386,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-            shuData.currentSkelPath === "assets/operators/Shu/ShuNian/shu_nian_weapon.skel" && 
+        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            shuData.currentSkelPath === "assets/operators/Shu/ShuNian/shu_nian_weapon.skel" &&
             !shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
             // console.log(`Shu tại worldX=${shuData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
@@ -463,8 +464,8 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                     }
                 );
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && 
-                   shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            shuData.isInAttackState && !isSwitchingSkeleton && !shuData.isDead) {
             // console.log(`Shu tại worldX=${shuData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 shuData,
@@ -553,8 +554,8 @@ export function isOverlappingWithOtherShu(newHitbox, existingShus, GROUND_Y) {
     for (let existing of existingShus) {
         const existingHitbox = {
             x: isFinite(existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2) ?
-               existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2 :
-               existing.worldX,
+                existing.worldX + existing.hitbox.offsetX * (existing.skeleton.scaleX || 1) - existing.hitbox.width / 2 :
+                existing.worldX,
             y: GROUND_Y + 220 + existing.hitbox.offsetY - existing.hitbox.height / 2,
             width: existing.hitbox.width,
             height: existing.hitbox.height

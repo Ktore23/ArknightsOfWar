@@ -57,7 +57,7 @@ const LINE_WIDTH = 2;
 const DEFAULT_X = 250;
 const SAFE_OFFSET = 100; // Tăng từ 50 lên 100 để đảm bảo khoảng cách an toàn
 
-backgroundImage.src = "assets/images/background.png";
+backgroundImage.src = "assets/images/Home_Screen_background-Flowerbed.png";
 backgroundImage.onload = () => { isBackgroundLoaded = true; console.log("Background loaded"); };
 backgroundImage.onerror = () => { console.error("Failed to load background"); };
 
@@ -65,7 +65,7 @@ towerImage.src = "assets/images/tower.png";
 towerImage.onload = () => { isTowerLoaded = true; console.log("Tower loaded"); };
 towerImage.onerror = () => { console.error("Failed to load tower"); };
 
-groundTileImage.src = "assets/images/battlefield_ground.png";
+groundTileImage.src = "assets/images/game-ground-texture-road-forest-260nw-2207352763.jpg";
 groundTileImage.onload = () => { isGroundTileLoaded = true; console.log("Ground tile loaded"); };
 groundTileImage.onerror = () => { console.error("Failed to load ground tile"); };
 
@@ -561,7 +561,7 @@ function render() {
       backgroundCtx.drawImage(
         groundTileImage,
         i * tileWidth - camera.x,
-        GROUND_Y,
+        GROUND_Y - 230,
         tileWidth,
         tileHeight
       );
@@ -593,64 +593,41 @@ function render() {
         backgroundCtx.drawImage(towerImage, drawX, drawY, width, height);
       }
 
-      const barWidth = 200;
-      const barHeight = 10;
-      let barX, barY;
-      if (index === 0) {
-        barX = drawX + (width - barWidth) / 2 - 150;
-        barY = drawY - 20;
-        if (!hasLoggedRightTower) {
-          console.log(`Tháp trái (index ${index}): barX=${barX}, barY=${barY}, width=${barWidth}, height=${barHeight}`);
-        }
-      } else {
-        barX = drawX + (width - barWidth) / 2 - 2634 + camera.x;
-        barY = drawY + 195;
-        if (!hasLoggedRightTower) {
-          console.log(`Tháp phải (index ${index}): barX=${barX}, barY=${barY}, width=${barWidth}, height=${barHeight}`);
-          hasLoggedRightTower = true;
-        }
-      }
-      backgroundCtx.fillStyle = "red";
-      backgroundCtx.fillRect(barX, barY, barWidth, barHeight);
-      backgroundCtx.fillStyle = "green";
-      backgroundCtx.fillRect(barX, barY, barWidth * (tower.hp / tower.maxHp), barHeight);
-      backgroundCtx.strokeStyle = "black";
-      backgroundCtx.strokeRect(barX, barY, barWidth, barHeight);
+      // Tính toán tâm hitbox (đã có sẵn từ chấm xanh)
+      backgroundCtx.restore(); // Khôi phục trạng thái để tránh ảnh hưởng từ scale(-1, 1)
+      const centerX = tower.x + tower.hitbox.offsetX - tower.hitbox.width / 2 + tower.hitbox.width / 2;
+      const centerY = tower.y + tower.hitbox.offsetY - tower.hitbox.height / 2 + tower.hitbox.height / 2;
 
+      // Thanh máu
+      const barWidth = 200;
+      const barHeight = 15;
+      const barX = centerX - barWidth / 2; // Căn giữa thanh máu theo tâm hitbox
+      const barY = centerY - 100; // Dịch lên trên tâm hitbox để tránh chồng lấn chấm xanh
+      backgroundCtx.fillStyle = "red";
+      backgroundCtx.fillRect(barX - camera.x, barY, barWidth, barHeight);
+      backgroundCtx.fillStyle = "green";
+      backgroundCtx.fillRect(barX - camera.x, barY, barWidth * (tower.hp / tower.maxHp), barHeight);
+      backgroundCtx.strokeStyle = "black";
+      backgroundCtx.strokeRect(barX - camera.x, barY, barWidth, barHeight);
+
+      // Text HP (nằm bên trong thanh máu)
       backgroundCtx.fillStyle = "white";
       backgroundCtx.font = "12px Arial";
       backgroundCtx.textAlign = "center";
       backgroundCtx.textBaseline = "middle";
       const hpText = `${Math.floor(tower.hp)}/${tower.maxHp}`;
-      const hpTextX = barX + barWidth / 2;
-      const hpTextY = barY + barHeight / 2;
-      if (index === 0) {
-        backgroundCtx.save();
-        backgroundCtx.translate(hpTextX, hpTextY);
-        backgroundCtx.scale(-1, 1);
-        backgroundCtx.fillText(hpText, 0, 0);
-        backgroundCtx.restore();
-      } else {
-        backgroundCtx.fillText(hpText, hpTextX, hpTextY);
-      }
+      const hpTextX = barX + barWidth / 2; // Căn giữa ngang trong thanh máu
+      const hpTextY = barY + barHeight / 2; // Căn giữa dọc trong thanh máu
+      backgroundCtx.fillText(hpText, hpTextX - camera.x, hpTextY);
 
-      backgroundCtx.fillStyle = "red";
-      backgroundCtx.font = "16px Arial";
+      // Text tên tháp
+      backgroundCtx.fillStyle = "white";
+      backgroundCtx.font = "20px Arial";
       backgroundCtx.textAlign = "center";
       backgroundCtx.textBaseline = "middle";
-      let textX = barX + barWidth / 2;
-      const textY = barY + barHeight / 2 - 15;
-      if (index === 0) {
-        backgroundCtx.save();
-        backgroundCtx.translate(textX, textY);
-        backgroundCtx.scale(-1, 1);
-        backgroundCtx.fillText("Tháp trái", 0, 0);
-        backgroundCtx.restore();
-      } else {
-        backgroundCtx.fillText("Tháp phải", textX, textY);
-      }
-
-      backgroundCtx.restore();
+      const textX = centerX;
+      const textY = centerY - 115; // Dịch lên trên để tránh chồng lấn thanh máu
+      backgroundCtx.fillText(index === 0 ? "Tháp trái" : "Tháp phải", textX - camera.x, textY);
     });
   }
 
