@@ -74,18 +74,27 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
     animationState.addListener({
         event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && frostNovaData.isInAttackState && frostNovaData) {
-                let damage = characterDataObj["Frost Nova"].atk;
+                let atk = characterDataObj["Frost Nova"].atk;
+                let damage;
                 if (frostNovaData.target && frostNovaData.isAttackingEnemy) {
+                    // Tính sát thương phép cho enemy: ATK × (1 - (RES / 100))
+                    const targetRes = characterDataObj[frostNovaData.target.type]?.res || 0;
+                    damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
                     frostNovaData.target.hp = Math.max(0, frostNovaData.target.hp - damage);
-                    createDamageText(frostNovaData.target.worldX, GROUND_Y + 300, damage);
-                    // console.log(`Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${frostNovaData.target.worldX}. HP kẻ địch còn: ${frostNovaData.target.hp}`);
+                    // Thêm damage text tại vị trí target
+                    createDamageText(frostNovaData.target.worldX, GROUND_Y + 300, damage, 'purple');  // Làm tròn damage để hiển thị
+                    // console.log(`Frost Nova tại worldX=${frostNovaData.worldX} gây ${Math.round(damage)} sát thương phép lên kẻ địch tại worldX=${frostNovaData.target.worldX} (RES: ${targetRes}). HP kẻ địch còn: ${frostNovaData.target.hp}`);
                 } else {
                     const targetTower = frostNovaData.tower;
                     if (targetTower && isCollidingWithTower(frostNovaData, targetTower)) {
+                        // Tính sát thương phép cho tower sử dụng res từ targetTower
+                        const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
+                        damage = Math.round(Math.max(0, atk * (1 - (towerRes / 100))));
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        // Thêm damage text tại vị trí tháp
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
-                        createDamageText(towerCenterX, GROUND_Y + 200, damage);
-                        // console.log(`Sự kiện OnAttack: Frost Nova tại worldX=${frostNovaData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
+                        createDamageText(towerCenterX, GROUND_Y + 200, damage, 'purple');
+                        // console.log(`Sự kiện OnAttack: Frost Nova tại worldX=${frostNovaData.worldX} gây ${Math.round(damage)} sát thương phép lên tháp (RES: ${towerRes}). HP tháp còn lại: ${targetTower.hp}`);
                     }
                 }
             }

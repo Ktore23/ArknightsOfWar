@@ -4,7 +4,7 @@ let canvas, backgroundCanvas, backgroundCtx;
 let gl;
 let importedModules = {}; // Lưu module dynamic
 const characterModuleNameMap = {
-  "Kroos": "Kroos"
+  "Surtr": "Surtr"
 };
 const GROUND_Y = 0;
 const WORLD_WIDTH = 2000;
@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Kroos": './models/operators/Kroos/Kroos.js'
+  "Surtr": './models/operators/Surtr/Surtr.js'
 };
 
 // Load groundTileImage
@@ -63,9 +63,9 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
   });
 }
 
-// Hàm để render Kroos bot ở trạng thái idle
-function addKroosBotForTesting() {
-  const char = "Kroos";
+// Hàm để render Surtr bot ở trạng thái idle
+function addSurtrBotForTesting() {
+  const char = "Surtr";
   const module = importedModules[char];
   if (!module) {
     console.error(`Module cho ${char} không tồn tại`);
@@ -81,7 +81,7 @@ function addKroosBotForTesting() {
     return;
   }
 
-  // Tìm unit Kroos được thả gần nhất
+  // Tìm unit Surtr được thả gần nhất
   let botWorldX = 1500;
 
   const newHitbox = {
@@ -126,14 +126,14 @@ function addKroosBotForTesting() {
     const animState = botUnit.state || botUnit.skeleton.state;
     animState.setAnimation(0, "Idle", true);
     animState.isLockedIdle = true;
-    console.log(`Đã set animation Idle cho Kroos bot`);
+    console.log(`Đã set animation Idle cho Surtr bot`);
   } catch (error) {
     console.error(`Lỗi khi set animation Idle cho bot:`, error);
     // Fallback: Không set animation, bot vẫn hiển thị với render fallback
   }
 
   playerUnits.push(botUnit);
-  // console.log(`Đã thêm Kroos bot tại x=${botWorldX}. Hitbox:`, newHitbox);
+  // console.log(`Đã thêm Surtr bot tại x=${botWorldX}. Hitbox:`, newHitbox);
 }
 
 async function init() {
@@ -154,14 +154,14 @@ async function init() {
   gl.enable(gl.BLEND);
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
-  // Load module cho Kroos
-  const char = "Kroos";
+  // Load module cho Surtr
+  const char = "Surtr";
   try {
     const modulePath = characterModules[char];
     const module = await import(modulePath);
     importedModules[char] = module;
-    if (typeof module.initKroos === 'function') {
-      module.initKroos(gl); // Init assets
+    if (typeof module.initSurtr === 'function') {
+      module.initSurtr(gl); // Init assets
       console.log(`Đã load và init cho demo`);
     } else {
       console.error(`init không tồn tại trong module ${char}`);
@@ -188,14 +188,14 @@ async function init() {
     console.log(`Dùng fallback cho để test hitbox`);
   }
 
-  // Đợi tài nguyên Kroos load xong rồi thêm bot
-  const waitForKroosAssets = setInterval(() => {
+  // Đợi tài nguyên Surtr load xong rồi thêm bot
+  const waitForSurtrAssets = setInterval(() => {
     const module = importedModules[char];
-    if (module && module.isKroosLoadingComplete && module.isKroosLoadingComplete()) {
-      clearInterval(waitForKroosAssets); // Dừng interval khi load xong
-      addKroosBotForTesting(); // Thêm bot
+    if (module && module.isSurtrLoadingComplete && module.isSurtrLoadingComplete()) {
+      clearInterval(waitForSurtrAssets); // Dừng interval khi load xong
+      addSurtrBotForTesting(); // Thêm bot
     } else {
-      console.log(`Đang đợi tài nguyên Kroos load...`);
+      console.log(`Đang đợi tài nguyên Surtr load...`);
     }
   }, 100); // Kiểm tra mỗi 100ms
 
@@ -333,7 +333,7 @@ function render(now) {
   const enemyUnits = playerUnits.filter(unit => unit.isBot);
 
   // Cập nhật camera để hiển thị bot
-  const bot = playerUnits.find(unit => unit.type === "Kroos" && unit.direction === -1);
+  const bot = playerUnits.find(unit => unit.type === "Surtr" && unit.direction === -1);
   if (bot) {
     camera.x = Math.max(0, Math.min(bot.worldX - window.innerWidth / 2, WORLD_WIDTH - window.innerWidth));
     // console.log(`Camera di chuyển đến bot: x=${camera.x}`);
