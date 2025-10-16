@@ -2,14 +2,8 @@ import { characterDataObj } from '../../../character.js';
 import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
-let debugRenderer, debugShader, shapes;
-let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
-let velocity = 50;
-let direction = 1;
-let currentSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel"; // Khai báo ban đầu là weapon.skel
-let currentAtlasPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas"; // Khai báo ban đầu là weapon.atlas
-let isSwitchingSkeleton = false;
-let hasLoggedSurtrPosition = false;
+let currentSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel";
+let currentAtlasPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas";
 let fixedDamageHitbox = null;
 
 export function initSurtr(webglContext) {
@@ -22,11 +16,6 @@ export function initSurtr(webglContext) {
     mvp = new spine.webgl.Matrix4();
     skeletonRenderer = new spine.webgl.SkeletonRenderer(webglContext);
     assetManager = new spine.webgl.AssetManager(webglContext);
-
-    debugRenderer = new spine.webgl.SkeletonDebugRenderer(webglContext);
-    debugRenderer.drawRegionAttachments = debugRenderer.drawBoundingBoxes = debugRenderer.drawMeshHull = debugRenderer.drawMeshTriangles = debugRenderer.drawPaths = true;
-    debugShader = spine.webgl.Shader.newColored(webglContext);
-    shapes = new spine.webgl.ShapeRenderer(webglContext);
 
     assetManager.loadBinary("assets/operators/Surtr/SurtrSummer/surtr_summer.skel");
     assetManager.loadTextureAtlas("assets/operators/Surtr/SurtrSummer/surtr_summer.atlas");
@@ -47,15 +36,10 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     }
 
     const atlas = assetManager.get(currentAtlasPath);
-    if (!atlas) {
-        console.error(`Atlas không tồn tại tại ${currentAtlasPath}`);
-        return null;
-    }
-
     const atlasLoader = new spine.AtlasAttachmentLoader(atlas);
     const skeletonBinary = new spine.SkeletonBinary(atlasLoader);
     skeletonBinary.scale = 0.3;
-    const skeletonDataRaw = skeletonBinary.readSkeletonData(assetManager.get("assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel")); // Sử dụng weapon.skel để có animation Start
+    const skeletonDataRaw = skeletonBinary.readSkeletonData(assetManager.get("assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel"));
     if (!skeletonDataRaw) {
         console.error(`Skeleton data không tải được từ surtr_summer_weapon.skel`);
         return null;
@@ -72,33 +56,36 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     if (!animationToUse) {
         console.error(`Initial animation ${initialAnimation} not found in surtr_summer_weapon.skel. Available animations: ${skeletonDataRaw.animations.map(a => a.name).join(", ")}`);
     }
-    animationState.setAnimation(0, animationToUse || "Move", false); // Non-looping cho Start
+    animationState.setAnimation(0, animationToUse || "Move", false);
 
     animationState.addListener({
         event: function (trackIndex, event) {
             if (event.data.name === "OnAttack" && surtrData.isInAttackState && surtrData) {
-                let atk = characterDataObj["Surtr"].atk;
-                let damage;
-                if (surtrData.target && surtrData.isAttackingEnemy) {
-                    const targetRes = characterDataObj[surtrData.target.type]?.res || 0;
-                    damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
-                    surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
-                    createDamageText(surtrData.target.worldX, GROUND_Y + 300, damage, 'purple');
-                } else {
-                    const targetTower = surtrData.tower;
-                    if (targetTower && isCollidingWithTower(surtrData, targetTower)) {
-                        const towerRes = targetTower.res || 0;
-                        damage = Math.round(Math.max(0, atk * (1 - (towerRes / 100))));
-                        targetTower.hp = Math.max(0, targetTower.hp - damage);
-                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
-                        createDamageText(towerCenterX, GROUND_Y + 200, damage, 'purple');
+                let atk = surtrData.atk;
+                surtrData.collidingTargets.forEach(target => {
+                    if (target.hp > 0) {
+                        let damage;
+                        let targetRes = 0;
+                        let damageTextX = 0;
+
+                        if (target.type) {
+                            targetRes = characterDataObj[target.type]?.res || 0;
+                            damageTextX = target.worldX;
+                        } else {
+                            targetRes = target.res || 0;
+                            damageTextX = target.x + target.hitbox.offsetX;
+                        }
+
+                        damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
+                        target.hp = Math.max(0, target.hp - damage);
+                        createDamageText(damageTextX, GROUND_Y + (target.type ? 300 : 200), damage, 'purple');
                     }
-                }
+                });
             }
         },
         complete: function (trackIndex, count) {
             const currentAnimation = animationState.getCurrent(0)?.animation?.name.toLowerCase();
-            if (currentAnimation === "start" && !surtrData.isDead) {
+            if (surtrData.isInStartAnimation && !surtrData.isDead) {
                 surtrData.isInStartAnimation = false;
                 switchSkeletonFile(
                     surtrData,
@@ -107,7 +94,6 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     "Move",
                     (success) => {
                         if (success) {
-                            surtrData.velocity = 50;
                             console.log("Surtr switched to Move animation from Start");
                         } else {
                             console.error("Failed to switch to Move skeleton for Surtr");
@@ -116,8 +102,20 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     }
                 );
             }
+            if (currentAnimation === "skill_3_begin" && !surtrData.isDead && surtrData.isInSkill3State) {
+                surtrData.state.setAnimation(0, "Skill_3_Loop", true);
+                console.log(`Surtr tại worldX=${surtrData.worldX} switched to Skill_3_Loop after Skill_3_Begin`);
+            }
             if (surtrData.isDead && currentAnimation === "die") {
                 surtrData.deathAnimationComplete = true;
+            }
+            if (currentAnimation === "attack" || currentAnimation === "skill_3_loop") {
+                surtrData.isInAttackState = false;
+                if (currentAnimation === "skill_3_loop") {
+                    surtrData.isInSkill3State = false;
+                    surtrData.justCompletedSkillLoop = true;
+                }
+                console.log(`Surtr tại worldX=${surtrData.worldX} reset states after ${currentAnimation} cycle complete`);
             }
         }
     });
@@ -130,7 +128,7 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     };
 
     fixedDamageHitbox = {
-        width: 100,
+        width: 50,
         height: 200,
         offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 220) ? bounds.offset.x + bounds.size.x / 2 + 220 : 220,
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 145 : 120
@@ -143,21 +141,29 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         premultipliedAlpha: true,
         worldX: initialWorldX,
         hitbox,
-        damageHitbox: fixedDamageHitbox,
+        damageHitbox: { ...fixedDamageHitbox },
         tower: null,
         isInAttackState: false,
-        isInStartAnimation: true, // Thêm trạng thái Start
-        currentSkelPath: "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel", // Khởi tạo với weapon.skel
+        isInStartAnimation: true,
+        isInSkill3State: false,
+        isSwitchingSkeleton: false,
+        currentSkelPath: "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
         currentAtlasPath: "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
         direction: 1,
-        velocity: 0, // Không di chuyển khi đang ở animation Start
+        velocity: 0,
         target: null,
-        isAttackingEnemy: false,
         isDead: false,
-        deathAnimationTimer: 0,
         deathAnimationComplete: false,
         groundY: GROUND_Y,
-        type: "Surtr"
+        type: "Surtr",
+        deployTime: 0,
+        hasExpandedHitbox: false,
+        hasLoggedPosition: false,
+        collidingTargets: [],
+        atk: characterDataObj["Surtr"].atk,
+        maxHp: characterDataObj["Surtr"].hp,
+        hp: characterDataObj["Surtr"].hp,
+        justCompletedSkillLoop: false
     };
     return surtrData;
 }
@@ -178,10 +184,10 @@ function isCollidingWithTower(surtrData, targetTower) {
 
     const surtrDamageHitbox = {
         x: surtrData.direction === -1 ?
-            surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
+            surtrHitbox.x - (surtrData.damageHitbox.width) :
             surtrHitbox.x + surtrHitbox.width,
         y: surtrData.groundY + surtrData.damageHitbox.offsetY - surtrData.damageHitbox.height / 2 + 258,
-        width: surtrData.damageHitbox.width - 50,
+        width: surtrData.damageHitbox.width,
         height: surtrData.damageHitbox.height - 75
     };
 
@@ -217,10 +223,10 @@ export function isCollidingWithEnemy(surtrData, enemySurtr) {
 
     const surtrDamageHitbox = {
         x: surtrData.direction === -1 ?
-            surtrHitbox.x - (surtrData.damageHitbox.width - 50) :
+            surtrHitbox.x - (surtrData.damageHitbox.width) :
             surtrHitbox.x + surtrHitbox.width,
         y: surtrData.groundY + surtrData.damageHitbox.offsetY - surtrData.damageHitbox.height / 2 + 258,
-        width: surtrData.damageHitbox.width - 50,
+        width: surtrData.damageHitbox.width,
         height: surtrData.damageHitbox.height - 75
     };
 
@@ -236,9 +242,58 @@ export function isCollidingWithEnemy(surtrData, enemySurtr) {
     const isColliding = surtrDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
         surtrDamageHitbox.x + surtrDamageHitbox.width > enemyHitbox.x &&
         surtrDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
-        surtrDamageHitbox.y + surtrDamageHitbox.height > enemyHitbox.y;
+        surtrDamageHitbox.y + surtrData.damageHitbox.height > enemyHitbox.y;
 
     return isColliding;
+}
+
+function getAllCollidingEnemies(surtrData, enemies) {
+    if (!surtrData.damageHitbox || !isFinite(surtrData.worldX)) {
+        return [];
+    }
+
+    const surtrHitbox = {
+        x: isFinite(surtrData.worldX + surtrData.hitbox.offsetX * (surtrData.skeleton.scaleX || 1) - surtrData.hitbox.width / 2) ?
+            surtrData.worldX + surtrData.hitbox.offsetX * (surtrData.skeleton.scaleX || 1) - surtrData.hitbox.width / 2 :
+            surtrData.worldX,
+        y: surtrData.groundY + 220 + surtrData.hitbox.offsetY - surtrData.hitbox.height / 2,
+        width: surtrData.hitbox.width,
+        height: surtrData.hitbox.height
+    };
+
+    const surtrDamageHitbox = {
+        x: surtrData.direction === -1 ?
+            surtrHitbox.x - (surtrData.damageHitbox.width) :
+            surtrHitbox.x + surtrHitbox.width,
+        y: surtrData.groundY + surtrData.damageHitbox.offsetY - surtrData.damageHitbox.height / 2 + 258,
+        width: surtrData.damageHitbox.width,
+        height: surtrData.damageHitbox.height - 75
+    };
+
+    const collidingEnemies = [];
+    enemies.forEach(enemy => {
+        if (enemy && enemy.hp > 0) {
+            const enemyHitbox = {
+                x: isFinite(enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2) ?
+                    enemy.worldX + enemy.hitbox.offsetX * (enemy.skeleton.scaleX || 1) - enemy.hitbox.width / 2 :
+                    enemy.worldX,
+                y: enemy.groundY + 220 + enemy.hitbox.offsetY - enemy.hitbox.height / 2,
+                width: enemy.hitbox.width,
+                height: enemy.hitbox.height
+            };
+
+            const isColliding = surtrDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
+                surtrDamageHitbox.x + surtrDamageHitbox.width > enemyHitbox.x &&
+                surtrDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
+                surtrDamageHitbox.y + surtrData.damageHitbox.height > enemyHitbox.y;
+
+            if (isColliding) {
+                collidingEnemies.push(enemy);
+            }
+        }
+    });
+
+    return collidingEnemies;
 }
 
 function calculateSetupPoseBounds(skeleton) {
@@ -250,7 +305,8 @@ function calculateSetupPoseBounds(skeleton) {
 }
 
 function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimation, callback) {
-    if (isSwitchingSkeleton) {
+    if (surtrData.isSwitchingSkeleton) {
+        // console.log(`Surtr tại worldX=${surtrData.worldX} đang switching, bỏ qua yêu cầu chuyển sang ${initialAnimation}`);
         if (callback) callback(false);
         return false;
     }
@@ -258,13 +314,20 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
     if (surtrData.currentSkelPath === newSkelPath && surtrData.currentAtlasPath === newAtlasPath) {
         const animationToUse = surtrData.skeleton.data.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
         if (animationToUse) {
-            surtrData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
+            // console.log(`Surtr tại worldX=${surtrData.worldX}: Skeleton đã khớp, chuyển sang animation ${animationToUse}`);
+            surtrData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" || initialAnimation.toLowerCase() === "skill_3_begin" ? false : true);
+            if (callback) callback(true);
+            return true;
+        } else {
+            // console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tồn tại trong ${newSkelPath}. Available: ${surtrData.skeleton.data.animations.map(a => a.name).join(", ")}`);
+            if (callback) callback(false);
+            return false;
         }
-        if (callback) callback(true);
-        return true;
     }
 
-    isSwitchingSkeleton = true;
+    surtrData.isSwitchingSkeleton = true;
+    // console.log(`Surtr tại worldX=${surtrData.worldX}: Bắt đầu chuyển skeleton sang ${initialAnimation} với skelPath=${newSkelPath}`);
+
     let skelData = assetManager.get(newSkelPath);
     let atlasData = assetManager.get(newAtlasPath);
 
@@ -272,7 +335,8 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
     const maxRetries = 10;
     function attemptSwitch() {
         if (retryCount >= maxRetries) {
-            isSwitchingSkeleton = false;
+            // console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể chuyển skeleton sau ${maxRetries} lần thử cho ${initialAnimation}`);
+            surtrData.isSwitchingSkeleton = false;
             if (callback) callback(false);
             return;
         }
@@ -283,7 +347,8 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
             try {
                 const atlas = atlasData;
                 if (!atlas) {
-                    isSwitchingSkeleton = false;
+                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Atlas không tồn tại tại ${newAtlasPath}`);
+                    surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
@@ -293,21 +358,23 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
 
                 const binaryData = skelData;
                 if (!binaryData) {
-                    isSwitchingSkeleton = false;
+                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Skeleton data không tồn tại tại ${newSkelPath}`);
+                    surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
                 const newSkeletonData = skeletonBinary.readSkeletonData(binaryData);
                 if (!newSkeletonData) {
-                    isSwitchingSkeleton = false;
+                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể đọc skeleton data từ ${newSkelPath}`);
+                    surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
 
                 const animationToUse = newSkeletonData.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
                 if (!animationToUse) {
-                    console.error(`Animation ${initialAnimation} not found in ${newSkelPath}. Available animations: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
-                    isSwitchingSkeleton = false;
+                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tìm thấy trong ${newSkelPath}. Available: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
+                    surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
@@ -329,33 +396,36 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
 
                 const newAnimationStateData = new spine.AnimationStateData(newSkeletonData);
                 const animationState = new spine.AnimationState(newAnimationStateData);
-                animationState.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
+                animationState.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" || initialAnimation.toLowerCase() === "skill_3_begin" ? false : true);
 
                 animationState.addListener({
                     event: function (trackIndex, event) {
                         if (event.data.name === "OnAttack" && surtrData.isInAttackState && surtrData) {
-                            let atk = characterDataObj["Surtr"].atk;
-                            let damage;
-                            if (surtrData.target && surtrData.isAttackingEnemy) {
-                                const targetRes = characterDataObj[surtrData.target.type]?.res || 0;
-                                damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
-                                surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
-                                createDamageText(surtrData.target.worldX, GROUND_Y + 300, damage, 'purple');
-                            } else {
-                                const targetTower = surtrData.tower;
-                                if (targetTower && isCollidingWithTower(surtrData, targetTower)) {
-                                    const towerRes = targetTower.res || 0;
-                                    damage = Math.round(Math.max(0, atk * (1 - (towerRes / 100))));
-                                    targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
-                                    createDamageText(towerCenterX, GROUND_Y + 200, damage, 'purple');
+                            let atk = surtrData.atk;
+                            surtrData.collidingTargets.forEach(target => {
+                                if (target.hp > 0) {
+                                    let damage;
+                                    let targetRes = 0;
+                                    let damageTextX = 0;
+
+                                    if (target.type) {
+                                        targetRes = characterDataObj[target.type]?.res || 0;
+                                        damageTextX = target.worldX;
+                                    } else {
+                                        targetRes = target.res || 0;
+                                        damageTextX = target.x + target.hitbox.offsetX;
+                                    }
+
+                                    damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
+                                    target.hp = Math.max(0, target.hp - damage);
+                                    createDamageText(damageTextX, GROUND_Y + (target.type ? 300 : 200), damage, 'purple');
                                 }
-                            }
+                            });
                         }
                     },
                     complete: function (trackIndex, count) {
                         const currentAnimation = animationState.getCurrent(0)?.animation?.name.toLowerCase();
-                        if (currentAnimation === "start" && !surtrData.isDead) {
+                        if (surtrData.isInStartAnimation && !surtrData.isDead) {
                             surtrData.isInStartAnimation = false;
                             switchSkeletonFile(
                                 surtrData,
@@ -364,7 +434,6 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                                 "Move",
                                 (success) => {
                                     if (success) {
-                                        surtrData.velocity = 50;
                                         console.log("Surtr switched to Move animation from Start");
                                     } else {
                                         console.error("Failed to switch to Move skeleton for Surtr");
@@ -373,8 +442,20 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                                 }
                             );
                         }
+                        if (currentAnimation === "skill_3_begin" && !surtrData.isDead && surtrData.isInSkill3State) {
+                            surtrData.state.setAnimation(0, "Skill_3_Loop", true);
+                            // console.log(`Surtr tại worldX=${surtrData.worldX} switched to Skill_3_Loop after Skill_3_Begin`);
+                        }
                         if (surtrData.isDead && currentAnimation === "die") {
                             surtrData.deathAnimationComplete = true;
+                        }
+                        if (currentAnimation === "attack" || currentAnimation === "skill_3_loop") {
+                            surtrData.isInAttackState = false;
+                            if (currentAnimation === "skill_3_loop") {
+                                surtrData.isInSkill3State = false;
+                                surtrData.justCompletedSkillLoop = true;
+                            }
+                            // console.log(`Surtr tại worldX=${surtrData.worldX} reset states after ${currentAnimation} cycle complete`);
                         }
                     }
                 });
@@ -383,17 +464,22 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                 surtrData.skeleton = newSkeleton;
                 surtrData.state = animationState;
                 surtrData.bounds = newBounds;
-                surtrData.damageHitbox = fixedDamageHitbox;
+                if (!surtrData.damageHitbox) {
+                    surtrData.damageHitbox = { ...fixedDamageHitbox };
+                }
                 surtrData.currentSkelPath = newSkelPath;
                 surtrData.currentAtlasPath = newAtlasPath;
-                isSwitchingSkeleton = false;
+                surtrData.isSwitchingSkeleton = false;
+                // console.log(`Surtr tại worldX=${surtrData.worldX}: Chuyển skeleton thành công sang ${initialAnimation}`);
                 if (callback) callback(true);
             } catch (e) {
-                isSwitchingSkeleton = false;
+                // console.error(`Surtr tại worldX=${surtrData.worldX}: Lỗi khi chuyển skeleton sang ${initialAnimation}: ${e.message}`);
+                surtrData.isSwitchingSkeleton = false;
                 if (callback) callback(false);
             }
         } else {
             retryCount++;
+            // console.log(`Surtr tại worldX=${surtrData.worldX}: Thử lại lần ${retryCount}/${maxRetries} để chuyển skeleton sang ${initialAnimation}`);
             requestAnimationFrame(attemptSwitch);
         }
     }
@@ -411,10 +497,52 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
     const { skeleton, state, premultipliedAlpha, bounds, worldX, hitbox, damageHitbox } = surtrData;
     state.update(delta);
 
-    if (surtrData.hp <= 0 && !surtrData.isDead && !isSwitchingSkeleton) {
-        console.log(`Surtr tại worldX=${surtrData.worldX} đã chết, chuyển sang animation Die`);
+    if (!surtrData.isDead) {
+        surtrData.deployTime += delta;
+        if (surtrData.deployTime >= 10 && !surtrData.hasExpandedHitbox) {
+            surtrData.damageHitbox.width *= 3;
+            surtrData.hasExpandedHitbox = true;
+            // console.log(`Surtr tại worldX=${surtrData.worldX} đã mở rộng damageHitbox gấp 3 sau ${surtrData.deployTime.toFixed(2)} giây`);
+
+            surtrData.hp = surtrData.maxHp;
+            surtrData.atk = Math.round(surtrData.atk + surtrData.atk * 3.3);
+            surtrData.maxHp += 5000;
+            surtrData.hp += 5000;
+            console.log(`Surtr tại worldX=${surtrData.worldX} đã buff: atk=${surtrData.atk}, maxHp=${surtrData.maxHp}, hp=${surtrData.hp}`);
+
+            // Thêm: Force switch sang skill nếu đang attack mà chưa ở skill state
+            if (surtrData.isInAttackState && !surtrData.isInSkill3State && !surtrData.isSwitchingSkeleton) {
+                // console.log(`Surtr tại worldX=${surtrData.worldX} force chuyển từ Attack sang Skill_3_Begin sau 10s`);
+                // Force end current animation loop để tránh chờ complete
+                const currentTrack = surtrData.state.getCurrent(0);
+                if (currentTrack) {
+                    currentTrack.loop = false;  // Dừng loop để trigger complete ngay cycle này
+                }
+                // Switch ngay sang Skill_3_Begin
+                switchSkeletonFile(
+                    surtrData,
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
+                    "Skill_3_Begin",
+                    (success) => {
+                        if (success) {
+                            surtrData.isInAttackState = true;
+                            surtrData.isInSkill3State = true;
+                            surtrData.justCompletedSkillLoop = false;
+                        } else {
+                            // console.error(`Failed to force switch to Skill_3_Begin for Surtr`);
+                        }
+                    }
+                );
+            }
+        }
+    }
+
+    if (surtrData.hp <= 0 && !surtrData.isDead && !surtrData.isSwitchingSkeleton) {
+        // console.log(`Surtr tại worldX=${surtrData.worldX} đã chết, chuyển sang animation Die`);
         surtrData.isDead = true;
         surtrData.isInAttackState = false;
+        surtrData.isInSkill3State = false;
         surtrData.isInStartAnimation = false;
         surtrData.velocity = 0;
         switchSkeletonFile(
@@ -424,21 +552,13 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             "Die",
             (success) => {
                 if (success) {
-                    console.log(`Surtr tại worldX=${surtrData.worldX} chuyển sang animation Die thành công`);
+                    // console.log(`Surtr tại worldX=${surtrData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    console.error(`Không thể chuyển sang animation Die cho Surtr tại worldX=${surtrData.worldX}`);
+                    // console.error(`Không thể chuyển sang animation Die cho Surtr tại worldX=${surtrData.worldX}`);
                     surtrData.deathAnimationComplete = true;
                 }
             }
         );
-    }
-
-    if (surtrData.isDead && !surtrData.deathAnimationComplete) {
-        surtrData.deathAnimationTimer += delta;
-        if (surtrData.deathAnimationTimer >= 1.0) {
-            surtrData.deathAnimationComplete = true;
-            console.log(`Animation Die hoàn tất (theo timer) cho Surtr tại worldX=${surtrData.worldX}`);
-        }
     }
 
     if (!surtrData.deathAnimationComplete) {
@@ -457,37 +577,30 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         const surtrDamageHitbox = {
             x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ?
                 (surtrData.direction === -1 ?
-                    surtrHitbox.x - (damageHitbox.width - 50) :
+                    surtrHitbox.x - (damageHitbox.width) :
                     surtrHitbox.x + surtrHitbox.width) : worldX,
             y: damageHitbox ? GROUND_Y + damageHitbox.offsetY - damageHitbox.height / 2 + 258 : GROUND_Y + 258,
-            width: damageHitbox ? damageHitbox.width - 50 : 50,
+            width: damageHitbox ? damageHitbox.width : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
         };
 
-        if (!hasLoggedSurtrPosition) {
-            console.log(`Vị trí Surtr: worldX=${worldX}, y=${skeleton.y}, direction=${surtrData.direction}`);
-            hasLoggedSurtrPosition = true;
+        if (!surtrData.hasLoggedPosition) {
+            // console.log(`Vị trí Surtr: worldX=${worldX}, y=${skeleton.y}, direction=${surtrData.direction}`);
+            surtrData.hasLoggedPosition = true;
         }
 
-        const validEnemies = Array.isArray(enemies) ? enemies : [];
+        const validEnemies = Array.isArray(enemies) ? enemies.filter(e => e && e.hp > 0) : [];
 
-        let closestEnemy = null;
-        let minDistance = Infinity;
-        validEnemies.forEach(enemy => {
-            if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
-                const distance = Math.abs(surtrData.worldX - enemy.worldX);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestEnemy = enemy;
-                }
-            }
-        });
+        const collidingEnemies = getAllCollidingEnemies(surtrData, validEnemies);
+        const isCollidingWithEnemyFlag = collidingEnemies.length > 0;
 
-        const isCollidingWithEnemyFlag = !!closestEnemy;
-        surtrData.target = closestEnemy ? closestEnemy : surtrData.tower;
-        surtrData.isAttackingEnemy = !!closestEnemy;
+        surtrData.collidingTargets = [...collidingEnemies];
 
         const targetTower = surtrData.tower;
+        if (isCollidingWithTower(surtrData, targetTower)) {
+            surtrData.collidingTargets.push(targetTower);
+        }
+
         const towerHitbox = {
             x: targetTower.x + targetTower.hitbox.offsetX - targetTower.hitbox.width / 2,
             y: targetTower.y + targetTower.hitbox.offsetY - targetTower.hitbox.height / 2,
@@ -499,143 +612,138 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
 
         let isBlockedByFrontAlly = false;
         let frontAlly = null;
+        let closestFrontDistance = Infinity;
+
         for (let otherAlly of allAllies) {
-            if (otherAlly !== surtrData &&
-                (surtrData.direction === 1 ? otherAlly.worldX > surtrData.worldX : otherAlly.worldX < surtrData.worldX)) {
-                const otherHitbox = {
-                    x: otherAlly.worldX + otherAlly.hitbox.offsetX * (otherAlly.skeleton.scaleX || 1) - otherAlly.hitbox.width / 2,
-                    y: GROUND_Y + 220 + otherAlly.hitbox.offsetY - otherAlly.hitbox.height / 2,
-                    width: otherAlly.hitbox.width,
-                    height: otherAlly.hitbox.height
-                };
-                if (surtrData.direction === 1 ?
-                    surtrHitbox.x + surtrHitbox.width >= otherHitbox.x :
-                    surtrHitbox.x <= otherHitbox.x + otherHitbox.width) {
-                    const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                    if (frontAnimation === "attack" || frontAnimation === "idle" || otherAlly.isInAttackState) {
-                        isBlockedByFrontAlly = true;
-                        frontAlly = otherAlly;
-                        break;
+            if (otherAlly !== surtrData && !otherAlly.isDead) {
+                const isInFront = surtrData.direction === 1 ?
+                    otherAlly.worldX > surtrData.worldX :
+                    otherAlly.worldX < surtrData.worldX;
+
+                if (isInFront) {
+                    const otherHitbox = {
+                        x: otherAlly.worldX + otherAlly.hitbox.offsetX * (otherAlly.skeleton.scaleX || 1) - otherAlly.hitbox.width / 2,
+                        y: GROUND_Y + 220 + otherAlly.hitbox.offsetY - otherAlly.hitbox.height / 2,
+                        width: otherAlly.hitbox.width,
+                        height: otherAlly.hitbox.height
+                    };
+
+                    const isTouchingFront = surtrData.direction === 1 ?
+                        surtrHitbox.x + surtrHitbox.width >= otherHitbox.x :
+                        surtrHitbox.x <= otherHitbox.x + otherHitbox.width;
+
+                    if (isTouchingFront) {
+                        const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
+                        const isFrontAttackingOrIdle = frontAnimation.includes("attack") ||
+                            frontAnimation.includes("idle") ||
+                            frontAnimation.includes("skill") ||
+                            otherAlly.isInAttackState ||
+                            otherAlly.isInSkill3State;
+
+                        if (isFrontAttackingOrIdle) {
+                            const distance = Math.abs(surtrData.worldX - otherAlly.worldX);
+                            if (distance < closestFrontDistance) {
+                                closestFrontDistance = distance;
+                                isBlockedByFrontAlly = true;
+                                frontAlly = otherAlly;
+                            }
+                        }
                     }
                 }
             }
         }
 
-        if (!surtrData.isInStartAnimation && !surtrData.isDead && !isSwitchingSkeleton) {
-            if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
-                surtrData.currentSkelPath === "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel" &&
-                !surtrData.isInAttackState) {
-                console.log(`Surtr tại worldX=${surtrData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
-                switchSkeletonFile(
-                    surtrData,
-                    "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
-                    "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
-                    "Move",
-                    (success) => {
-                        if (success) {
-                            surtrData.isInAttackState = false;
-                            console.log("Surtr switched back to Move animation from Idle");
-                        } else {
-                            console.error("Failed to switch back to Move skeleton for Surtr");
-                            state.setAnimation(0, "Move", true);
-                        }
-                    }
-                );
-            }
+        if (!surtrData.isInStartAnimation && !surtrData.isDead && !surtrData.isSwitchingSkeleton) {
+            const currentSkelIsWeapon = surtrData.currentSkelPath.includes("weapon");
+            const shouldAttack = isCollidingWithEnemyFlag || isColliding;
+            const shouldMove = !shouldAttack && !isBlockedByFrontAlly;
+            const shouldIdle = !shouldAttack && isBlockedByFrontAlly;
 
-            if (isCollidingWithEnemyFlag && isFinite(surtrDamageHitbox.x)) {
-                if (!surtrData.isInAttackState) {
-                    console.log(`Surtr tại worldX=${surtrData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
-                    switchSkeletonFile(
-                        surtrData,
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
-                        "Attack",
-                        (success) => {
-                            if (success) {
-                                surtrData.isInAttackState = true;
-                                console.log("Surtr switched to Attack animation for enemy");
-                            } else {
-                                console.error("Failed to switch to Attack skeleton for Surtr");
-                                state.setAnimation(0, "Move", true);
-                            }
-                        }
-                    );
+            if (shouldAttack && !surtrData.isInAttackState && !surtrData.isInSkill3State) {
+                const canUseSkill3 = surtrData.deployTime >= 10;
+                let attackAnimation = canUseSkill3 ? "Skill_3_Begin" : "Attack";
+                if (canUseSkill3 && surtrData.justCompletedSkillLoop) {
+                    attackAnimation = "Skill_3_Loop";
+                    surtrData.justCompletedSkillLoop = false;
                 }
-            } else if (isColliding && isFinite(surtrDamageHitbox.x)) {
-                if (!surtrData.isInAttackState) {
-                    console.log("Surtr tạm dừng di chuyển do va chạm với tháp");
-                    switchSkeletonFile(
-                        surtrData,
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
-                        "Attack",
-                        (success) => {
-                            if (success) {
-                                surtrData.isInAttackState = true;
-                                console.log("Surtr switched to Attack animation for tower");
-                            } else {
-                                console.error("Failed to switch to Attack skeleton for Surtr");
-                                state.setAnimation(0, "Move", true);
-                            }
-                        }
-                    );
-                }
-            } else if (isBlockedByFrontAlly && surtrData.currentSkelPath !== "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel") {
-                console.log(`Surtr tại worldX=${surtrData.worldX} bị chặn bởi Surtr phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
+                // console.log(`Surtr tại worldX=${surtrData.worldX} tấn công ${isCollidingWithEnemyFlag ? 'enemy' : 'tower'}, dùng ${attackAnimation}`);
+
                 switchSkeletonFile(
                     surtrData,
                     "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
                     "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
-                    "Idle",
+                    attackAnimation,
                     (success) => {
                         if (success) {
-                            surtrData.isInAttackState = false;
-                            console.log("Surtr switched to Idle animation");
-                        } else {
-                            console.error("Failed to switch to Idle skeleton for Surtr");
-                            state.setAnimation(0, "Move", true);
+                            surtrData.isInAttackState = true;
+                            surtrData.isInSkill3State = canUseSkill3;
+                            surtrData.velocity = 0;
+                            surtrData.justCompletedSkillLoop = false;
                         }
                     }
                 );
-            } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && surtrData.isInAttackState) {
-                console.log(`Surtr tại worldX=${surtrData.worldX} không còn va chạm, chuyển từ Attack về Move`);
-                switchSkeletonFile(
-                    surtrData,
-                    "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
-                    "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
-                    "Move",
-                    (success) => {
-                        if (success) {
-                            surtrData.isInAttackState = false;
-                            console.log("Surtr switched back to Move animation from Attack");
-                        } else {
-                            console.error("Failed to switch back to Move skeleton for Surtr");
-                            state.setAnimation(0, "Move", true);
+            } else if (!surtrData.isInAttackState && !surtrData.isInSkill3State) {
+                if (shouldIdle) {
+                    // console.log(`Surtr tại worldX=${surtrData.worldX} bị chặn bởi ally phía trước, chuyển Idle`);
+                    switchSkeletonFile(
+                        surtrData,
+                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
+                        "Idle",
+                        (success) => {
+                            if (success) {
+                                surtrData.isInAttackState = false;
+                                surtrData.isInSkill3State = false;
+                                surtrData.velocity = 0;
+                                // console.log(`Surtr tại worldX=${surtrData.worldX} reset states sang Idle`);
+                            }
                         }
-                    }
-                );
+                    );
+                } else if (shouldMove && currentSkelIsWeapon) {
+                    // console.log(`Surtr tại worldX=${surtrData.worldX} có thể di chuyển, chuyển về Move`);
+                    switchSkeletonFile(
+                        surtrData,
+                        "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
+                        "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
+                        "Move",
+                        (success) => {
+                            if (success) {
+                                surtrData.isInAttackState = false;
+                                surtrData.isInSkill3State = false;
+                                surtrData.velocity = 50;
+                            }
+                        }
+                    );
+                }
+            } else if (!shouldAttack && (surtrData.isInAttackState || surtrData.isInSkill3State)) {
+                const currentTrack = surtrData.state.getCurrent(0);
+                if (currentTrack) {
+                    currentTrack.loop = false;
+                }
+                // console.log(`Force end current attack anim because !shouldAttack`);
             }
         }
 
-        if (!surtrData.isInStartAnimation && !surtrData.isDead && !isSwitchingSkeleton &&
-            !isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly) {
-            surtrData.worldX += surtrData.velocity * delta * surtrData.direction;
-        } else if (isBlockedByFrontAlly && !surtrData.isDead && !isSwitchingSkeleton) {
-            if (surtrData.direction === -1) {
+        if (!surtrData.isInStartAnimation && !surtrData.isDead) {
+            if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && !surtrData.isSwitchingSkeleton && !surtrData.isInAttackState && !surtrData.isInSkill3State) {
+                surtrData.worldX += surtrData.velocity * delta * surtrData.direction;
+            } else if (isBlockedByFrontAlly && frontAlly) {
                 const otherHitbox = {
                     x: frontAlly.worldX + frontAlly.hitbox.offsetX * (frontAlly.skeleton.scaleX || 1) - frontAlly.hitbox.width / 2,
                     y: GROUND_Y + 220 + frontAlly.hitbox.offsetY - frontAlly.hitbox.height / 2,
                     width: frontAlly.hitbox.width,
                     height: frontAlly.hitbox.height
                 };
-                surtrData.worldX = otherHitbox.x + otherHitbox.width + surtrData.hitbox.width / 2 - surtrData.hitbox.offsetX * (surtrData.skeleton.scaleX || 1);
+
+                if (surtrData.direction === 1) {
+                    const targetX = otherHitbox.x - surtrData.hitbox.width / 2 - hitbox.offsetX * (skeleton.scaleX || 1);
+                    surtrData.worldX = Math.max(surtrData.worldX, targetX);
+                } else {
+                    const targetX = otherHitbox.x + otherHitbox.width + surtrData.hitbox.width / 2 - surtrData.hitbox.offsetX * (surtrData.skeleton.scaleX || 1);
+                    surtrData.worldX = Math.min(surtrData.worldX, targetX);
+                }
             }
         }
-
-        skeleton.x = surtrData.worldX - camera.x;
-        skeleton.y = canvas.height - (GROUND_Y + 425);
-        skeleton.scaleX = surtrData.direction;
 
         if (surtrData.direction === 1 && surtrData.worldX > towerHitbox.x - hitbox.width) {
             surtrData.worldX = towerHitbox.x - hitbox.width;
@@ -643,6 +751,9 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             surtrData.worldX = towerHitbox.x + towerHitbox.width;
         }
 
+        skeleton.x = surtrData.worldX - camera.x;
+        skeleton.y = canvas.height - (GROUND_Y + 425);
+        skeleton.scaleX = surtrData.direction;
         skeleton.updateWorldTransform();
 
         mvp.ortho2d(0, 0, canvas.width, canvas.height);
@@ -682,6 +793,7 @@ export function resizeSurtr(canvas, camera, gl) {
 
 export function isOverlappingWithOtherSurtr(newHitbox, existingSurtrs, GROUND_Y) {
     for (let existing of existingSurtrs) {
+        if (existing.isDead) continue;
         const existingHitbox = {
             x: existing.worldX + existing.hitbox.offsetX - existing.hitbox.width / 2,
             y: GROUND_Y + 220 + existing.hitbox.offsetY - existing.hitbox.height / 2,

@@ -2,10 +2,6 @@ import { characterDataObj } from '../../../character.js';
 import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
-let debugRenderer, debugShader, shapes;
-let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
-let velocity = 50;
-let direction = 1;
 let currentSkelPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel";
 let currentAtlasPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas";
 let isSwitchingSkeleton = false;
@@ -25,11 +21,6 @@ export function initKroos(webglContext) {
     mvp = new spine.webgl.Matrix4();
     skeletonRenderer = new spine.webgl.SkeletonRenderer(webglContext);
     assetManager = new spine.webgl.AssetManager(webglContext);
-
-    debugRenderer = new spine.webgl.SkeletonDebugRenderer(webglContext);
-    debugRenderer.drawRegionAttachments = debugRenderer.drawBoundingBoxes = debugRenderer.drawMeshHull = debugRenderer.drawMeshTriangles = debugRenderer.drawPaths = true;
-    debugShader = spine.webgl.Shader.newColored(webglContext);
-    shapes = new spine.webgl.ShapeRenderer(webglContext);
 
     assetManager.loadBinary("assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel");
     assetManager.loadTextureAtlas("assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas");

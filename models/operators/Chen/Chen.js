@@ -2,10 +2,6 @@ import { characterDataObj } from '../../../character.js';
 import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
-let debugRenderer, debugShader, shapes;
-let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
-let velocity = 50;
-let direction = 1;
 let currentSkelPath = "assets/operators/Chen/ChenNian/chen_nian.skel";
 let currentAtlasPath = "assets/operators/Chen/ChenNian/chen_nian.atlas";
 let isSwitchingSkeleton = false;
@@ -22,11 +18,6 @@ export function initChen(webglContext) {
     mvp = new spine.webgl.Matrix4();
     skeletonRenderer = new spine.webgl.SkeletonRenderer(webglContext);
     assetManager = new spine.webgl.AssetManager(webglContext);
-
-    debugRenderer = new spine.webgl.SkeletonDebugRenderer(webglContext);
-    debugRenderer.drawRegionAttachments = debugRenderer.drawBoundingBoxes = debugRenderer.drawMeshHull = debugRenderer.drawMeshTriangles = debugRenderer.drawPaths = true;
-    debugShader = spine.webgl.Shader.newColored(webglContext);
-    shapes = new spine.webgl.ShapeRenderer(webglContext);
 
     assetManager.loadBinary("assets/operators/Chen/ChenNian/chen_nian.skel");
     assetManager.loadTextureAtlas("assets/operators/Chen/ChenNian/chen_nian.atlas");

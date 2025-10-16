@@ -2,14 +2,8 @@ import { characterDataObj } from '../../../character.js';
 import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
-let debugRenderer, debugShader, shapes;
-let swirlEffect = new spine.SwirlEffect(0), jitterEffect = new spine.JitterEffect(20, 40), swirlTime = 0;
-let velocity = 50;
-let direction = 1;
 let currentSkelPath = "assets/enemies/FrostNova/FrostNova2/frstar2.skel";
 let currentAtlasPath = "assets/enemies/FrostNova/FrostNova2/frstar2.atlas";
-let isSwitchingSkeleton = false;
-let hasLoggedFrostNovaPosition = false;
 let fixedDamageHitbox = null;
 
 export function initFrostNova(webglContext) {
@@ -22,11 +16,6 @@ export function initFrostNova(webglContext) {
     mvp = new spine.webgl.Matrix4();
     skeletonRenderer = new spine.webgl.SkeletonRenderer(webglContext);
     assetManager = new spine.webgl.AssetManager(webglContext);
-
-    debugRenderer = new spine.webgl.SkeletonDebugRenderer(webglContext);
-    debugRenderer.drawRegionAttachments = debugRenderer.drawBoundingBoxes = debugRenderer.drawMeshHull = debugRenderer.drawMeshTriangles = debugRenderer.drawPaths = true;
-    debugShader = spine.webgl.Shader.newColored(webglContext);
-    shapes = new spine.webgl.ShapeRenderer(webglContext);
 
     assetManager.loadBinary(currentSkelPath);
     assetManager.loadTextureAtlas(currentAtlasPath);
