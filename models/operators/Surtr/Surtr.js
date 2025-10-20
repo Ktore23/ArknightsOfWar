@@ -157,6 +157,7 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         groundY: GROUND_Y,
         type: "Surtr",
         deployTime: 0,
+        skill3Timer: 30,
         hasExpandedHitbox: false,
         hasLoggedPosition: false,
         collidingTargets: [],
@@ -306,7 +307,7 @@ function calculateSetupPoseBounds(skeleton) {
 
 function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimation, callback) {
     if (surtrData.isSwitchingSkeleton) {
-        // console.log(`Surtr tại worldX=${surtrData.worldX} đang switching, bỏ qua yêu cầu chuyển sang ${initialAnimation}`);
+        console.log(`Surtr tại worldX=${surtrData.worldX} đang switching, bỏ qua yêu cầu chuyển sang ${initialAnimation}`);
         if (callback) callback(false);
         return false;
     }
@@ -314,19 +315,19 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
     if (surtrData.currentSkelPath === newSkelPath && surtrData.currentAtlasPath === newAtlasPath) {
         const animationToUse = surtrData.skeleton.data.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
         if (animationToUse) {
-            // console.log(`Surtr tại worldX=${surtrData.worldX}: Skeleton đã khớp, chuyển sang animation ${animationToUse}`);
+            console.log(`Surtr tại worldX=${surtrData.worldX}: Skeleton đã khớp, chuyển sang animation ${animationToUse}`);
             surtrData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" || initialAnimation.toLowerCase() === "skill_3_begin" ? false : true);
             if (callback) callback(true);
             return true;
         } else {
-            // console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tồn tại trong ${newSkelPath}. Available: ${surtrData.skeleton.data.animations.map(a => a.name).join(", ")}`);
+            console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tồn tại trong ${newSkelPath}. Available: ${surtrData.skeleton.data.animations.map(a => a.name).join(", ")}`);
             if (callback) callback(false);
             return false;
         }
     }
 
     surtrData.isSwitchingSkeleton = true;
-    // console.log(`Surtr tại worldX=${surtrData.worldX}: Bắt đầu chuyển skeleton sang ${initialAnimation} với skelPath=${newSkelPath}`);
+    console.log(`Surtr tại worldX=${surtrData.worldX}: Bắt đầu chuyển skeleton sang ${initialAnimation} với skelPath=${newSkelPath}`);
 
     let skelData = assetManager.get(newSkelPath);
     let atlasData = assetManager.get(newAtlasPath);
@@ -335,7 +336,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
     const maxRetries = 10;
     function attemptSwitch() {
         if (retryCount >= maxRetries) {
-            // console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể chuyển skeleton sau ${maxRetries} lần thử cho ${initialAnimation}`);
+            console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể chuyển skeleton sau ${maxRetries} lần thử cho ${initialAnimation}`);
             surtrData.isSwitchingSkeleton = false;
             if (callback) callback(false);
             return;
@@ -347,7 +348,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
             try {
                 const atlas = atlasData;
                 if (!atlas) {
-                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Atlas không tồn tại tại ${newAtlasPath}`);
+                    console.error(`Surtr tại worldX=${surtrData.worldX}: Atlas không tồn tại tại ${newAtlasPath}`);
                     surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
@@ -358,14 +359,14 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
 
                 const binaryData = skelData;
                 if (!binaryData) {
-                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Skeleton data không tồn tại tại ${newSkelPath}`);
+                    console.error(`Surtr tại worldX=${surtrData.worldX}: Skeleton data không tồn tại tại ${newSkelPath}`);
                     surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
                 const newSkeletonData = skeletonBinary.readSkeletonData(binaryData);
                 if (!newSkeletonData) {
-                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể đọc skeleton data từ ${newSkelPath}`);
+                    console.error(`Surtr tại worldX=${surtrData.worldX}: Không thể đọc skeleton data từ ${newSkelPath}`);
                     surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
@@ -373,7 +374,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
 
                 const animationToUse = newSkeletonData.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
                 if (!animationToUse) {
-                    // console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tìm thấy trong ${newSkelPath}. Available: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
+                    console.error(`Surtr tại worldX=${surtrData.worldX}: Animation ${initialAnimation} không tìm thấy trong ${newSkelPath}. Available: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
                     surtrData.isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
@@ -444,7 +445,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                         }
                         if (currentAnimation === "skill_3_begin" && !surtrData.isDead && surtrData.isInSkill3State) {
                             surtrData.state.setAnimation(0, "Skill_3_Loop", true);
-                            // console.log(`Surtr tại worldX=${surtrData.worldX} switched to Skill_3_Loop after Skill_3_Begin`);
+                            console.log(`Surtr tại worldX=${surtrData.worldX} switched to Skill_3_Loop after Skill_3_Begin`);
                         }
                         if (surtrData.isDead && currentAnimation === "die") {
                             surtrData.deathAnimationComplete = true;
@@ -455,7 +456,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                                 surtrData.isInSkill3State = false;
                                 surtrData.justCompletedSkillLoop = true;
                             }
-                            // console.log(`Surtr tại worldX=${surtrData.worldX} reset states after ${currentAnimation} cycle complete`);
+                            console.log(`Surtr tại worldX=${surtrData.worldX} reset states after ${currentAnimation} cycle complete`);
                         }
                     }
                 });
@@ -470,16 +471,16 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                 surtrData.currentSkelPath = newSkelPath;
                 surtrData.currentAtlasPath = newAtlasPath;
                 surtrData.isSwitchingSkeleton = false;
-                // console.log(`Surtr tại worldX=${surtrData.worldX}: Chuyển skeleton thành công sang ${initialAnimation}`);
+                console.log(`Surtr tại worldX=${surtrData.worldX}: Chuyển skeleton thành công sang ${initialAnimation}`);
                 if (callback) callback(true);
             } catch (e) {
-                // console.error(`Surtr tại worldX=${surtrData.worldX}: Lỗi khi chuyển skeleton sang ${initialAnimation}: ${e.message}`);
+                console.error(`Surtr tại worldX=${surtrData.worldX}: Lỗi khi chuyển skeleton sang ${initialAnimation}: ${e.message}`);
                 surtrData.isSwitchingSkeleton = false;
                 if (callback) callback(false);
             }
         } else {
             retryCount++;
-            // console.log(`Surtr tại worldX=${surtrData.worldX}: Thử lại lần ${retryCount}/${maxRetries} để chuyển skeleton sang ${initialAnimation}`);
+            console.log(`Surtr tại worldX=${surtrData.worldX}: Thử lại lần ${retryCount}/${maxRetries} để chuyển skeleton sang ${initialAnimation}`);
             requestAnimationFrame(attemptSwitch);
         }
     }
@@ -499,10 +500,10 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
 
     if (!surtrData.isDead) {
         surtrData.deployTime += delta;
-        if (surtrData.deployTime >= 10 && !surtrData.hasExpandedHitbox) {
+        if (surtrData.deployTime >= surtrData.skill3Timer && !surtrData.hasExpandedHitbox) {
             surtrData.damageHitbox.width *= 3;
             surtrData.hasExpandedHitbox = true;
-            // console.log(`Surtr tại worldX=${surtrData.worldX} đã mở rộng damageHitbox gấp 3 sau ${surtrData.deployTime.toFixed(2)} giây`);
+            console.log(`Surtr tại worldX=${surtrData.worldX} đã mở rộng damageHitbox gấp 3 sau ${surtrData.deployTime.toFixed(2)} giây`);
 
             surtrData.hp = surtrData.maxHp;
             surtrData.atk = Math.round(surtrData.atk + surtrData.atk * 3.3);
@@ -510,15 +511,12 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             surtrData.hp += 5000;
             console.log(`Surtr tại worldX=${surtrData.worldX} đã buff: atk=${surtrData.atk}, maxHp=${surtrData.maxHp}, hp=${surtrData.hp}`);
 
-            // Thêm: Force switch sang skill nếu đang attack mà chưa ở skill state
             if (surtrData.isInAttackState && !surtrData.isInSkill3State && !surtrData.isSwitchingSkeleton) {
-                // console.log(`Surtr tại worldX=${surtrData.worldX} force chuyển từ Attack sang Skill_3_Begin sau 10s`);
-                // Force end current animation loop để tránh chờ complete
+                console.log(`Surtr tại worldX=${surtrData.worldX} force chuyển từ Attack sang Skill_3_Begin sau 10s`);
                 const currentTrack = surtrData.state.getCurrent(0);
                 if (currentTrack) {
-                    currentTrack.loop = false;  // Dừng loop để trigger complete ngay cycle này
+                    currentTrack.loop = false;
                 }
-                // Switch ngay sang Skill_3_Begin
                 switchSkeletonFile(
                     surtrData,
                     "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
@@ -530,7 +528,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                             surtrData.isInSkill3State = true;
                             surtrData.justCompletedSkillLoop = false;
                         } else {
-                            // console.error(`Failed to force switch to Skill_3_Begin for Surtr`);
+                            console.error(`Failed to force switch to Skill_3_Begin for Surtr`);
                         }
                     }
                 );
@@ -539,7 +537,7 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
     }
 
     if (surtrData.hp <= 0 && !surtrData.isDead && !surtrData.isSwitchingSkeleton) {
-        // console.log(`Surtr tại worldX=${surtrData.worldX} đã chết, chuyển sang animation Die`);
+        console.log(`Surtr tại worldX=${surtrData.worldX} đã chết, chuyển sang animation Die`);
         surtrData.isDead = true;
         surtrData.isInAttackState = false;
         surtrData.isInSkill3State = false;
@@ -552,9 +550,9 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             "Die",
             (success) => {
                 if (success) {
-                    // console.log(`Surtr tại worldX=${surtrData.worldX} chuyển sang animation Die thành công`);
+                    console.log(`Surtr tại worldX=${surtrData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    // console.error(`Không thể chuyển sang animation Die cho Surtr tại worldX=${surtrData.worldX}`);
+                    console.error(`Không thể chuyển sang animation Die cho Surtr tại worldX=${surtrData.worldX}`);
                     surtrData.deathAnimationComplete = true;
                 }
             }
@@ -585,15 +583,13 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         };
 
         if (!surtrData.hasLoggedPosition) {
-            // console.log(`Vị trí Surtr: worldX=${worldX}, y=${skeleton.y}, direction=${surtrData.direction}`);
+            console.log(`Vị trí Surtr: worldX=${worldX}, y=${skeleton.y}, direction=${surtrData.direction}`);
             surtrData.hasLoggedPosition = true;
         }
 
         const validEnemies = Array.isArray(enemies) ? enemies.filter(e => e && e.hp > 0) : [];
-
         const collidingEnemies = getAllCollidingEnemies(surtrData, validEnemies);
         const isCollidingWithEnemyFlag = collidingEnemies.length > 0;
-
         surtrData.collidingTargets = [...collidingEnemies];
 
         const targetTower = surtrData.tower;
@@ -653,21 +649,40 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
             }
         }
 
+        // Đơn giản hóa logic chuyển sang Idle hoặc Skill_3_Idle
         if (!surtrData.isInStartAnimation && !surtrData.isDead && !surtrData.isSwitchingSkeleton) {
             const currentSkelIsWeapon = surtrData.currentSkelPath.includes("weapon");
             const shouldAttack = isCollidingWithEnemyFlag || isColliding;
-            const shouldMove = !shouldAttack && !isBlockedByFrontAlly;
-            const shouldIdle = !shouldAttack && isBlockedByFrontAlly;
+            const useSkill3Idle = surtrData.deployTime >= surtrData.skill3Timer;
 
-            if (shouldAttack && !surtrData.isInAttackState && !surtrData.isInSkill3State) {
-                const canUseSkill3 = surtrData.deployTime >= 10;
+            if (isBlockedByFrontAlly && !shouldAttack && surtrData.currentSkelPath !== "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel") {
+                const idleAnimation = useSkill3Idle ? "Skill_3_Idle" : "Idle";
+                console.log(`Surtr tại worldX=${surtrData.worldX} bị chặn bởi ally phía trước tại worldX=${frontAlly.worldX}, chuyển sang ${idleAnimation}`);
+                switchSkeletonFile(
+                    surtrData,
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
+                    idleAnimation,
+                    (success) => {
+                        if (success) {
+                            surtrData.isInAttackState = false;
+                            surtrData.isInSkill3State = false;
+                            surtrData.velocity = 0;
+                            console.log(`Surtr tại worldX=${surtrData.worldX} switched to ${idleAnimation} animation`);
+                        } else {
+                            console.error(`Failed to switch to ${idleAnimation} skeleton for Surtr at worldX=${surtrData.worldX}`);
+                            surtrData.state.setAnimation(0, "Move", true);
+                        }
+                    }
+                );
+            } else if (shouldAttack && !surtrData.isInAttackState && !surtrData.isInSkill3State) {
+                const canUseSkill3 = surtrData.deployTime >= surtrData.skill3Timer;
                 let attackAnimation = canUseSkill3 ? "Skill_3_Begin" : "Attack";
                 if (canUseSkill3 && surtrData.justCompletedSkillLoop) {
                     attackAnimation = "Skill_3_Loop";
                     surtrData.justCompletedSkillLoop = false;
                 }
-                // console.log(`Surtr tại worldX=${surtrData.worldX} tấn công ${isCollidingWithEnemyFlag ? 'enemy' : 'tower'}, dùng ${attackAnimation}`);
-
+                console.log(`Surtr tại worldX=${surtrData.worldX} tấn công ${isCollidingWithEnemyFlag ? 'enemy' : 'tower'}, dùng ${attackAnimation}`);
                 switchSkeletonFile(
                     surtrData,
                     "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
@@ -682,45 +697,27 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                         }
                     }
                 );
-            } else if (!surtrData.isInAttackState && !surtrData.isInSkill3State) {
-                if (shouldIdle) {
-                    // console.log(`Surtr tại worldX=${surtrData.worldX} bị chặn bởi ally phía trước, chuyển Idle`);
-                    switchSkeletonFile(
-                        surtrData,
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
-                        "Idle",
-                        (success) => {
-                            if (success) {
-                                surtrData.isInAttackState = false;
-                                surtrData.isInSkill3State = false;
-                                surtrData.velocity = 0;
-                                // console.log(`Surtr tại worldX=${surtrData.worldX} reset states sang Idle`);
-                            }
+            } else if (!shouldAttack && !isBlockedByFrontAlly && currentSkelIsWeapon) {
+                console.log(`Surtr tại worldX=${surtrData.worldX} có thể di chuyển, chuyển về Move`);
+                switchSkeletonFile(
+                    surtrData,
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
+                    "Move",
+                    (success) => {
+                        if (success) {
+                            surtrData.isInAttackState = false;
+                            surtrData.isInSkill3State = false;
+                            surtrData.velocity = 50;
                         }
-                    );
-                } else if (shouldMove && currentSkelIsWeapon) {
-                    // console.log(`Surtr tại worldX=${surtrData.worldX} có thể di chuyển, chuyển về Move`);
-                    switchSkeletonFile(
-                        surtrData,
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
-                        "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
-                        "Move",
-                        (success) => {
-                            if (success) {
-                                surtrData.isInAttackState = false;
-                                surtrData.isInSkill3State = false;
-                                surtrData.velocity = 50;
-                            }
-                        }
-                    );
-                }
+                    }
+                );
             } else if (!shouldAttack && (surtrData.isInAttackState || surtrData.isInSkill3State)) {
                 const currentTrack = surtrData.state.getCurrent(0);
                 if (currentTrack) {
                     currentTrack.loop = false;
                 }
-                // console.log(`Force end current attack anim because !shouldAttack`);
+                console.log(`Force end current attack anim because !shouldAttack`);
             }
         }
 
@@ -767,23 +764,23 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
         batcher.end();
         shader.unbind();
 
-        // backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
-        // backgroundCtx.fillRect(
-        //     surtrHitbox.x - camera.x,
-        //     surtrHitbox.y,
-        //     surtrHitbox.width,
-        //     surtrHitbox.height
-        // );
+        backgroundCtx.fillStyle = "rgba(255, 0, 0, 0.3)";
+        backgroundCtx.fillRect(
+            surtrHitbox.x - camera.x,
+            surtrHitbox.y,
+            surtrHitbox.width,
+            surtrHitbox.height
+        );
 
-        // if (isFinite(surtrDamageHitbox.x) && !surtrData.isDead) {
-        //     backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
-        //     backgroundCtx.fillRect(
-        //         surtrDamageHitbox.x - camera.x,
-        //         surtrDamageHitbox.y,
-        //         surtrDamageHitbox.width,
-        //         surtrDamageHitbox.height
-        //     );
-        // }
+        if (isFinite(surtrDamageHitbox.x) && !surtrData.isDead) {
+            backgroundCtx.fillStyle = "rgba(255, 165, 0, 0.3)";
+            backgroundCtx.fillRect(
+                surtrDamageHitbox.x - camera.x,
+                surtrDamageHitbox.y,
+                surtrDamageHitbox.width,
+                surtrDamageHitbox.height
+            );
+        }
     }
 }
 

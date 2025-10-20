@@ -104,8 +104,6 @@ function updateCharacterInfo() {
       <h5>Kỹ năng</h5>
       <ul>
         <li>${data.skill1}</li>
-        <li>${data.skill2}</li>
-        <li>${data.skill3}</li>
       </ul>
     `;
     infoTalent.innerHTML = `

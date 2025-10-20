@@ -7,7 +7,6 @@ let towerImage = new Image(), isTowerLoaded = false;
 let groundTileImage = new Image(), isGroundTileLoaded = false;
 let mouseX = 0, camera = { x: 0 };
 let lastFrameTime;
-let hasLoggedRightTower = false;
 let gl;
 let playerUnits = []; // Mảng duy nhất lưu tất cả units của người chơi
 let isGameOver = false;

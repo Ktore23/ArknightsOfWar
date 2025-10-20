@@ -50,11 +50,11 @@ export const characterData = [
     // "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",
     // "Thiên phú: <em>Cuồng Nộ</em> - Tăng <span style='color: red;'>10% tấn công</span> khi HP dưới 50%.",
     // "Đặc tính: <em>Sát Thủ</em> - Gây thêm <u>15% sát thương</u> vào kẻ địch dưới 30% HP."
+    "Kỹ năng: Sau 30s nếu Surtr vẫn còn sống thì sẽ chuyển sang dạng chiến đấu mới <span style='color: green;'>hồi lại toàn bộ máu</span> đã mất, tấn công tăng thêm 330%, <span style='color: green;'>máu</span> tăng thêm 5000 đồng thời tăng phạm vi gây sát thương gấp 3 lần.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",
-    "Chưa có dữ liệu.",
-    "Chưa có dữ liệu."
+    "Gây sát thương <span style='color: purple;'>phép</span>."
   ),
   new Character(
     "Shu",
@@ -155,7 +155,7 @@ export const characterData = [
     375, // ATK
     5, // DP
     5, // Cooldown
-    "Kỹ năng 1: Sau mỗi 4 đòn đánh gây <span style='color: red;'>2 lần sát thương mỗi đòn gây 140%</span> lên kẻ địch.",
+    "Kỹ năng: Sau mỗi 4 đòn đánh gây <span style='color: red;'>2 lần sát thương mỗi đòn gây 140%</span> lên kẻ địch.",
     // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
     // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
     // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",
