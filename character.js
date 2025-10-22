@@ -50,7 +50,7 @@ export const characterData = [
     // "Kỹ năng 3: <em>Siêu Hỏa</em> - Gây <span style='color: crimson;'>500 sát thương</span> đơn mục tiêu.",
     // "Thiên phú: <em>Cuồng Nộ</em> - Tăng <span style='color: red;'>10% tấn công</span> khi HP dưới 50%.",
     // "Đặc tính: <em>Sát Thủ</em> - Gây thêm <u>15% sát thương</u> vào kẻ địch dưới 30% HP."
-    "Kỹ năng: Sau 30s nếu Surtr vẫn còn sống thì sẽ chuyển sang dạng chiến đấu mới <span style='color: green;'>hồi lại toàn bộ máu</span> đã mất, tấn công tăng thêm 330%, <span style='color: green;'>máu</span> tăng thêm 5000 đồng thời tăng phạm vi gây sát thương gấp 3 lần.",
+    "Kỹ năng: Sau 60s nếu Surtr vẫn còn sống thì sẽ chuyển sang dạng chiến đấu mới <span style='color: green;'>hồi lại toàn bộ máu</span> đã mất, tấn công tăng thêm 330%, <span style='color: green;'>máu</span> tăng thêm 5000 đồng thời tăng phạm vi gây sát thương gấp 3 lần.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",

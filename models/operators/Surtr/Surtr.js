@@ -914,82 +914,82 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
     state.update(delta);
 
     // Cập nhật timer cho hitbox và tăng chỉ số
-if (!surtrData.isHitboxScaled && !surtrData.isDead) {
-    surtrData.hitboxTimer += delta;
-    if (surtrData.hitboxTimer >= surtrData.skill3Timer) {
-        surtrData.damageHitbox.width *= 3; // Tăng chiều rộng hitbox cam gấp 3 lần
-        surtrData.isHitboxScaled = true;
-        surtrData.isSkill3Active = true;
+    if (!surtrData.isHitboxScaled && !surtrData.isDead) {
+        surtrData.hitboxTimer += delta;
+        if (surtrData.hitboxTimer >= surtrData.skill3Timer) {
+            surtrData.damageHitbox.width *= 3; // Tăng chiều rộng hitbox cam gấp 3 lần
+            surtrData.isHitboxScaled = true;
+            surtrData.isSkill3Active = true;
 
-        // Hồi máu và tăng chỉ số
-        surtrData.hp = surtrData.maxHp;
-        surtrData.atk = Math.round(surtrData.atk + surtrData.atk * 3.3);
-        surtrData.maxHp += 5000;
-        surtrData.hp += 5000;
-        console.log(`Surtr tại worldX=${surtrData.worldX}: Hồi máu đầy (${surtrData.hp}/${surtrData.maxHp}), tăng atk lên ${surtrData.atk}, tăng maxHp lên ${surtrData.maxHp}`);
+            // Hồi máu và tăng chỉ số
+            surtrData.hp = surtrData.maxHp;
+            surtrData.atk = Math.round(surtrData.atk + surtrData.atk * 3.3);
+            surtrData.maxHp += 5000;
+            surtrData.hp += 5000;
+            console.log(`Surtr tại worldX=${surtrData.worldX}: Hồi máu đầy (${surtrData.hp}/${surtrData.maxHp}), tăng atk lên ${surtrData.atk}, tăng maxHp lên ${surtrData.maxHp}`);
 
-        // Tìm mục tiêu gần nhất
-        const validEnemies = Array.isArray(enemies) ? enemies : [];
-        let closestEnemy = null;
-        let minDistance = Infinity;
-        validEnemies.forEach(enemy => {
-            if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
-                const distance = Math.abs(surtrData.worldX - enemy.worldX);
-                if (distance < minDistance) {
-                    minDistance = distance;
-                    closestEnemy = enemy;
-                }
-            }
-        });
-        const isCollidingWithEnemyFlag = !!closestEnemy;
-        surtrData.tower = surtrData.direction === 1 ? TOWER_POSITIONS[1] : TOWER_POSITIONS[0];
-        const isCollidingTower = isCollidingWithTower(surtrData, surtrData.tower);
-        const hasTarget = isCollidingWithEnemyFlag || isCollidingTower;
-
-        // Xác định animation cần chuyển
-        let targetAnimation = null;
-        let newSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel";
-        let newAtlasPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas";
-
-        if (surtrData.currentAnimation === "attack" && hasTarget) {
-            targetAnimation = "Skill_3_Begin";
-            surtrData.isInAttackState = false;
-            surtrData.isInSkill3State = true;
-            surtrData.velocity = 0;
-        } 
-        else if (surtrData.currentAnimation === "idle") {
-            targetAnimation = "Skill_3_Idle"; // Chuyển sang Idle của Skill 3
-            surtrData.isInAttackState = false;
-            surtrData.isInSkill3State = true;
-            surtrData.velocity = 0;
-        }
-
-        // Chỉ chuyển nếu có animation hợp lệ
-        if (targetAnimation) {
-            surtrData.target = closestEnemy ? closestEnemy : (isCollidingTower ? surtrData.tower : null);
-            surtrData.isAttackingEnemy = !!closestEnemy;
-
-            switchSkeletonFile(
-                surtrData,
-                newSkelPath,
-                newAtlasPath,
-                targetAnimation,
-                (success) => {
-                    if (success) {
-                        surtrData.currentAnimation = targetAnimation.toLowerCase();
-                        console.log(`Surtr chuyển sang ${targetAnimation} sau khi kích hoạt Skill 3`);
-                    } else {
-                        console.error(`Không thể chuyển sang ${targetAnimation} cho Surtr tại worldX=${surtrData.worldX}`);
-                        // Fallback: giữ nguyên trạng thái hoặc về Move
-                        surtrData.state.setAnimation(0, "Move", true);
-                        surtrData.currentAnimation = "move";
-                        surtrData.velocity = 50;
+            // Tìm mục tiêu gần nhất
+            const validEnemies = Array.isArray(enemies) ? enemies : [];
+            let closestEnemy = null;
+            let minDistance = Infinity;
+            validEnemies.forEach(enemy => {
+                if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
+                    const distance = Math.abs(surtrData.worldX - enemy.worldX);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        closestEnemy = enemy;
                     }
                 }
-            );
+            });
+            const isCollidingWithEnemyFlag = !!closestEnemy;
+            surtrData.tower = surtrData.direction === 1 ? TOWER_POSITIONS[1] : TOWER_POSITIONS[0];
+            const isCollidingTower = isCollidingWithTower(surtrData, surtrData.tower);
+            const hasTarget = isCollidingWithEnemyFlag || isCollidingTower;
+
+            // Xác định animation cần chuyển
+            let targetAnimation = null;
+            let newSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel";
+            let newAtlasPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas";
+
+            if (surtrData.currentAnimation === "attack" && hasTarget) {
+                targetAnimation = "Skill_3_Begin";
+                surtrData.isInAttackState = false;
+                surtrData.isInSkill3State = true;
+                surtrData.velocity = 0;
+            }
+            else if (surtrData.currentAnimation === "idle") {
+                targetAnimation = "Skill_3_Idle"; // Chuyển sang Idle của Skill 3
+                surtrData.isInAttackState = false;
+                surtrData.isInSkill3State = true;
+                surtrData.velocity = 0;
+            }
+
+            // Chỉ chuyển nếu có animation hợp lệ
+            if (targetAnimation) {
+                surtrData.target = closestEnemy ? closestEnemy : (isCollidingTower ? surtrData.tower : null);
+                surtrData.isAttackingEnemy = !!closestEnemy;
+
+                switchSkeletonFile(
+                    surtrData,
+                    newSkelPath,
+                    newAtlasPath,
+                    targetAnimation,
+                    (success) => {
+                        if (success) {
+                            surtrData.currentAnimation = targetAnimation.toLowerCase();
+                            console.log(`Surtr chuyển sang ${targetAnimation} sau khi kích hoạt Skill 3`);
+                        } else {
+                            console.error(`Không thể chuyển sang ${targetAnimation} cho Surtr tại worldX=${surtrData.worldX}`);
+                            // Fallback: giữ nguyên trạng thái hoặc về Move
+                            surtrData.state.setAnimation(0, "Move", true);
+                            surtrData.currentAnimation = "move";
+                            surtrData.velocity = 50;
+                        }
+                    }
+                );
+            }
         }
     }
-}
 
     // Kiểm tra va chạm để xác định mục tiêu
     const validEnemies = Array.isArray(enemies) ? enemies : [];
@@ -1190,6 +1190,25 @@ if (!surtrData.isHitboxScaled && !surtrData.isDead) {
                 if (surtrData.currentAnimation === "move") {
                     surtrData.worldX += surtrData.velocity * delta * surtrData.direction;
                 }
+            } else if (surtrData.currentAnimation === "skill_3_idle" &&
+                !isBlockedByFrontAlly && !isCollidingWithEnemyFlag && !isCollidingTower) {
+
+                surtrData.isInSkill3State = false; // Cho phép di chuyển lại
+                switchSkeletonFile(
+                    surtrData,
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer.atlas",
+                    "Move",
+                    (success) => {
+                        if (success) {
+                            surtrData.currentAnimation = "move";
+                            surtrData.velocity = 50;
+                            console.log("Surtr thoát khỏi Skill_3_Idle và chuyển sang Move");
+                        } else {
+                            console.error("Không thể chuyển từ Skill_3_Idle sang Move");
+                        }
+                    }
+                );
             }
         }
 
