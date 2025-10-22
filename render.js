@@ -133,6 +133,7 @@ async function init() {
   // Bot tự chọn ngẫu nhiên 3 nhân vật từ characterModules (có thể khác player)
   const allAvailableChars = Object.keys(characterModules);  // ['Surtr', 'Shu', "Ch'en", 'Frost Nova']
   botSelected = allAvailableChars.sort(() => 0.5 - Math.random()).slice(0, 3);  // Chọn random 3, không lặp
+  // botSelected = ["Frost Nova", "Ch'en", "Exusiai", "Shu", "Kroos"];
   console.log(`Bot đã chọn: ${botSelected.join(', ')}`);
 
   // Dynamic import và init chỉ cho botSelected (tương tự player)
