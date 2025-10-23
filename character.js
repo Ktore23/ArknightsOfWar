@@ -165,6 +165,27 @@ export const characterData = [
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu."
   ),
+  new Character(
+    "Reid",
+    "./assets/avatars/enemies/HatefulAvenger/HatefulAvenger/Avg_avg_npc_334.png",
+    23000, // HP
+    650, // DEF
+    60, // RES
+    55, // SPD
+    1.0, // SPDATK
+    800, // ATK
+    32, // DP
+    60, // Cooldown
+  "Không có dữ liệu.",
+    // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
+    // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
+    // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",
+    // "Đặc tính: <em>Hỗ Trợ</em> - Tăng <u>15% hiệu quả hồi máu</u>."
+    "Không có dữ liệu.",
+    "Không có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
+  ),
 ];
 
 // Chuyển thành object để tương thích với main.js

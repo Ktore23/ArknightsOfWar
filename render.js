@@ -75,7 +75,8 @@ const characterModules = {
   "Ch'en": './models/operators/Chen/Chen.js', // Lưu ý: "Ch'en" trong data, nhưng dùng "Chen" cho module
   "Frost Nova": './models/enemies/FrostNova/FrostNova.js', // Nếu có space trong name, dùng như vậy
   "Exusiai": './models/operators/Exusiai/Exusiai.js',
-  "Kroos": './models/operators/Kroos/Kroos.js'
+  "Kroos": './models/operators/Kroos/Kroos.js',
+  "Reid": './models/enemies/HatefulAvenger/Reid.js'
 };
 
 // THÊM MỚI: Map để xử lý tên nhân vật có dấu/special char (như "Ch'en" -> "Chen") để gọi hàm đúng
@@ -85,7 +86,8 @@ export const characterModuleNameMap = {
   "Ch'en": "Chen",
   "Frost Nova": "FrostNova",
   "Exusiai": "Exusiai",
-  "Kroos": "Kroos"
+  "Kroos": "Kroos",
+  "Reid": "Reid"
   // Thêm nhân vật mới nếu cần, ví dụ: "Some'Char": "SomeChar"
 };
 
@@ -173,6 +175,7 @@ async function init() {
         case "Frost Nova": module.initFrostNova(gl); break;
         case "Exusiai": module.initExusiai(gl); break;
         case "Kroos": module.initKroos(gl); break;
+        case "Reid": module.initReid(gl); break;
       }
       console.log(`Đã import và init ${char}`);
     } catch (error) {

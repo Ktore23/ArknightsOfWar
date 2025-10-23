@@ -4,7 +4,7 @@ let canvas, backgroundCanvas, backgroundCtx;
 let gl;
 let importedModules = {}; // Lưu module dynamic
 const characterModuleNameMap = {
-  "Surtr": "Surtr"
+  "Reid": "Reid"
 };
 const GROUND_Y = 0;
 const WORLD_WIDTH = 2000;
@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Surtr": './models/operators/Surtr/Surtr.js'
+  "Reid": './models/enemies/HatefulAvenger/Reid.js'
 };
 
 // Load groundTileImage
@@ -64,8 +64,8 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
 }
 
 // Hàm để render Surtr bot ở trạng thái idle
-function addSurtrBotForTesting() {
-  const char = "Surtr";
+function addReidBotForTesting() {
+  const char = "Reid";
   const module = importedModules[char];
   if (!module) {
     console.error(`Module cho ${char} không tồn tại`);
@@ -155,13 +155,13 @@ async function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // Load module cho Surtr
-  const char = "Surtr";
+  const char = "Reid";
   try {
     const modulePath = characterModules[char];
     const module = await import(modulePath);
     importedModules[char] = module;
-    if (typeof module.initSurtr === 'function') {
-      module.initSurtr(gl); // Init assets
+    if (typeof module.initReid === 'function') {
+      module.initReid(gl); // Init assets
       console.log(`Đã load và init cho demo`);
     } else {
       console.error(`init không tồn tại trong module ${char}`);
@@ -170,7 +170,7 @@ async function init() {
     console.error(`Lỗi load:`, error);
     // Fallback
     importedModules[char] = {
-      loadSurtrSkeleton: (x, isBot) => ({
+      loadReidSkeleton: (x, isBot) => ({
         worldX: x,
         x: x,
         skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => { } } },
@@ -179,8 +179,8 @@ async function init() {
         velocity: 50,
         tower: TOWER_POSITIONS[1]
       }),
-      isSurtrLoadingComplete: () => true,
-      renderSurtrSkeleton: (unit) => {
+      isReidLoadingComplete: () => true,
+      renderReidSkeleton: (unit) => {
         backgroundCtx.fillStyle = "blue";
         backgroundCtx.fillRect(unit.worldX - camera.x - 50, GROUND_Y - 100, 100, 200);
       }
@@ -189,11 +189,11 @@ async function init() {
   }
 
   // Đợi tài nguyên Surtr load xong rồi thêm bot
-  const waitForSurtrAssets = setInterval(() => {
+  const waitForReidAssets = setInterval(() => {
     const module = importedModules[char];
-    if (module && module.isSurtrLoadingComplete && module.isSurtrLoadingComplete()) {
-      clearInterval(waitForSurtrAssets); // Dừng interval khi load xong
-      addSurtrBotForTesting(); // Thêm bot
+    if (module && module.isReidLoadingComplete && module.isReidLoadingComplete()) {
+      clearInterval(waitForReidAssets); // Dừng interval khi load xong
+      addReidBotForTesting(); // Thêm bot
     } else {
       console.log(`Đang đợi tài nguyên Surtr load...`);
     }
@@ -212,8 +212,8 @@ async function init() {
 
   // Hiển thị danh sách animation
   const module = importedModules[char];
-  if (module && module.isSurtrLoadingComplete && module.isSurtrLoadingComplete()) {
-    const tempUnit = module.loadSurtrSkeleton(0, false);
+  if (module && module.isReidLoadingComplete && module.isReidLoadingComplete()) {
+    const tempUnit = module.loadReidSkeleton(0, false);
     if (tempUnit && tempUnit.skeleton && tempUnit.skeleton.data && tempUnit.skeleton.data.animations) {
       const animations = tempUnit.skeleton.data.animations.map(anim => anim.name);
       const select = document.getElementById('animationSelect');
@@ -333,7 +333,7 @@ function render(now) {
   const enemyUnits = playerUnits.filter(unit => unit.isBot);
 
   // Cập nhật camera để hiển thị bot
-  const bot = playerUnits.find(unit => unit.type === "Surtr" && unit.direction === -1);
+  const bot = playerUnits.find(unit => unit.type === "Reid" && unit.direction === -1);
   if (bot) {
     camera.x = Math.max(0, Math.min(bot.worldX - window.innerWidth / 2, WORLD_WIDTH - window.innerWidth));
     // console.log(`Camera di chuyển đến bot: x=${camera.x}`);
