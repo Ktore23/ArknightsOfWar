@@ -156,8 +156,47 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     }
                 );
             }
+
             if (kroosData.isDead && currentAnimation === "die") {
                 kroosData.deathAnimationComplete = true;
+            }
+
+            if (currentAnimation === "attack" && !kroosData.isDead) {
+                const target = kroosData.target;
+
+                // Kiểm tra nếu target vẫn còn sống và trong tầm
+                const stillHasTarget = target && target.hp > 0 &&
+                    (kroosData.isAttackingEnemy
+                        ? isCollidingWithEnemy(kroosData, target)
+                        : isCollidingWithTower(kroosData, kroosData.tower));
+
+                if (stillHasTarget) {
+                    // Tấn công tiếp
+                    kroosData.state.setAnimation(0, "Attack", false);
+                    kroosData.currentAnimation = "attack";
+                } else {
+                    // Hết mục tiêu: chuyển về Move/Idle
+                    kroosData.isInAttackState = false;
+                    kroosData.target = null;
+                    kroosData.isAttackingEnemy = false;
+
+                    switchSkeletonFile(
+                        kroosData,
+                        "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
+                        "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas",
+                        "Move",
+                        (success) => {
+                            if (success) {
+                                kroosData.velocity = 50;
+                                kroosData.currentAnimation = "move";
+                                console.log("Kroos switched to Move animation after Attack finished");
+                            } else {
+                                kroosData.state.setAnimation(0, "Idle", true);
+                                kroosData.currentAnimation = "idle";
+                            }
+                        }
+                    );
+                }
             }
         },
         event: function (trackIndex, event) {
@@ -171,12 +210,12 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     // Mục tiêu là kẻ địch
                     const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
+                        damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
                         totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
                         damage2 = 0;
                         totalDamage = damage1;
                     }
@@ -185,12 +224,12 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     const targetTower = kroosData.tower;
                     const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
+                        damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
                         totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
                         damage2 = 0;
                         totalDamage = damage1;
                     }
@@ -463,12 +502,12 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 // Mục tiêu là kẻ địch
                                 const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
+                                    damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
                                     totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - targetDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }
@@ -477,12 +516,12 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 const targetTower = kroosData.tower;
                                 const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
+                                    damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
                                     totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage * 1.4 - towerDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }
@@ -866,9 +905,10 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                 projectile.y += projectile.velocityY * delta;
 
                 // Kiểm tra nếu mục tiêu đã chết
-                if (projectile.target && projectile.target.hp <= 0) {
+                if (kroosData.isDead || (projectile.target && projectile.target.hp <= 0)) {
                     projectile.active = false;
-                    console.log("Projectile bị xóa vì mục tiêu đã chết");
+                    console.log("Projectile bị xóa vì Kroos hoặc mục tiêu đã chết");
+                    return;
                 } else if (projectile.target && projectile.target.hp > 0) {
                     // Kiểm tra nếu đạn chạm mục tiêu
                     const dx = projectile.worldX - projectile.targetCenterX;
