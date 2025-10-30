@@ -138,7 +138,7 @@ export const characterData = [
     // "Kỹ năng 3: <em>Hủy Diệt</em> - Gây <span style='color: red;'>600 sát thương</span> đơn mục tiêu.",
     // "Thiên phú: <em>Cuồng Loạn</em> - Tăng <span style='color: red;'>20% tốc đánh</span> khi HP dưới 30%.",
     // "Đặc tính: <em>Chiến Binh</em> - Tăng <u>10% sát thương</u> khi tấn công liên tục."
-    "Chưa có dữ liệu.",
+    "Kỹ năng: Sau mỗi 4 đòn đánh gây <span style='color: red;'>3 lần sát thương mỗi đòn gây 145%</span> lên kẻ địch.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",
     "Chưa có dữ liệu.",

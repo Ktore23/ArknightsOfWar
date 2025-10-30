@@ -8,8 +8,6 @@ let isSwitchingSkeleton = false;
 let hasLoggedKroosPosition = false;
 let fixedDamageHitbox = null;
 let projectileImages = [];
-// Lưu thông tin animation Attack
-let attackAnimationInfo = null;
 
 export function initKroos(webglContext) {
     if (!webglContext) {
@@ -72,20 +70,6 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         return null;
     }
 
-    // Lấy thông tin animation Attack
-    const attackAnim = skeletonDataRaw.animations.find(anim => anim.name === "Attack");
-    if (attackAnim) {
-        const onAttackEvent = attackAnim.events?.find(e => e.data.name === "OnAttack");
-        attackAnimationInfo = {
-            duration: attackAnim.duration,
-            onAttackTime: onAttackEvent ? onAttackEvent.time : 0
-        };
-        console.log(`Animation Attack: Duration=${attackAnimationInfo.duration} giây, OnAttack tại=${attackAnimationInfo.onAttackTime} giây`);
-    } else {
-        console.warn("Animation Attack không tìm thấy, sử dụng giá trị mặc định");
-        attackAnimationInfo = { duration: 1.8, onAttackTime: 0.5 }; // Giá trị dự phòng
-    }
-
     const skeleton = new spine.Skeleton(skeletonDataRaw);
     skeleton.setSkinByName("default");
 
@@ -112,7 +96,7 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
             offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.3 + 120 : 120
         },
         damageHitbox: {
-            width: 300,
+            width: 250,
             height: 300,
             offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 220) ? bounds.offset.x + bounds.size.x / 2 + 220 : 220,
             offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.3 + 82 : 120
@@ -314,10 +298,10 @@ function isCollidingWithTower(kroosData, targetTower) {
 
     const kroosDamageHitbox = {
         x: kroosData.direction === -1 ?
-            kroosHitbox.x - (kroosData.damageHitbox.width - 50) :
+            kroosHitbox.x - (kroosData.damageHitbox.width) :
             kroosHitbox.x + kroosHitbox.width,
         y: kroosData.groundY + kroosData.damageHitbox.offsetY - kroosData.damageHitbox.height / 2 + 258,
-        width: kroosData.damageHitbox.width - 50,
+        width: kroosData.damageHitbox.width,
         height: kroosData.damageHitbox.height - 75
     };
 
@@ -356,10 +340,10 @@ export function isCollidingWithEnemy(kroosData, enemyKroos) {
 
     const kroosDamageHitbox = {
         x: kroosData.direction === -1 ?
-            kroosHitbox.x - (kroosData.damageHitbox.width - 50) :
+            kroosHitbox.x - (kroosData.damageHitbox.width) :
             kroosHitbox.x + kroosHitbox.width,
         y: kroosData.groundY + kroosData.damageHitbox.offsetY - kroosData.damageHitbox.height / 2 + 258,
-        width: kroosData.damageHitbox.width - 50,
+        width: kroosData.damageHitbox.width,
         height: kroosData.damageHitbox.height - 75
     };
 
@@ -446,21 +430,6 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
-                }
-
-                // Lấy thông tin animation Attack cho skeleton mới
-                if (newSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel") {
-                    const attackAnim = newSkeletonData.animations.find(anim => anim.name === "Attack");
-                    if (attackAnim) {
-                        const onAttackEvent = attackAnim.events?.find(e => e.data.name === "OnAttack");
-                        attackAnimationInfo = {
-                            duration: attackAnim.duration,
-                            onAttackTime: onAttackEvent ? onAttackEvent.time : 0
-                        };
-                        console.log(`Animation Attack (new skeleton): Duration=${attackAnimationInfo.duration} giây, OnAttack tại=${attackAnimationInfo.onAttackTime} giây`);
-                    } else {
-                        console.warn("Animation Attack không tìm thấy trong skeleton mới, giữ giá trị hiện tại");
-                    }
                 }
 
                 const animationToUse = newSkeletonData.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
@@ -669,10 +638,10 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         const kroosDamageHitbox = {
             x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ?
                 (kroosData.direction === -1 ?
-                    kroosHitbox.x - (damageHitbox.width - 50) :
+                    kroosHitbox.x - (damageHitbox.width) :
                     kroosHitbox.x + kroosHitbox.width) : worldX,
             y: damageHitbox ? GROUND_Y + damageHitbox.offsetY - damageHitbox.height / 2 + 258 : GROUND_Y + 258,
-            width: damageHitbox ? damageHitbox.width - 50 : 50,
+            width: damageHitbox ? damageHitbox.width : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
         };
 

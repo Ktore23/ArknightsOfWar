@@ -2,11 +2,12 @@ import { characterDataObj } from '../../../character.js';
 import { createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
-let currentSkelPath = "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel";
-let currentAtlasPath = "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas";
+let currentSkelPath = "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel";
+let currentAtlasPath = "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas";
 let isSwitchingSkeleton = false;
 let hasLoggedExusiaiPosition = false;
 let fixedDamageHitbox = null;
+let projectileImages = [];
 
 export function initExusiai(webglContext) {
     if (!webglContext) {
@@ -25,10 +26,19 @@ export function initExusiai(webglContext) {
     assetManager.loadBinary("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel");
     assetManager.loadTextureAtlas("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas");
     assetManager.loadTexture("assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.png");
+
+    projectileImages = [];
+    const bulletSrc = "assets/operators/Exusiai/ExusiaiSale/bullet.png";
+    const img = new Image();
+    img.src = bulletSrc;
+    img.onload = () => console.log(`Hình ảnh đạn Exusiai đã tải: ${bulletSrc}`);
+    img.onerror = () => console.error(`Lỗi tải ảnh đạn: ${bulletSrc}`);
+    projectileImages.push(img);
 }
 
 export function isExusiaiLoadingComplete() {
-    return assetManager && assetManager.isLoadingComplete();
+    return assetManager && assetManager.isLoadingComplete() &&
+        projectileImages.length > 0 && projectileImages[0].complete;
 }
 
 export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
@@ -58,59 +68,26 @@ export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     const bounds = calculateSetupPoseBounds(skeleton);
     const animationStateData = new spine.AnimationStateData(skeletonDataRaw);
     const animationState = new spine.AnimationState(animationStateData);
-    const initialAnimation = "Move";
+
+    const initialAnimation = "Start";
     const animationToUse = skeletonDataRaw.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name || skeletonDataRaw.animations[0]?.name;
     if (!animationToUse) {
-        // console.error(`Initial animation ${initialAnimation} not found in ${currentSkelPath}. Available animations: ${skeletonDataRaw.animations.map(a => a.name).join(", ")}`);
+        console.error(`Initial animation ${initialAnimation} not found in ${currentSkelPath}. Available animations: ${skeletonDataRaw.animations.map(a => a.name).join(", ")}`);
     }
-    animationState.setAnimation(0, animationToUse || "Move", true);
-
-    animationState.addListener({
-        event: function (trackIndex, event) {
-            if (event.data.name === "OnAttack" && exusiaiData.isInAttackState && exusiaiData) {
-                let baseDamage = characterDataObj["Exusiai"].atk;
-                let finalDamage;
-                if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
-                    // Áp dụng công thức: damage = atk - def, tối thiểu 20% atk
-                    const targetDef = characterDataObj[exusiaiData.target.type]?.def || 0;
-                    finalDamage = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
-                    exusiaiData.target.hp = Math.max(0, exusiaiData.target.hp - finalDamage);
-                    createDamageText(exusiaiData.target.worldX, GROUND_Y + 300, finalDamage);
-                    // console.log(`Exusiai tại worldX=${exusiaiData.worldX} gây ${finalDamage} sát thương lên kẻ địch tại worldX=${exusiaiData.target.worldX}. HP kẻ địch còn: ${exusiaiData.target.hp}`);
-                } else {
-                    const targetTower = exusiaiData.tower;
-                    if (targetTower && isCollidingWithTower(exusiaiData, targetTower)) {
-                        // Áp dụng công thức cho tháp: damage = atk - def, tối thiểu 20% atk
-                        let towerDef = targetTower.def || 0;
-                        finalDamage = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
-                        targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
-                        const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
-                        createDamageText(towerCenterX, GROUND_Y + 200, finalDamage);
-                        // console.log(`Sự kiện OnAttack: Exusiai tại worldX=${exusiaiData.worldX} gây ${finalDamage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
-                    }
-                }
-            }
-        },
-        complete: function (trackIndex, count) {
-            if (exusiaiData.isDead && exusiaiData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
-                exusiaiData.deathAnimationComplete = true; // Đánh dấu animation Die đã hoàn tất
-                // console.log(`Animation Die hoàn tất cho Exusiai tại worldX=${exusiaiData.worldX}`);
-            }
-        }
-    });
+    animationState.setAnimation(0, animationToUse || "Idle", false);
 
     const hitbox = {
-        width: isFinite(bounds.size.x) ? bounds.size.x * 0.03 : 100,
-        height: isFinite(bounds.size.y) ? bounds.size.y * 0.2 : 200,
-        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 120) ? bounds.offset.x + bounds.size.x / 2 - 485 : 120,
-        offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 525 : 120
+        width: isFinite(bounds.size.x) ? bounds.size.x * 0.25 : 100,
+        height: isFinite(bounds.size.y) ? bounds.size.y * 0.9 : 200,
+        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 120) ? bounds.offset.x + bounds.size.x / 2 - 55 : 120,
+        offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 120 : 120
     };
 
     fixedDamageHitbox = {
-        width: 300,
+        width: 250,
         height: 300,
         offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 220) ? bounds.offset.x + bounds.size.x / 2 + 220 : 220,
-        offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 477 : 120
+        offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 120) ? bounds.offset.y + bounds.size.y * 0.2 + 71 : 120
     };
 
     const exusiaiData = {
@@ -123,24 +100,163 @@ export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         damageHitbox: fixedDamageHitbox,
         tower: null,
         isInAttackState: false,
+        isInStartAnimation: true,
         currentSkelPath,
         currentAtlasPath,
         direction: 1,
         velocity: 50,
         target: null,
         isAttackingEnemy: false,
-        isDead: false, // Thêm trạng thái chết
-        deathAnimationTimer: 0, // Timer để theo dõi thời gian animation Die
-        deathAnimationComplete: false, // Trạng thái hoàn tất animation Die
+        isDead: false,
+        deathAnimationTimer: 0,
+        deathAnimationComplete: false,
         groundY: GROUND_Y,
-        type: "Exusiai"
+        type: "Exusiai",
+        projectiles: [],
+        attackCount: 0
     };
+
+    animationState.addListener({
+        complete: function (trackIndex, count) {
+            const currentAnimation = animationState.getCurrent(0)?.animation?.name.toLowerCase();
+
+            if (currentAnimation === "start" && !exusiaiData.isDead) {
+                exusiaiData.isInStartAnimation = false;
+                switchSkeletonFile(
+                    exusiaiData,
+                    "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
+                    "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas",
+                    "Move",
+                    (success) => {
+                        if (success) {
+                            exusiaiData.velocity = 50;
+                            console.log("Exusiai switched to Move animation after Start");
+                        } else {
+                            console.error("Failed to switch to Move skeleton for Exusiai");
+                            exusiaiData.state.setAnimation(0, "Idle", true);
+                        }
+                    }
+                );
+            }
+
+            if (currentAnimation === "attack" && !exusiaiData.isDead) {
+                const target = exusiaiData.target;
+                const stillHasTarget = target && target.hp > 0 &&
+                    (exusiaiData.isAttackingEnemy
+                        ? isCollidingWithEnemy(exusiaiData, target)
+                        : isCollidingWithTower(exusiaiData, exusiaiData.tower));
+
+                if (stillHasTarget) {
+                    exusiaiData.state.setAnimation(0, "Attack", false);
+                } else {
+                    exusiaiData.isInAttackState = false;
+                    exusiaiData.target = null;
+                    exusiaiData.isAttackingEnemy = false;
+
+                    switchSkeletonFile(
+                        exusiaiData,
+                        "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
+                        "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.atlas",
+                        "Move",
+                        (success) => {
+                            if (success) {
+                                exusiaiData.velocity = 50;
+                                console.log("Exusiai switched to Move animation after Attack finished");
+                            } else {
+                                exusiaiData.state.setAnimation(0, "Idle", true);
+                            }
+                        }
+                    );
+                }
+            }
+
+            if (exusiaiData.isDead && currentAnimation === "die") {
+                exusiaiData.deathAnimationComplete = true;
+            }
+        },
+        event: function (trackIndex, event) {
+            if (event.data.name === "OnAttack" && exusiaiData.isInAttackState && exusiaiData) {
+                exusiaiData.attackCount++;
+                let baseDamage = characterDataObj["Exusiai"].atk;
+                let damage1 = 0, damage2 = 0, damage3 = 0, totalDamage = 0;
+
+                let targetDef = 0;
+                if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
+                    targetDef = characterDataObj[exusiaiData.target.type]?.def || 0;
+                } else {
+                    const targetTower = exusiaiData.tower;
+                    targetDef = targetTower.def || 0;
+                }
+
+                if (exusiaiData.attackCount === 5) {
+                    const burst = Math.max(baseDamage * 1.45 * 0.2, baseDamage * 1.45 - targetDef);
+                    damage1 = damage2 = damage3 = Math.round(burst);
+                    totalDamage = damage1 + damage2 + damage3;
+                    exusiaiData.attackCount = 0;
+                } else {
+                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                    totalDamage = damage1;
+                }
+
+                let targetHitbox, targetCenterX, targetCenterY;
+                if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
+                    targetHitbox = {
+                        x: exusiaiData.target.worldX + exusiaiData.target.hitbox.offsetX * (exusiaiData.target.skeleton.scaleX || 1) - exusiaiData.target.hitbox.width / 2,
+                        y: exusiaiData.target.groundY + 220 + exusiaiData.target.hitbox.offsetY - exusiaiData.target.hitbox.height / 2,
+                        width: exusiaiData.target.hitbox.width,
+                        height: exusiaiData.target.hitbox.height
+                    };
+                } else {
+                    const targetTower = exusiaiData.tower;
+                    targetHitbox = {
+                        x: targetTower.x + targetTower.hitbox.offsetX - targetTower.hitbox.width / 2,
+                        y: targetTower.y + targetTower.hitbox.offsetY - targetTower.hitbox.height / 2,
+                        width: targetTower.hitbox.width,
+                        height: targetTower.hitbox.height
+                    };
+                }
+                targetCenterX = targetHitbox.x + targetHitbox.width / 2;
+                targetCenterY = targetHitbox.y + targetHitbox.height / 2;
+
+                const exusiaiHitbox = {
+                    x: exusiaiData.worldX + exusiaiData.hitbox.offsetX * (exusiaiData.skeleton.scaleX || 1) - exusiaiData.hitbox.width / 2,
+                    y: exusiaiData.groundY + 220 + exusiaiData.hitbox.offsetY - exusiaiData.hitbox.height / 2,
+                    width: exusiaiData.hitbox.width,
+                    height: exusiaiData.hitbox.height
+                };
+
+                const projectileX = exusiaiData.direction === 1 ? exusiaiHitbox.x + exusiaiHitbox.width : exusiaiHitbox.x;
+                const projectileY = exusiaiHitbox.y + exusiaiHitbox.height / 2 + 5;
+
+                const dx = targetCenterX - projectileX;
+                const dy = targetCenterY - projectileY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                const speed = 500;
+
+                const projectile = {
+                    worldX: projectileX,
+                    y: projectileY,
+                    velocityX: distance > 0 ? (dx / distance) * speed : 0,
+                    velocityY: distance > 0 ? (dy / distance) * speed : 0,
+                    active: true,
+                    damage1, damage2, damage3,
+                    totalDamage,
+                    target: exusiaiData.target,
+                    targetCenterX, targetCenterY,
+                    image: projectileImages[0]
+                };
+                exusiaiData.projectiles.push(projectile);
+
+                console.log(`Exusiai bắn đạn: ${totalDamage} dmg (1:${damage1}, 2:${damage2}, 3:${damage3})`);
+            }
+        }
+    });
+
     return exusiaiData;
 }
 
 function isCollidingWithTower(exusiaiData, targetTower) {
     if (!exusiaiData.damageHitbox || !isFinite(exusiaiData.worldX) || !isFinite(exusiaiData.damageHitbox.offsetX)) {
-        // console.warn("Invalid damageHitbox or worldX, skipping tower collision check");
         return false;
     }
 
@@ -155,10 +271,10 @@ function isCollidingWithTower(exusiaiData, targetTower) {
 
     const exusiaiDamageHitbox = {
         x: exusiaiData.direction === -1 ?
-            exusiaiHitbox.x - (exusiaiData.damageHitbox.width - 50) :
+            exusiaiHitbox.x - (exusiaiData.damageHitbox.width) :
             exusiaiHitbox.x + exusiaiHitbox.width,
         y: exusiaiData.groundY + exusiaiData.damageHitbox.offsetY - exusiaiData.damageHitbox.height / 2 + 258,
-        width: exusiaiData.damageHitbox.width - 50,
+        width: exusiaiData.damageHitbox.width,
         height: exusiaiData.damageHitbox.height - 75
     };
 
@@ -169,21 +285,15 @@ function isCollidingWithTower(exusiaiData, targetTower) {
         height: targetTower.hitbox.height
     };
 
-    const isColliding = isFinite(exusiaiDamageHitbox.x) &&
+    return isFinite(exusiaiDamageHitbox.x) &&
         exusiaiDamageHitbox.x < towerHitbox.x + towerHitbox.width &&
         exusiaiDamageHitbox.x + exusiaiDamageHitbox.width > towerHitbox.x &&
         exusiaiDamageHitbox.y < towerHitbox.y + towerHitbox.height &&
         exusiaiDamageHitbox.y + exusiaiDamageHitbox.height > towerHitbox.y;
-
-    if (isColliding) {
-        // console.log(`Exusiai tại worldX=${exusiaiData.worldX} va chạm với tháp tại x=${targetTower.x}`);
-    }
-    return isColliding;
 }
 
 export function isCollidingWithEnemy(exusiaiData, enemyExusiai) {
     if (!exusiaiData.damageHitbox || !enemyExusiai.hitbox || !isFinite(exusiaiData.worldX) || !isFinite(enemyExusiai.worldX)) {
-        // console.warn("Invalid hitbox or worldX, skipping enemy collision check");
         return false;
     }
 
@@ -198,10 +308,10 @@ export function isCollidingWithEnemy(exusiaiData, enemyExusiai) {
 
     const exusiaiDamageHitbox = {
         x: exusiaiData.direction === -1 ?
-            exusiaiHitbox.x - (exusiaiData.damageHitbox.width - 50) :
+            exusiaiHitbox.x - (exusiaiData.damageHitbox.width) :
             exusiaiHitbox.x + exusiaiHitbox.width,
         y: exusiaiData.groundY + exusiaiData.damageHitbox.offsetY - exusiaiData.damageHitbox.height / 2 + 258,
-        width: exusiaiData.damageHitbox.width - 50,
+        width: exusiaiData.damageHitbox.width,
         height: exusiaiData.damageHitbox.height - 75
     };
 
@@ -214,17 +324,10 @@ export function isCollidingWithEnemy(exusiaiData, enemyExusiai) {
         height: enemyExusiai.hitbox.height
     };
 
-    const isColliding = exusiaiDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
+    return exusiaiDamageHitbox.x < enemyHitbox.x + enemyHitbox.width &&
         exusiaiDamageHitbox.x + exusiaiDamageHitbox.width > enemyHitbox.x &&
         exusiaiDamageHitbox.y < enemyHitbox.y + enemyHitbox.height &&
         exusiaiDamageHitbox.y + exusiaiDamageHitbox.height > enemyHitbox.y;
-
-    if (isColliding) {
-        // console.log(`Exusiai tại worldX=${exusiaiData.worldX} va chạm với kẻ địch tại worldX=${enemyExusiai.worldX}`);
-        // console.log(`Exusiai damageHitbox: x=${exusiaiDamageHitbox.x}, width=${exusiaiDamageHitbox.width}, y=${exusiaiDamageHitbox.y}, height=${exusiaiDamageHitbox.height}`);
-        // console.log(`Enemy hitbox: x=${enemyHitbox.x}, width=${enemyHitbox.width}, y=${enemyHitbox.y}, height=${enemyHitbox.height}`);
-    }
-    return isColliding;
 }
 
 function calculateSetupPoseBounds(skeleton) {
@@ -237,17 +340,14 @@ function calculateSetupPoseBounds(skeleton) {
 
 function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnimation, callback) {
     if (isSwitchingSkeleton) {
-        // console.log(`Switching skeleton in progress for ${newSkelPath}, skipping`);
         if (callback) callback(false);
         return false;
     }
 
     if (exusiaiData.currentSkelPath === newSkelPath && exusiaiData.currentAtlasPath === newAtlasPath) {
-        // console.log(`Already using skeleton ${newSkelPath}, skipping switch`);
         const animationToUse = exusiaiData.skeleton.data.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
         if (animationToUse) {
             exusiaiData.state.setAnimation(0, animationToUse, initialAnimation.toLowerCase() === "die" ? false : true);
-            // console.log(`Reapplied animation ${animationToUse} for ${newSkelPath}`);
         }
         if (callback) callback(true);
         return true;
@@ -261,7 +361,6 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
     const maxRetries = 10;
     function attemptSwitch() {
         if (retryCount >= maxRetries) {
-            // console.error(`Failed to load assets for ${newSkelPath} after ${maxRetries} retries`);
             isSwitchingSkeleton = false;
             if (callback) callback(false);
             return;
@@ -273,7 +372,6 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
             try {
                 const atlas = atlasData;
                 if (!atlas) {
-                    // console.error(`Atlas not loaded for ${newAtlasPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
@@ -284,20 +382,17 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
 
                 const binaryData = skelData;
                 if (!binaryData) {
-                    // console.error(`Skeleton binary not loaded for ${newSkelPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
                 const newSkeletonData = skeletonBinary.readSkeletonData(binaryData);
                 if (!newSkeletonData) {
-                    // console.error(`Failed to parse skeleton from ${newSkelPath}`);
                     isSwitchingSkeleton = false;
                     if (callback) callback(false);
                     return;
                 }
 
-                // console.log(`Animations in ${newSkelPath}: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
                 const animationToUse = newSkeletonData.animations.find(anim => anim.name.toLowerCase() === initialAnimation.toLowerCase())?.name;
                 if (!animationToUse) {
                     console.error(`Animation ${initialAnimation} not found in ${newSkelPath}. Available animations: ${newSkeletonData.animations.map(a => a.name).join(", ")}`);
@@ -328,26 +423,83 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
                 animationState.addListener({
                     event: function (trackIndex, event) {
                         if (event.data.name === "OnAttack" && exusiaiData.isInAttackState && exusiaiData) {
-                            let damage = characterDataObj["Exusiai"].atk;
+                            exusiaiData.attackCount++;
+                            let baseDamage = characterDataObj["Exusiai"].atk;
+                            let damage1 = 0, damage2 = 0, damage3 = 0, totalDamage = 0;
+
+                            let targetDef = 0;
                             if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
-                                exusiaiData.target.hp = Math.max(0, exusiaiData.target.hp - damage);
-                                createDamageText(exusiaiData.target.worldX, GROUND_Y + 300, damage);
-                                // console.log(`Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên kẻ địch tại worldX=${exusiaiData.target.worldX}. HP kẻ địch còn: ${exusiaiData.target.hp}`);
+                                targetDef = characterDataObj[exusiaiData.target.type]?.def || 0;
                             } else {
                                 const targetTower = exusiaiData.tower;
-                                if (targetTower && isCollidingWithTower(exusiaiData, targetTower)) {
-                                    targetTower.hp = Math.max(0, targetTower.hp - damage);
-                                    const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
-                                    createDamageText(towerCenterX, GROUND_Y + 200, damage);
-                                    // console.log(`Sự kiện OnAttack: Exusiai tại worldX=${exusiaiData.worldX} gây ${damage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
-                                }
+                                targetDef = targetTower.def || 0;
                             }
+
+                            if (exusiaiData.attackCount === 5) {
+                                const burst = Math.max(baseDamage * 1.45 * 0.2, baseDamage * 1.45 - targetDef);
+                                damage1 = damage2 = damage3 = Math.round(burst);
+                                totalDamage = damage1 + damage2 + damage3;
+                                exusiaiData.attackCount = 0;
+                            } else {
+                                damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                                totalDamage = damage1;
+                            }
+
+                            let targetHitbox, targetCenterX, targetCenterY;
+                            if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
+                                targetHitbox = {
+                                    x: exusiaiData.target.worldX + exusiaiData.target.hitbox.offsetX * (exusiaiData.target.skeleton.scaleX || 1) - exusiaiData.target.hitbox.width / 2,
+                                    y: exusiaiData.target.groundY + 220 + exusiaiData.target.hitbox.offsetY - exusiaiData.target.hitbox.height / 2,
+                                    width: exusiaiData.target.hitbox.width,
+                                    height: exusiaiData.target.hitbox.height
+                                };
+                            } else {
+                                const targetTower = exusiaiData.tower;
+                                targetHitbox = {
+                                    x: targetTower.x + targetTower.hitbox.offsetX - targetTower.hitbox.width / 2,
+                                    y: targetTower.y + targetTower.hitbox.offsetY - targetTower.hitbox.height / 2,
+                                    width: targetTower.hitbox.width,
+                                    height: targetTower.hitbox.height
+                                };
+                            }
+                            targetCenterX = targetHitbox.x + targetHitbox.width / 2;
+                            targetCenterY = targetHitbox.y + targetHitbox.height / 2;
+
+                            const exusiaiHitbox = {
+                                x: exusiaiData.worldX + exusiaiData.hitbox.offsetX * (exusiaiData.skeleton.scaleX || 1) - exusiaiData.hitbox.width / 2,
+                                y: exusiaiData.groundY + 220 + exusiaiData.hitbox.offsetY - exusiaiData.hitbox.height / 2,
+                                width: exusiaiData.hitbox.width,
+                                height: exusiaiData.hitbox.height
+                            };
+
+                            const projectileX = exusiaiData.direction === 1 ? exusiaiHitbox.x + exusiaiHitbox.width : exusiaiHitbox.x;
+                            const projectileY = exusiaiHitbox.y + exusiaiHitbox.height / 2 + 5;
+
+                            const dx = targetCenterX - projectileX;
+                            const dy = targetCenterY - projectileY;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            const speed = 500;
+
+                            const projectile = {
+                                worldX: projectileX,
+                                y: projectileY,
+                                velocityX: distance > 0 ? (dx / distance) * speed : 0,
+                                velocityY: distance > 0 ? (dy / distance) * speed : 0,
+                                active: true,
+                                damage1, damage2, damage3,
+                                totalDamage,
+                                target: exusiaiData.target,
+                                targetCenterX, targetCenterY,
+                                image: projectileImages[0]
+                            };
+                            exusiaiData.projectiles.push(projectile);
+
+                            // console.log(`Exusiai bắn đạn: ${totalDamage} dmg (1:${damage1}, 2:${damage2}, 3:${damage3})`);
                         }
                     },
                     complete: function (trackIndex, count) {
                         if (exusiaiData.isDead && animationState.getCurrent(0).animation.name.toLowerCase() === "die") {
                             exusiaiData.deathAnimationComplete = true;
-                            // console.log(`Animation Die hoàn tất cho Exusiai tại worldX=${exusiaiData.worldX}`);
                         }
                     }
                 });
@@ -360,15 +512,13 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
                 exusiaiData.currentSkelPath = newSkelPath;
                 exusiaiData.currentAtlasPath = newAtlasPath;
                 isSwitchingSkeleton = false;
-                // console.log(`Successfully switched to ${newSkelPath} with animation ${animationToUse}`);
                 if (callback) callback(true);
             } catch (e) {
-                // console.error(`Error switching skeleton file: ${e.message}`);
+                console.error("Lỗi khi chuyển skeleton:", e);
                 isSwitchingSkeleton = false;
                 if (callback) callback(false);
             }
         } else {
-            // console.warn(`Assets for ${newSkelPath} not yet loaded, retrying... (attempt ${retryCount + 1}/${maxRetries})`);
             retryCount++;
             requestAnimationFrame(attemptSwitch);
         }
@@ -387,12 +537,10 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
     const { skeleton, state, premultipliedAlpha, bounds, worldX, hitbox, damageHitbox } = exusiaiData;
     state.update(delta);
 
-    // Kiểm tra trạng thái chết
     if (exusiaiData.hp <= 0 && !exusiaiData.isDead && !isSwitchingSkeleton) {
-        // console.log(`Exusiai tại worldX=${exusiaiData.worldX} đã chết, chuyển sang animation Die`);
         exusiaiData.isDead = true;
         exusiaiData.isInAttackState = false;
-        exusiaiData.velocity = 0; // Ngừng di chuyển
+        exusiaiData.velocity = 0;
         switchSkeletonFile(
             exusiaiData,
             "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
@@ -402,23 +550,19 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 if (success) {
                     console.log(`Exusiai tại worldX=${exusiaiData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    // console.error(`Không thể chuyển sang animation Die cho Exusiai tại worldX=${exusiaiData.worldX}`);
-                    exusiaiData.deathAnimationComplete = true; // Đánh dấu hoàn tất để xóa ngay nếu lỗi
+                    exusiaiData.deathAnimationComplete = true;
                 }
             }
         );
     }
 
-    // Cập nhật timer cho animation Die
     if (exusiaiData.isDead && !exusiaiData.deathAnimationComplete) {
         exusiaiData.deathAnimationTimer += delta;
-        if (exusiaiData.deathAnimationTimer >= 1.0) { // Giả sử animation Die kéo dài 1 giây
+        if (exusiaiData.deathAnimationTimer >= 1.0) {
             exusiaiData.deathAnimationComplete = true;
-            // console.log(`Animation Die hoàn tất (theo timer) cho Exusiai tại worldX=${exusiaiData.worldX}`);
         }
     }
 
-    // Tiếp tục render nếu chưa hoàn tất animation Die
     if (!exusiaiData.deathAnimationComplete) {
         state.apply(skeleton);
         exusiaiData.tower = exusiaiData.direction === 1 ? TOWER_POSITIONS[1] : TOWER_POSITIONS[0];
@@ -435,27 +579,23 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         const exusiaiDamageHitbox = {
             x: isFinite(worldX) && damageHitbox && isFinite(damageHitbox.offsetX) ?
                 (exusiaiData.direction === -1 ?
-                    exusiaiHitbox.x - (damageHitbox.width - 50) :
+                    exusiaiHitbox.x - (damageHitbox.width) :
                     exusiaiHitbox.x + exusiaiHitbox.width) : worldX,
             y: damageHitbox ? GROUND_Y + damageHitbox.offsetY - damageHitbox.height / 2 + 258 : GROUND_Y + 258,
-            width: damageHitbox ? damageHitbox.width - 50 : 50,
+            width: damageHitbox ? damageHitbox.width : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
         };
 
         if (!hasLoggedExusiaiPosition) {
-            // console.log(`Vị trí Exusiai: worldX=${worldX}, y=${skeleton.y}, direction=${exusiaiData.direction}`);
             hasLoggedExusiaiPosition = true;
         }
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
-        // console.log(`Kiểm tra va chạm kẻ địch cho Exusiai tại worldX=${exusiaiData.worldX}, direction=${exusiaiData.direction}, số lượng kẻ địch: ${validEnemies.length}`);
-
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
             if (enemy && enemy.hp > 0 && isCollidingWithEnemy(exusiaiData, enemy)) {
                 const distance = Math.abs(exusiaiData.worldX - enemy.worldX);
-                // console.log(`Kẻ địch tại worldX=${enemy.worldX}, HP=${enemy.hp}, khoảng cách=${distance}`);
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestEnemy = enemy;
@@ -491,7 +631,6 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 if (exusiaiData.direction === 1 ?
                     exusiaiHitbox.x + exusiaiHitbox.width >= otherHitbox.x :
                     exusiaiHitbox.x <= otherHitbox.x + otherHitbox.width) {
-                    // Thay vì check weapon.skel, check state chung: nếu front đang attack hoặc idle
                     const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
                     if (frontAnimation === "attack" || frontAnimation === "idle" || otherAlly.isInAttackState) {
                         isBlockedByFrontAlly = true;
@@ -502,10 +641,9 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
             }
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+        if (!exusiaiData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
             exusiaiData.currentSkelPath === "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel" &&
             !exusiaiData.isInAttackState && !isSwitchingSkeleton && !exusiaiData.isDead) {
-            // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
             switchSkeletonFile(
                 exusiaiData,
                 "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
@@ -516,8 +654,7 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                         exusiaiData.isInAttackState = false;
                         console.log("Exusiai switched back to Move animation from Idle");
                     } else {
-                        console.error("Failed to switch back to Move skeleton for Exusiai");
-                        state.setAnimation(0, "Move", true);
+                        exusiaiData.state.setAnimation(0, "Idle", true);
                     }
                 }
             );
@@ -525,7 +662,6 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
 
         if (isCollidingWithEnemyFlag && !isSwitchingSkeleton && isFinite(exusiaiDamageHitbox.x) && !exusiaiData.isDead) {
             if (!exusiaiData.isInAttackState) {
-                // console.log(`Exusiai tại worldX=${exusiaiData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
                 switchSkeletonFile(
                     exusiaiData,
                     "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
@@ -536,15 +672,13 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                             exusiaiData.isInAttackState = true;
                             console.log("Exusiai switched to Attack animation for enemy");
                         } else {
-                            console.error("Failed to switch to Attack skeleton for Exusiai");
-                            state.setAnimation(0, "Move", true);
+                            exusiaiData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
         } else if (isColliding && !isSwitchingSkeleton && isFinite(exusiaiDamageHitbox.x) && !exusiaiData.isDead) {
             if (!exusiaiData.isInAttackState) {
-                // console.log("Exusiai tạm dừng di chuyển do va chạm với tháp");
                 switchSkeletonFile(
                     exusiaiData,
                     "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
@@ -555,15 +689,13 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                             exusiaiData.isInAttackState = true;
                             console.log("Exusiai switched to Attack animation for tower");
                         } else {
-                            console.error("Failed to switch to Attack skeleton for Exusiai");
-                            state.setAnimation(0, "Move", true);
+                            exusiaiData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !exusiaiData.isDead) {
             if (exusiaiData.currentSkelPath !== "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel") {
-                // console.log(`Exusiai tại worldX=${exusiaiData.worldX} bị chặn bởi Exusiai phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
                 switchSkeletonFile(
                     exusiaiData,
                     "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel",
@@ -574,15 +706,13 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                             exusiaiData.isInAttackState = false;
                             console.log("Exusiai switched to Idle animation");
                         } else {
-                            console.error("Failed to switch to Idle skeleton for Exusiai");
-                            state.setAnimation(0, "Move", true);
+                            exusiaiData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
         } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
             exusiaiData.isInAttackState && !isSwitchingSkeleton && !exusiaiData.isDead) {
-            // console.log(`Exusiai tại worldX=${exusiaiData.worldX} không còn va chạm, chuyển từ Attack về Move`);
             switchSkeletonFile(
                 exusiaiData,
                 "assets/operators/Exusiai/ExusiaiSale/build_char_103_angel_sale8.skel",
@@ -593,14 +723,13 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                         exusiaiData.isInAttackState = false;
                         console.log("Exusiai switched back to Move animation from Attack");
                     } else {
-                        console.error("Failed to switch back to Move skeleton for Exusiai");
-                        state.setAnimation(0, "Move", true);
+                        exusiaiData.state.setAnimation(0, "Idle", true);
                     }
                 }
             );
         }
 
-        if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && !isSwitchingSkeleton && !exusiaiData.isDead) {
+        if (!exusiaiData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && !isSwitchingSkeleton && !exusiaiData.isDead) {
             exusiaiData.worldX += exusiaiData.velocity * delta * exusiaiData.direction;
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !exusiaiData.isDead) {
             if (exusiaiData.direction === -1) {
@@ -611,7 +740,6 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                     height: frontAlly.hitbox.height
                 };
                 exusiaiData.worldX = otherHitbox.x + otherHitbox.width + exusiaiData.hitbox.width / 2 - exusiaiData.hitbox.offsetX * (exusiaiData.skeleton.scaleX || 1);
-                // console.log(`Exusiai bot tại worldX=${exusiaiData.worldX} được điều chỉnh để kề sát Exusiai phía trước tại x=${frontAlly.worldX}`);
             }
         }
 
@@ -621,10 +749,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
 
         if (exusiaiData.direction === 1 && exusiaiData.worldX > towerHitbox.x - hitbox.width) {
             exusiaiData.worldX = towerHitbox.x - hitbox.width;
-            // console.log(`Exusiai bị giới hạn tại worldX=${exusiaiData.worldX} để không vượt qua tháp phải`);
         } else if (exusiaiData.direction === -1 && exusiaiData.worldX < towerHitbox.x + towerHitbox.width) {
             exusiaiData.worldX = towerHitbox.x + towerHitbox.width;
-            // console.log(`Exusiai bị giới hạn tại worldX=${exusiaiData.worldX} để không vượt qua tháp trái`);
         }
 
         skeleton.updateWorldTransform();
@@ -657,6 +783,51 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
         //         exusiaiDamageHitbox.height
         //     );
         // }
+
+        // backgroundCtx.fillStyle = "blue";
+        // const dotRadius = 5;
+        // const dotX = exusiaiData.direction === 1
+        //     ? exusiaiHitbox.x + exusiaiHitbox.width - camera.x
+        //     : exusiaiHitbox.x - camera.x;
+        // const dotY = exusiaiHitbox.y + exusiaiHitbox.height / 2 + 5;
+        // backgroundCtx.beginPath();
+        // backgroundCtx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
+        // backgroundCtx.fill();
+
+        if (projectileImages.length > 0 && projectileImages[0].complete) {
+            exusiaiData.projectiles = exusiaiData.projectiles.filter(p => p.active);
+
+            exusiaiData.projectiles.forEach(projectile => {
+                projectile.worldX += projectile.velocityX * delta;
+                projectile.y += projectile.velocityY * delta;
+
+                if (exusiaiData.isDead || (projectile.target && projectile.target.hp <= 0)) {
+                    projectile.active = false;
+                    return;
+                }
+
+                const dx = projectile.worldX - projectile.targetCenterX;
+                const dy = projectile.y - projectile.targetCenterY;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < 8) {
+                    const isTower = projectile.target === exusiaiData.tower;
+                    const baseY = isTower ? GROUND_Y + 200 : GROUND_Y + 300;
+
+                    if (projectile.damage1 > 0) createDamageText(projectile.targetCenterX, baseY, projectile.damage1);
+                    if (projectile.damage2 > 0) createDamageText(projectile.targetCenterX, baseY + 20, projectile.damage2);
+                    if (projectile.damage3 > 0) createDamageText(projectile.targetCenterX, baseY + 40, projectile.damage3);
+
+                    projectile.active = false;
+                }
+
+                if (projectile.active) {
+                    const scale = 0.3;
+                    const w = projectile.image.width * scale;
+                    const h = projectile.image.height * scale;
+                    backgroundCtx.drawImage(projectile.image, projectile.worldX - camera.x - w / 2, projectile.y - h / 2, w, h);
+                }
+            });
+        }
     }
 }
 

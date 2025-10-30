@@ -4,7 +4,7 @@ let canvas, backgroundCanvas, backgroundCtx;
 let gl;
 let importedModules = {}; // Lưu module dynamic
 const characterModuleNameMap = {
-  "Reid": "Reid"
+  "Exusiai": "Exusiai"
 };
 const GROUND_Y = 0;
 const WORLD_WIDTH = 2000;
@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Reid": './models/enemies/HatefulAvenger/Reid.js'
+  "Exusiai": './models/operators/Exusiai/Exusiai.js'
 };
 
 // Load groundTileImage
@@ -64,8 +64,8 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
 }
 
 // Hàm để render Surtr bot ở trạng thái idle
-function addReidBotForTesting() {
-  const char = "Reid";
+function addExusiaiBotForTesting() {
+  const char = "Exusiai";
   const module = importedModules[char];
   if (!module) {
     console.error(`Module cho ${char} không tồn tại`);
@@ -124,7 +124,11 @@ function addReidBotForTesting() {
     }
     // Sử dụng botUnit.state nếu tồn tại (cho module thực tế), fallback skeleton.state nếu không
     const animState = botUnit.state || botUnit.skeleton.state;
-    animState.setAnimation(0, "Idle", true);
+    const preferred = "Relax";
+    const fallback = "Idle";
+    const anim = animState.data.skeletonData.findAnimation(preferred) ? preferred : fallback;
+    animState.setAnimation(0, anim, true);
+    animState.isLockedIdle = true;
     animState.isLockedIdle = true;
     console.log(`Đã set animation Idle cho Surtr bot`);
   } catch (error) {
@@ -155,13 +159,13 @@ async function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // Load module cho Surtr
-  const char = "Reid";
+  const char = "Exusiai";
   try {
     const modulePath = characterModules[char];
     const module = await import(modulePath);
     importedModules[char] = module;
-    if (typeof module.initReid === 'function') {
-      module.initReid(gl); // Init assets
+    if (typeof module.initExusiai === 'function') {
+      module.initExusiai(gl); // Init assets
       console.log(`Đã load và init cho demo`);
     } else {
       console.error(`init không tồn tại trong module ${char}`);
@@ -170,7 +174,7 @@ async function init() {
     console.error(`Lỗi load:`, error);
     // Fallback
     importedModules[char] = {
-      loadReidSkeleton: (x, isBot) => ({
+      loadExusiaiSkeleton: (x, isBot) => ({
         worldX: x,
         x: x,
         skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => { } } },
@@ -179,8 +183,8 @@ async function init() {
         velocity: 50,
         tower: TOWER_POSITIONS[1]
       }),
-      isReidLoadingComplete: () => true,
-      renderReidSkeleton: (unit) => {
+      isExusiaiLoadingComplete: () => true,
+      renderExusiaiSkeleton: (unit) => {
         backgroundCtx.fillStyle = "blue";
         backgroundCtx.fillRect(unit.worldX - camera.x - 50, GROUND_Y - 100, 100, 200);
       }
@@ -189,11 +193,11 @@ async function init() {
   }
 
   // Đợi tài nguyên Surtr load xong rồi thêm bot
-  const waitForReidAssets = setInterval(() => {
+  const waitForExusiaiAssets = setInterval(() => {
     const module = importedModules[char];
-    if (module && module.isReidLoadingComplete && module.isReidLoadingComplete()) {
-      clearInterval(waitForReidAssets); // Dừng interval khi load xong
-      addReidBotForTesting(); // Thêm bot
+    if (module && module.isExusiaiLoadingComplete && module.isExusiaiLoadingComplete()) {
+      clearInterval(waitForExusiaiAssets); // Dừng interval khi load xong
+      addExusiaiBotForTesting(); // Thêm bot
     } else {
       console.log(`Đang đợi tài nguyên Surtr load...`);
     }
@@ -212,8 +216,8 @@ async function init() {
 
   // Hiển thị danh sách animation
   const module = importedModules[char];
-  if (module && module.isReidLoadingComplete && module.isReidLoadingComplete()) {
-    const tempUnit = module.loadReidSkeleton(0, false);
+  if (module && module.isExusiaiLoadingComplete && module.isExusiaiLoadingComplete()) {
+    const tempUnit = module.loadExusiaiSkeleton(0, false);
     if (tempUnit && tempUnit.skeleton && tempUnit.skeleton.data && tempUnit.skeleton.data.animations) {
       const animations = tempUnit.skeleton.data.animations.map(anim => anim.name);
       const select = document.getElementById('animationSelect');
@@ -276,7 +280,7 @@ function tryAddUnit(char) {
   }
 
   // Thả ở giữa màn hình
-  let newWorldX = window.innerWidth / 2;
+  let newWorldX = window.innerWidth / 2 + 200;
   const tempUnit = loadFunc(newWorldX, false);
   if (!tempUnit) {
     console.error(`Không thể load ${char} skeleton`);
@@ -333,7 +337,7 @@ function render(now) {
   const enemyUnits = playerUnits.filter(unit => unit.isBot);
 
   // Cập nhật camera để hiển thị bot
-  const bot = playerUnits.find(unit => unit.type === "Reid" && unit.direction === -1);
+  const bot = playerUnits.find(unit => unit.type === "Exusiai" && unit.direction === -1);
   if (bot) {
     camera.x = Math.max(0, Math.min(bot.worldX - window.innerWidth / 2, WORLD_WIDTH - window.innerWidth));
     // console.log(`Camera di chuyển đến bot: x=${camera.x}`);
