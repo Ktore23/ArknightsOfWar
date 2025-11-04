@@ -194,12 +194,12 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     // Mục tiêu là kẻ địch
                     const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
+                        damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
                         totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
                         damage2 = 0;
                         totalDamage = damage1;
                     }
@@ -208,12 +208,12 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                     const targetTower = kroosData.tower;
                     const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
+                        damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
                         totalDamage = damage1 + damage2;
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
+                        damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
                         damage2 = 0;
                         totalDamage = damage1;
                     }
@@ -471,12 +471,12 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 // Mục tiêu là kẻ địch
                                 const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - targetDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
+                                    damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
                                     totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }
@@ -485,12 +485,12 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                                 const targetTower = kroosData.tower;
                                 const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.2 * 1.4, baseDamage * 1.4 - towerDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
+                                    damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
                                     totalDamage = damage1 + damage2;
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
+                                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }

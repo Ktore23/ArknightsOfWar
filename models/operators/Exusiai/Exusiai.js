@@ -189,12 +189,12 @@ export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 }
 
                 if (exusiaiData.attackCount === 5) {
-                    const burst = Math.max(baseDamage * 1.45 * 0.2, baseDamage * 1.45 - targetDef);
+                    const burst = Math.max(baseDamage * 1.45 * 0.05, baseDamage * 1.45 - targetDef);
                     damage1 = damage2 = damage3 = Math.round(burst);
                     totalDamage = damage1 + damage2 + damage3;
                     exusiaiData.attackCount = 0;
                 } else {
-                    damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
                     totalDamage = damage1;
                 }
 
@@ -436,12 +436,12 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
                             }
 
                             if (exusiaiData.attackCount === 5) {
-                                const burst = Math.max(baseDamage * 1.45 * 0.2, baseDamage * 1.45 - targetDef);
+                                const burst = Math.max(baseDamage * 1.45 * 0.05, baseDamage * 1.45 - targetDef);
                                 damage1 = damage2 = damage3 = Math.round(burst);
                                 totalDamage = damage1 + damage2 + damage3;
                                 exusiaiData.attackCount = 0;
                             } else {
-                                damage1 = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                                damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
                                 totalDamage = damage1;
                             }
 

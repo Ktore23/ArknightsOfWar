@@ -77,7 +77,7 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 enemies.forEach(enemy => {
                     if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
                         const res = characterDataObj[enemy.type]?.res || 0;
-                        const damage = Math.round(Math.max(0, atk * (1 - res / 100)));
+                        const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
                         enemy.hp = Math.max(0, enemy.hp - damage);
                         createDamageText(enemy.worldX, GROUND_Y + 300, damage, 'purple');
                     }
@@ -87,7 +87,7 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 const tower = surtrData.tower;
                 if (tower && isCollidingWithTower(surtrData, tower)) {
                     const res = tower.res || 0;
-                    const damage = Math.round(Math.max(0, atk * (1 - res / 100)));
+                    const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
                     tower.hp = Math.max(0, tower.hp - damage);
                     createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                 }
@@ -597,7 +597,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                             enemies.forEach(enemy => {
                                 if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
                                     const res = characterDataObj[enemy.type]?.res || 0;
-                                    const damage = Math.round(Math.max(0, atk * (1 - res / 100)));
+                                    const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
                                     enemy.hp = Math.max(0, enemy.hp - damage);
                                     createDamageText(enemy.worldX, GROUND_Y + 300, damage, 'purple');
                                 }
@@ -607,7 +607,7 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                             const tower = surtrData.tower;
                             if (tower && isCollidingWithTower(surtrData, tower)) {
                                 const res = tower.res || 0;
-                                const damage = Math.round(Math.max(0, atk * (1 - res / 100)));
+                                const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
                                 tower.hp = Math.max(0, tower.hp - damage);
                                 createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                             }

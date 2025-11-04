@@ -73,7 +73,7 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                 if (shuData.target && shuData.isAttackingEnemy) {
                     // Áp dụng công thức: damage = atk - def, tối thiểu 20% atk
                     const targetDef = characterDataObj[shuData.target.type]?.def || 0;
-                    finalDamage = Math.round(Math.max(baseDamage * 0.2, baseDamage - targetDef));
+                    finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
                     shuData.target.hp = Math.max(0, shuData.target.hp - finalDamage);
                     createDamageText(shuData.target.worldX, GROUND_Y + 300, finalDamage);
                     // console.log(`Shu tại worldX=${shuData.worldX} gây ${finalDamage} sát thương lên kẻ địch tại worldX=${shuData.target.worldX}. HP kẻ địch còn: ${shuData.target.hp}`);
@@ -82,7 +82,7 @@ export function loadShuSkeleton(initialWorldX = 250, GROUND_Y = 0) { // Thêm th
                     if (targetTower && isCollidingWithTower(shuData, targetTower)) {
                         // Áp dụng công thức cho tháp: damage = atk - def, tối thiểu 20% atk
                         let towerDef = targetTower.def || 0;
-                        finalDamage = Math.round(Math.max(baseDamage * 0.2, baseDamage - towerDef));
+                        finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
                         targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
                         createDamageText(towerCenterX, GROUND_Y + 200, finalDamage);

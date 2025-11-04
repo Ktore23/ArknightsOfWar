@@ -68,7 +68,7 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                 if (frostNovaData.target && frostNovaData.isAttackingEnemy) {
                     // Tính sát thương phép cho enemy: ATK × (1 - (RES / 100))
                     const targetRes = characterDataObj[frostNovaData.target.type]?.res || 0;
-                    damage = Math.round(Math.max(0, atk * (1 - (targetRes / 100))));
+                    damage = Math.round(Math.max(atk * 0.05, atk * (1 - (targetRes / 100))));
                     frostNovaData.target.hp = Math.max(0, frostNovaData.target.hp - damage);
                     // Thêm damage text tại vị trí target
                     createDamageText(frostNovaData.target.worldX, GROUND_Y + 300, damage, 'purple');  // Làm tròn damage để hiển thị
@@ -78,7 +78,7 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                     if (targetTower && isCollidingWithTower(frostNovaData, targetTower)) {
                         // Tính sát thương phép cho tower sử dụng res từ targetTower
                         const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
-                        damage = Math.round(Math.max(0, atk * (1 - (towerRes / 100))));
+                        damage = Math.round(Math.max(atk * 0.05, atk * (1 - (towerRes / 100))));
                         targetTower.hp = Math.max(0, targetTower.hp - damage);
                         // Thêm damage text tại vị trí tháp
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
@@ -89,9 +89,72 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
             }
         },
         complete: function (trackIndex, count) {
-            if (frostNovaData.isDead && frostNovaData.state.getCurrent(0).animation.name.toLowerCase() === "die") {
+            const currentAnimation = animationState.getCurrent(0)?.animation?.name.toLowerCase() || ""; // THÊM: Lấy current animation
+            if (frostNovaData.isDead && currentAnimation === "die") {
                 frostNovaData.deathAnimationComplete = true; // Đánh dấu animation Die đã hoàn tất
                 // console.log(`Animation Die hoàn tất cho Frost Nova tại worldX=${frostNovaData.worldX}`);
+            }
+            // THÊM: Logic từ Reid.js để xử lý khi animation "Attack" complete
+            if (currentAnimation === "attack" && !frostNovaData.isDead) {
+                // Kiểm tra lại tình huống hiện tại (tương tự trong render)
+                const frostNovaHitbox = {
+                    x: isFinite(frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2) ?
+                        frostNovaData.worldX + frostNovaData.hitbox.offsetX * (frostNovaData.skeleton.scaleX || 1) - frostNovaData.hitbox.width / 2 :
+                        frostNovaData.worldX,
+                    y: frostNovaData.groundY + 220 + frostNovaData.hitbox.offsetY - frostNovaData.hitbox.height / 2,
+                    width: frostNovaData.hitbox.width,
+                    height: frostNovaData.hitbox.height
+                };
+
+                // Kiểm tra va chạm với enemy (lấy từ validUnits hoặc enemies, tùy theo context của bạn)
+                const { colliding: isCollidingWithEnemyFlag, target: closestEnemy } = isCollidingWithEnemy(frostNovaData, frostNovaData.enemies || []); // Giả sử bạn thêm frostNovaData.enemies như trong Reid
+                frostNovaData.target = closestEnemy;
+                frostNovaData.isAttackingEnemy = isCollidingWithEnemyFlag;
+
+                const isCollidingTower = isCollidingWithTower(frostNovaData, frostNovaData.tower);
+
+                // Kiểm tra blocked by front ally (tương tự code cũ, nhưng dùng buffer để tránh overlap)
+                let isBlockedByFrontAlly = false;
+                const bufferDistance = 5; // THÊM: Buffer để tránh overlap quá sát
+                for (let ally of frostNovaData.allBotUnits || []) { // Giả sử bạn thêm frostNovaData.allBotUnits như trong Reid
+                    if (ally === frostNovaData || ally.hp <= 0 || ally.isDead || ally.deathAnimationComplete) continue;
+                    if ((frostNovaData.direction === 1 && ally.worldX > frostNovaData.worldX) ||
+                        (frostNovaData.direction === -1 && ally.worldX < frostNovaData.worldX)) {
+                        const allyHitbox = {
+                            x: ally.worldX + ally.hitbox.offsetX * (ally.skeleton.scaleX || 1) - ally.hitbox.width / 2,
+                            y: GROUND_Y + 220 + ally.hitbox.offsetY - ally.hitbox.height / 2,
+                            width: ally.hitbox.width,
+                            height: ally.hitbox.height
+                        };
+                        const overlapX = (frostNovaData.direction === 1) ?
+                            (frostNovaHitbox.x + frostNovaHitbox.width >= allyHitbox.x - bufferDistance) :
+                            (frostNovaHitbox.x <= allyHitbox.x + allyHitbox.width + bufferDistance);
+                        if (overlapX) {
+                            const frontAnimation = ally.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
+                            if (frontAnimation === "attack" || frontAnimation === "idle" || ally.isInAttackState) {
+                                isBlockedByFrontAlly = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                // Quyết định animation tiếp theo dựa trên tình huống
+                if (isCollidingWithEnemyFlag || isCollidingTower) {
+                    frostNovaData.target = closestEnemy || frostNovaData.tower;
+                    frostNovaData.isAttackingEnemy = !!closestEnemy;
+                    animationState.setAnimation(0, "Attack", false); // Set lại Attack (không loop) nếu vẫn colliding
+                    frostNovaData.isInAttackState = true;
+                    // console.log("Frost Nova continues Attack after complete");
+                } else if (isBlockedByFrontAlly) {
+                    animationState.setAnimation(0, "Idle", true);
+                    frostNovaData.isInAttackState = false;
+                    // console.log("Frost Nova switched to Idle after Attack complete");
+                } else {
+                    animationState.setAnimation(0, "Move", true);
+                    frostNovaData.isInAttackState = false;
+                    // console.log("Frost Nova switched to Move after Attack complete");
+                }
             }
         }
     });
@@ -131,7 +194,9 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
         deathAnimationComplete: false, // Trạng thái hoàn tất animation Die
         groundY: GROUND_Y,
         blockedFrameCount: 0,  // THÊM: Khởi tạo debounce counter cho blocked
-        type: "Frost Nova"
+        type: "Frost Nova",
+        enemies: [], // THÊM: Để lưu enemies, tương tự Reid (cần pass vào render)
+        allBotUnits: [] // THÊM: Để lưu all allies/bot units, tương tự Reid (cần pass vào render)
     };
     frostNovaData.skeleton.scaleX = frostNovaData.direction;
     return frostNovaData;
@@ -234,6 +299,10 @@ export function isCollidingWithEnemy(frostNovaData, enemies) {
 export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, groundTileImage, WORLD_WIDTH, GROUND_Y, TOWER_POSITIONS, backgroundCtx, gl, allBotUnits, validUnits) {
     if (!frostNovaData || frostNovaData.deathAnimationComplete) return;
 
+    // THÊM: Lưu enemies và allBotUnits vào frostNovaData để dùng trong listener complete
+    frostNovaData.enemies = validUnits; // Giả sử validUnits là enemies
+    frostNovaData.allBotUnits = allBotUnits;
+
     const { skeleton, state, premultipliedAlpha } = frostNovaData;
     const worldX = frostNovaData.worldX;
     const hitbox = frostNovaData.hitbox;
@@ -319,7 +388,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     const isStablyBlocked = blockedFrameCount >= DEBOUNCE_THRESHOLD;
 
     // Xử lý death
-    if (frostNovaData.hp <= 0 && !frostNovaData.isDead) {
+    if (frostNovaData.hp <= 0 && !frostNovaData.isDead) { // THÊM: Kiểm tra hp ở đây (giả sử bạn có frostNovaData.hp từ characterDataObj)
         frostNovaData.isDead = true;
         frostNovaData.deathAnimationTimer = 0;
         const dieAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "die")?.name;
@@ -330,6 +399,8 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
             console.error("Animation Die not found for Frost Nova");
             frostNovaData.deathAnimationComplete = true;
         }
+        frostNovaData.isInAttackState = false; // THÊM: Ngừng attack nếu chết
+        return; // THÊM: Không update thêm nếu chết
     }
 
     if (frostNovaData.isDead) {
@@ -338,30 +409,24 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
             frostNovaData.deathAnimationComplete = true;
         }
     } else {
-        // Chuyển animation với debounce
+        // CHỈNH SỬA: Chỉ set animation Attack/Idle/Move nếu KHÔNG đang inAttackState (để tránh interrupt)
+        // Animation sẽ được xử lý tiếp theo ở listener complete
         const currentAnimation = state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-        if (isCollidingWithEnemyFlag && currentAnimation !== "attack") {
+        if ((isCollidingWithEnemyFlag || isColliding) && !frostNovaData.isInAttackState && currentAnimation !== "attack") {
             const attackAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "attack")?.name;
             if (attackAnimation) {
-                state.setAnimation(0, attackAnimation, true);
+                state.setAnimation(0, attackAnimation, false); // CHỈNH SỬA: Set false để không loop, trigger complete
                 frostNovaData.isInAttackState = true;
-                // console.log("Frost Nova switched to Attack animation for enemy");
+                // console.log("Frost Nova switched to Attack animation");
             }
-        } else if (isColliding && currentAnimation !== "attack") {
-            const attackAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "attack")?.name;
-            if (attackAnimation) {
-                state.setAnimation(0, attackAnimation, true);
-                frostNovaData.isInAttackState = true;
-                console.log("Frost Nova switched to Attack animation for tower");
-            }
-        } else if (isStablyBlocked && currentAnimation !== "idle") {
+        } else if (isStablyBlocked && !frostNovaData.isInAttackState && currentAnimation !== "idle") {
             const idleAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "idle")?.name;
             if (idleAnimation) {
                 state.setAnimation(0, idleAnimation, true);
                 frostNovaData.isInAttackState = false;
                 console.log(`Frost Nova switched to Idle (stable block: ${blockedFrameCount} frames)`);
             }
-        } else if (!isCollidingWithEnemyFlag && !isColliding && !isStablyBlocked && currentAnimation !== "move") {
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isStablyBlocked && !frostNovaData.isInAttackState && currentAnimation !== "move") {
             const moveAnimation = state.data.skeletonData.animations.find(anim => anim.name.toLowerCase() === "move")?.name;
             if (moveAnimation) {
                 state.setAnimation(0, moveAnimation, true);
@@ -375,7 +440,7 @@ export function renderFrostNovaSkeleton(frostNovaData, delta, camera, canvas, gr
     state.apply(skeleton);
 
     // Update vị trí với threshold cho adjust
-    if (!isCollidingWithEnemyFlag && !isColliding && !isStablyBlocked && !frostNovaData.isDead) {
+    if (!isCollidingWithEnemyFlag && !isColliding && !isStablyBlocked && !frostNovaData.isDead && !frostNovaData.isInAttackState) {
         frostNovaData.worldX += frostNovaData.velocity * delta * frostNovaData.direction;
     } else if (isStablyBlocked && !frostNovaData.isDead && frontAlly) {
         const thisHitbox = {
