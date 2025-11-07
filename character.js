@@ -176,7 +176,28 @@ export const characterData = [
     800, // ATK
     32, // DP
     60, // Cooldown
-  "Không có dữ liệu.",
+    "Không có dữ liệu.",
+    // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
+    // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
+    // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",
+    // "Đặc tính: <em>Hỗ Trợ</em> - Tăng <u>15% hiệu quả hồi máu</u>."
+    "Không có dữ liệu.",
+    "Không có dữ liệu.",
+    "Chưa có dữ liệu.",
+    "Chưa có dữ liệu."
+  ),
+  new Character(
+    "Lost Colossus",
+    "./assets/avatars/enemies/Colossus/LostColossus/enemy_2003_rockman.png",
+    75000, // HP
+    600, // DEF
+    0, // RES
+    55, // SPD
+    1.0, // SPDATK
+    1500, // ATK
+    50, // DP
+    120, // Cooldown
+    "Không có dữ liệu.",
     // "Kỹ năng 2: <em>Ánh Sáng</em> - Tăng <span style='color: yellow;'>20% kháng phép</span> cho đồng đội trong <u>10 giây</u>.",
     // "Kỹ năng 3: <em>Phục Hồi</em> - Hồi <span style='color: green;'>200 HP</span> cho cả đội trong <u>5 giây</u>.",
     // "Thiên phú: <em>Bảo Hộ</em> - Giảm <span style='color: blue;'>10% sát thương</span> nhận vào cho đồng đội gần kề.",

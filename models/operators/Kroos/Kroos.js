@@ -688,7 +688,10 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                     kroosHitbox.x + kroosHitbox.width >= otherHitbox.x :
                     kroosHitbox.x <= otherHitbox.x + otherHitbox.width) {
                     const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                    if (frontAnimation === "attack" || frontAnimation === "idle" || otherAlly.isInAttackState) {
+                    // Thêm check cho skill 3
+                    if (frontAnimation === "attack" || frontAnimation === "idle" ||
+                        frontAnimation === "skill_3_loop" || frontAnimation === "skill_3_idle" ||  // <--- Thêm
+                        otherAlly.isInAttackState || otherAlly.isInSkill3State) {  // <--- Thêm isInSkill3State
                         isBlockedByFrontAlly = true;
                         frontAlly = otherAlly;
                         kroosData.isBlocked = isBlockedByFrontAlly;

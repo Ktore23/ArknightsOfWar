@@ -131,7 +131,10 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                             (frostNovaHitbox.x <= allyHitbox.x + allyHitbox.width + bufferDistance);
                         if (overlapX) {
                             const frontAnimation = ally.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                            if (frontAnimation === "attack" || frontAnimation === "idle" || ally.isInAttackState) {
+                            // Thêm check cho skill 3
+                            if (frontAnimation === "attack" || frontAnimation === "idle" ||
+                                frontAnimation === "skill_3_loop" || frontAnimation === "skill_3_idle" ||  // <--- Thêm
+                                ally.isInAttackState || ally.isInSkill3State) {  // <--- Thêm isInSkill3State
                                 isBlockedByFrontAlly = true;
                                 break;
                             }

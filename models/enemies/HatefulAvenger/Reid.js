@@ -156,7 +156,7 @@ export function loadReidSkeleton(initialWorldX = 250, GROUND_Y = 0) {
     const hitbox = {
         width: isFinite(bounds.size.x) ? bounds.size.x * 0.5 : 100,
         height: isFinite(bounds.size.y) ? bounds.size.y * 1.05 : 200,
-        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 95) ? bounds.offset.x + bounds.size.x / 2 + 15: 120,
+        offsetX: isFinite(bounds.offset.x + bounds.size.x / 2 + 95) ? bounds.offset.x + bounds.size.x / 2 + 15 : 120,
         offsetY: isFinite(bounds.offset.y + bounds.size.y * 0.2 + 145) ? bounds.offset.y + bounds.size.y * 0.2 + 130 : 120
     };
 
@@ -369,7 +369,10 @@ export function renderReidSkeleton(reidData, delta, camera, canvas, groundTileIm
                     reidHitbox.x + reidHitbox.width >= otherHitbox.x - bufferDistance :
                     reidHitbox.x <= otherHitbox.x + otherHitbox.width + bufferDistance) {
                     const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                    if (frontAnimation === "attack" || frontAnimation === "idle") {
+                    // Thêm check cho skill 3
+                    if (frontAnimation === "attack" || frontAnimation === "idle" ||
+                        frontAnimation === "skill_3_loop" || frontAnimation === "skill_3_idle" ||  // <--- Thêm
+                        otherAlly.isInAttackState || otherAlly.isInSkill3State) {  // <--- Thêm isInSkill3State
                         isBlockedByFrontAlly = true;
                         break;
                     }

@@ -4,11 +4,11 @@ import { isOverlappingWithOtherUnit } from './render.js';
 
 let botUnitsByType = {};  // Object động: { "Surtr": [], "Shu": [], ... }
 let botInterval;
-let botDP = 20; // DP ban đầu cho bot
-const MAX_DP = 50; // DP tối đa
+let botDP = 40; // DP ban đầu cho bot
+const MAX_DP = 100; // DP tối đa
 const MAX_UNITS_PER_SIDE = 10; // Giới hạn 10 unit mỗi bên
 let botLastDeployTime = {}; // Lưu thời gian thả cuối cùng cho mỗi char
-const DP_REGEN_RATE = 1; // +1 DP mỗi giây
+const DP_REGEN_RATE = 5; // +1 DP mỗi giây
 
 export function initBot(TOWER_POSITIONS, GROUND_Y, WORLD_WIDTH) {
   botSelected.forEach(char => {

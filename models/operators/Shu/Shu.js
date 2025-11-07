@@ -375,7 +375,10 @@ export function renderShuSkeleton(shuData, delta, camera, canvas, groundTileImag
                     shuHitbox.x <= otherHitbox.x + otherHitbox.width) {
                     // Thay vì check weapon.skel, check state chung: nếu front đang attack hoặc idle
                     const frontAnimation = otherAlly.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                    if (frontAnimation === "attack" || frontAnimation === "idle" || otherAlly.isInAttackState) {
+                    // Thêm check cho skill 3
+                    if (frontAnimation === "attack" || frontAnimation === "idle" ||
+                        frontAnimation === "skill_3_loop" || frontAnimation === "skill_3_idle" ||  // <--- Thêm
+                        otherAlly.isInAttackState || otherAlly.isInSkill3State) {  // <--- Thêm isInSkill3State
                         isBlockedByFrontAlly = true;
                         frontAlly = otherAlly;
                         break;

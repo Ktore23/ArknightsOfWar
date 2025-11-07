@@ -45,7 +45,7 @@ function handleCharacterClick(event) {
 
   if (selectedCharacters.includes(charName)) {
     selectedCharacters = selectedCharacters.filter(name => name !== charName);
-  } else if (selectedCharacters.length < 3) {
+  } else if (selectedCharacters.length < 5) {
     selectedCharacters.push(charName);
   }
 

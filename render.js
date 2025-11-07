@@ -14,11 +14,11 @@ export let importedModules = {}; // Object lưu module dynamic: { "Surtr": { ini
 let selectedCharacters = []; // Sẽ đọc từ localStorage
 export let botSelected = [];  // Export để bot.js dùng
 // Thêm biến mới
-let playerDP = 20; // DP ban đầu cho người chơi
-const MAX_DP = 50; // DP tối đa
+let playerDP = 40; // DP ban đầu cho người chơi
+const MAX_DP = 100; // DP tối đa
 const MAX_UNITS_PER_SIDE = 10; // Giới hạn 10 unit mỗi bên
 let lastDeployTime = {}; // Lưu thời gian thả cuối cùng cho mỗi char
-const DP_REGEN_RATE = 1; // +1 DP mỗi giây
+const DP_REGEN_RATE = 5; // +1 DP mỗi giây
 // Thêm biến cho nút điều khiển camera
 let isLeftArrowPressed = false;
 let isRightArrowPressed = false;
@@ -76,7 +76,8 @@ const characterModules = {
   "Frost Nova": './models/enemies/FrostNova/FrostNova.js', // Nếu có space trong name, dùng như vậy
   "Exusiai": './models/operators/Exusiai/Exusiai.js',
   "Kroos": './models/operators/Kroos/Kroos.js',
-  "Reid": './models/enemies/HatefulAvenger/Reid.js'
+  "Reid": './models/enemies/HatefulAvenger/Reid.js',
+  "Lost Colossus": './models/enemies/Colossus/LostColossus.js'
 };
 
 // THÊM MỚI: Map để xử lý tên nhân vật có dấu/special char (như "Ch'en" -> "Chen") để gọi hàm đúng
@@ -87,7 +88,8 @@ export const characterModuleNameMap = {
   "Frost Nova": "FrostNova",
   "Exusiai": "Exusiai",
   "Kroos": "Kroos",
-  "Reid": "Reid"
+  "Reid": "Reid",
+  "Lost Colossus": "LostColossus"
   // Thêm nhân vật mới nếu cần, ví dụ: "Some'Char": "SomeChar"
 };
 
@@ -134,8 +136,8 @@ async function init() {
 
   // Bot tự chọn ngẫu nhiên 3 nhân vật từ characterModules (có thể khác player)
   const allAvailableChars = Object.keys(characterModules);  // ['Surtr', 'Shu', "Ch'en", 'Frost Nova']
-  botSelected = allAvailableChars.sort(() => 0.5 - Math.random()).slice(0, 3);  // Chọn random 3, không lặp
-  // botSelected = ["Frost Nova", "Ch'en", "Exusiai", "Shu", "Kroos"];
+  botSelected = allAvailableChars.sort(() => 0.5 - Math.random()).slice(0, 5);  // Chọn random 3, không lặp
+  // botSelected = ["Frost Nova", "Ch'en", "Surtr"];
   console.log(`Bot đã chọn: ${botSelected.join(', ')}`);
 
   // Dynamic import và init chỉ cho botSelected (tương tự player)
@@ -176,6 +178,7 @@ async function init() {
         case "Exusiai": module.initExusiai(gl); break;
         case "Kroos": module.initKroos(gl); break;
         case "Reid": module.initReid(gl); break;
+        case "Lost Colossus": module.initLostColossus(gl); break;
       }
       console.log(`Đã import và init ${char}`);
     } catch (error) {

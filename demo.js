@@ -4,7 +4,7 @@ let canvas, backgroundCanvas, backgroundCtx;
 let gl;
 let importedModules = {}; // Lưu module dynamic
 const characterModuleNameMap = {
-  "Exusiai": "Exusiai"
+  "Lost Colossus": "LostColossus" //Không khoảng cách ở giữa
 };
 const GROUND_Y = 0;
 const WORLD_WIDTH = 2000;
@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Exusiai": './models/operators/Exusiai/Exusiai.js'
+  "Lost Colossus": './models/enemies/Colossus/LostColossus.js'
 };
 
 // Load groundTileImage
@@ -64,8 +64,8 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
 }
 
 // Hàm để render Surtr bot ở trạng thái idle
-function addExusiaiBotForTesting() {
-  const char = "Exusiai";
+function addLostColossusBotForTesting() {
+  const char = "Lost Colossus";
   const module = importedModules[char];
   if (!module) {
     console.error(`Module cho ${char} không tồn tại`);
@@ -159,13 +159,13 @@ async function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // Load module cho Surtr
-  const char = "Exusiai";
+  const char = "Lost Colossus";
   try {
     const modulePath = characterModules[char];
     const module = await import(modulePath);
     importedModules[char] = module;
-    if (typeof module.initExusiai === 'function') {
-      module.initExusiai(gl); // Init assets
+    if (typeof module.initLostColossus === 'function') {
+      module.initLostColossus(gl); // Init assets
       console.log(`Đã load và init cho demo`);
     } else {
       console.error(`init không tồn tại trong module ${char}`);
@@ -174,7 +174,7 @@ async function init() {
     console.error(`Lỗi load:`, error);
     // Fallback
     importedModules[char] = {
-      loadExusiaiSkeleton: (x, isBot) => ({
+      loadLostColossusSkeleton: (x, isBot) => ({
         worldX: x,
         x: x,
         skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => { } } },
@@ -183,8 +183,8 @@ async function init() {
         velocity: 50,
         tower: TOWER_POSITIONS[1]
       }),
-      isExusiaiLoadingComplete: () => true,
-      renderExusiaiSkeleton: (unit) => {
+      isLostColossusLoadingComplete: () => true,
+      renderLostColossusSkeleton: (unit) => {
         backgroundCtx.fillStyle = "blue";
         backgroundCtx.fillRect(unit.worldX - camera.x - 50, GROUND_Y - 100, 100, 200);
       }
@@ -193,11 +193,11 @@ async function init() {
   }
 
   // Đợi tài nguyên Surtr load xong rồi thêm bot
-  const waitForExusiaiAssets = setInterval(() => {
+  const waitForLostColossusAssets = setInterval(() => {
     const module = importedModules[char];
-    if (module && module.isExusiaiLoadingComplete && module.isExusiaiLoadingComplete()) {
-      clearInterval(waitForExusiaiAssets); // Dừng interval khi load xong
-      addExusiaiBotForTesting(); // Thêm bot
+    if (module && module.isLostColossusLoadingComplete && module.isLostColossusLoadingComplete()) {
+      clearInterval(waitForLostColossusAssets); // Dừng interval khi load xong
+      addLostColossusBotForTesting(); // Thêm bot
     } else {
       console.log(`Đang đợi tài nguyên Surtr load...`);
     }
@@ -216,8 +216,8 @@ async function init() {
 
   // Hiển thị danh sách animation
   const module = importedModules[char];
-  if (module && module.isExusiaiLoadingComplete && module.isExusiaiLoadingComplete()) {
-    const tempUnit = module.loadExusiaiSkeleton(0, false);
+  if (module && module.isLostColossusLoadingComplete && module.isLostColossusLoadingComplete()) {
+    const tempUnit = module.loadLostColossusSkeleton(0, false);
     if (tempUnit && tempUnit.skeleton && tempUnit.skeleton.data && tempUnit.skeleton.data.animations) {
       const animations = tempUnit.skeleton.data.animations.map(anim => anim.name);
       const select = document.getElementById('animationSelect');
@@ -337,7 +337,7 @@ function render(now) {
   const enemyUnits = playerUnits.filter(unit => unit.isBot);
 
   // Cập nhật camera để hiển thị bot
-  const bot = playerUnits.find(unit => unit.type === "Exusiai" && unit.direction === -1);
+  const bot = playerUnits.find(unit => unit.type === "Lost Colossus" && unit.direction === -1);
   if (bot) {
     camera.x = Math.max(0, Math.min(bot.worldX - window.innerWidth / 2, WORLD_WIDTH - window.innerWidth));
     // console.log(`Camera di chuyển đến bot: x=${camera.x}`);
