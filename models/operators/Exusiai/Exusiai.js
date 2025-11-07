@@ -5,7 +5,6 @@ let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel";
 let currentAtlasPath = "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.atlas";
 let isSwitchingSkeleton = false;
-let hasLoggedExusiaiPosition = false;
 let fixedDamageHitbox = null;
 let projectileImages = [];
 
@@ -585,10 +584,6 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
             width: damageHitbox ? damageHitbox.width : 50,
             height: damageHitbox ? damageHitbox.height - 75 : 125
         };
-
-        if (!hasLoggedExusiaiPosition) {
-            hasLoggedExusiaiPosition = true;
-        }
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
         let closestEnemy = null;

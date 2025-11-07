@@ -112,6 +112,7 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
         target: null,
         isAttackingEnemy: false,
         isDead: false,
+        isBlocked: false,
         deathAnimationTimer: 0,
         deathAnimationComplete: false,
         groundY: GROUND_Y,
@@ -593,10 +594,8 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
     state.update(delta);
 
     if (kroosData.hp <= 0 && !kroosData.isDead && !isSwitchingSkeleton) {
-        console.log(`Kroos tại worldX=${kroosData.worldX} đã chết, chuyển sang animation Die`);
         kroosData.isDead = true;
         kroosData.isInAttackState = false;
-        kroosData.isInStartAnimation = false;
         kroosData.velocity = 0;
         switchSkeletonFile(
             kroosData,
@@ -607,7 +606,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                 if (success) {
                     console.log(`Kroos tại worldX=${kroosData.worldX} chuyển sang animation Die thành công`);
                 } else {
-                    console.error(`Không thể chuyển sang animation Die cho Kroos tại worldX=${kroosData.worldX}`);
                     kroosData.deathAnimationComplete = true;
                 }
             }
@@ -618,7 +616,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         kroosData.deathAnimationTimer += delta;
         if (kroosData.deathAnimationTimer >= 1.0) {
             kroosData.deathAnimationComplete = true;
-            console.log(`Animation Die hoàn tất (theo timer) cho Kroos tại worldX=${kroosData.worldX}`);
         }
     }
 
@@ -646,12 +643,10 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         };
 
         if (!hasLoggedKroosPosition) {
-            console.log(`Vị trí Kroos: worldX=${worldX}, y=${skeleton.y}, direction=${kroosData.direction}`);
             hasLoggedKroosPosition = true;
         }
 
         const validEnemies = Array.isArray(enemies) ? enemies : [];
-
         let closestEnemy = null;
         let minDistance = Infinity;
         validEnemies.forEach(enemy => {
@@ -696,74 +691,68 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                     if (frontAnimation === "attack" || frontAnimation === "idle" || otherAlly.isInAttackState) {
                         isBlockedByFrontAlly = true;
                         frontAlly = otherAlly;
+                        kroosData.isBlocked = isBlockedByFrontAlly;
                         break;
                     }
                 }
             }
         }
 
-        if (!kroosData.isInStartAnimation && !kroosData.isDead && !isSwitchingSkeleton) {
-            if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
-                kroosData.currentSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel" &&
-                !kroosData.isInAttackState) {
-                console.log(`Kroos tại worldX=${kroosData.worldX} không còn bị chặn, chuyển từ Idle về Move`);
+        if (!kroosData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !kroosData.isBlocked &&
+            kroosData.currentSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel" &&
+            !kroosData.isInAttackState && !isSwitchingSkeleton && !kroosData.isDead) {
+            switchSkeletonFile(
+                kroosData,
+                "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
+                "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas",
+                "Move",
+                (success) => {
+                    if (success) {
+                        kroosData.isInAttackState = false;
+                        console.log("Kroos switched back to Move animation from Idle");
+                    } else {
+                        kroosData.state.setAnimation(0, "Idle", true);
+                    }
+                }
+            );
+        }
+
+        if (isCollidingWithEnemyFlag && !isSwitchingSkeleton && isFinite(kroosDamageHitbox.x) && !kroosData.isDead) {
+            if (!kroosData.isInAttackState) {
                 switchSkeletonFile(
                     kroosData,
-                    "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
-                    "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas",
-                    "Move",
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas",
+                    "Attack",
                     (success) => {
                         if (success) {
-                            kroosData.isInAttackState = false;
-                            console.log("Kroos switched back to Move animation from Idle");
+                            kroosData.isInAttackState = true;
+                            console.log("Kroos switched to Attack animation for enemy");
                         } else {
-                            console.error("Failed to switch back to Move skeleton for Kroos");
-                            state.setAnimation(0, "Idle", true);
+                            kroosData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
-
-            if (isCollidingWithEnemyFlag && isFinite(kroosDamageHitbox.x)) {
-                if (!kroosData.isInAttackState) {
-                    console.log(`Kroos tại worldX=${kroosData.worldX} dừng để tấn công kẻ địch tại worldX=${closestEnemy.worldX}`);
-                    switchSkeletonFile(
-                        kroosData,
-                        "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
-                        "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas",
-                        "Attack",
-                        (success) => {
-                            if (success) {
-                                kroosData.isInAttackState = true;
-                                console.log("Kroos switched to Attack animation for enemy");
-                            } else {
-                                console.error("Failed to switch to Attack skeleton for Kroos");
-                                state.setAnimation(0, "Idle", true);
-                            }
+        } else if (isColliding && !isSwitchingSkeleton && isFinite(kroosDamageHitbox.x) && !kroosData.isDead) {
+            if (!kroosData.isInAttackState) {
+                switchSkeletonFile(
+                    kroosData,
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas",
+                    "Attack",
+                    (success) => {
+                        if (success) {
+                            kroosData.isInAttackState = true;
+                            console.log("Kroos switched to Attack animation for tower");
+                        } else {
+                            kroosData.state.setAnimation(0, "Idle", true);
                         }
-                    );
-                }
-            } else if (isColliding && isFinite(kroosDamageHitbox.x)) {
-                if (!kroosData.isInAttackState) {
-                    console.log("Kroos tạm dừng di chuyển do va chạm với tháp");
-                    switchSkeletonFile(
-                        kroosData,
-                        "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
-                        "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas",
-                        "Attack",
-                        (success) => {
-                            if (success) {
-                                kroosData.isInAttackState = true;
-                                console.log("Kroos switched to Attack animation for tower");
-                            } else {
-                                console.error("Failed to switch to Attack skeleton for Kroos");
-                                state.setAnimation(0, "Idle", true);
-                            }
-                        }
-                    );
-                }
-            } else if (isBlockedByFrontAlly && kroosData.currentSkelPath !== "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel") {
-                console.log(`Kroos tại worldX=${kroosData.worldX} bị chặn bởi Kroos phía trước tại worldX=${frontAlly.worldX}, chuyển sang Idle`);
+                    }
+                );
+            }
+        } else if (kroosData.isBlocked && !isSwitchingSkeleton && !kroosData.isDead) {
+            if (kroosData.currentSkelPath !== "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel") {
                 switchSkeletonFile(
                     kroosData,
                     "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
@@ -774,35 +763,32 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                             kroosData.isInAttackState = false;
                             console.log("Kroos switched to Idle animation");
                         } else {
-                            console.error("Failed to switch to Idle skeleton for Kroos");
-                            state.setAnimation(0, "Idle", true);
-                        }
-                    }
-                );
-            } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly && kroosData.isInAttackState) {
-                console.log(`Kroos tại worldX=${kroosData.worldX} không còn va chạm, chuyển từ Attack về Move`);
-                switchSkeletonFile(
-                    kroosData,
-                    "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
-                    "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas",
-                    "Move",
-                    (success) => {
-                        if (success) {
-                            kroosData.isInAttackState = false;
-                            console.log("Kroos switched back to Move animation from Attack");
-                        } else {
-                            console.error("Failed to switch back to Move skeleton for Kroos");
-                            state.setAnimation(0, "Idle", true);
+                            kroosData.state.setAnimation(0, "Idle", true);
                         }
                     }
                 );
             }
+        } else if (!isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly &&
+            kroosData.isInAttackState && !isSwitchingSkeleton && !kroosData.isDead) {
+            switchSkeletonFile(
+                kroosData,
+                "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.skel",
+                "assets/operators/Kroos/KroosWitch/build_char_124_kroos_witch1.atlas",
+                "Move",
+                (success) => {
+                    if (success) {
+                        kroosData.isInAttackState = false;
+                        console.log("Kroos switched back to Move animation from Attack");
+                    } else {
+                        kroosData.state.setAnimation(0, "Idle", true);
+                    }
+                }
+            );
         }
 
-        if (!kroosData.isInStartAnimation && !kroosData.isDead && !isSwitchingSkeleton &&
-            !isCollidingWithEnemyFlag && !isColliding && !isBlockedByFrontAlly) {
+        if (!kroosData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !kroosData.isBlocked && !isSwitchingSkeleton && !kroosData.isDead) {
             kroosData.worldX += kroosData.velocity * delta * kroosData.direction;
-        } else if (isBlockedByFrontAlly && !kroosData.isDead && !isSwitchingSkeleton) {
+        } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !kroosData.isDead) {
             if (kroosData.direction === -1) {
                 const otherHitbox = {
                     x: frontAlly.worldX + frontAlly.hitbox.offsetX * (frontAlly.skeleton.scaleX || 1) - frontAlly.hitbox.width / 2,
@@ -811,7 +797,6 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                     height: frontAlly.hitbox.height
                 };
                 kroosData.worldX = otherHitbox.x + otherHitbox.width + kroosData.hitbox.width / 2 - kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1);
-                console.log(`Kroos bot tại worldX=${kroosData.worldX} được điều chỉnh để kề sát Kroos phía trước tại x=${frontAlly.worldX}`);
             }
         }
 
