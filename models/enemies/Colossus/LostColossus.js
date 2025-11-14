@@ -330,7 +330,7 @@ export function renderLostColossusSkeleton(lostColossusData, delta, camera, canv
 
             if (overlapX) {
                 const frontAnimation = ally.state.getCurrent(0)?.animation?.name.toLowerCase() || "";
-                if (frontAnimation === "attack" || frontAnimation === "idle" || ally.isInAttackState) {
+                if (frontAnimation === "attack" || frontAnimation === "idle" || frontAnimation === "skill_3_loop" || frontAnimation === "skill_3_idle" || ally.isInAttackState || ally.isInSkill3State) {
                     isBlockedByFrontAlly = true;
                     frontAlly = ally;
                     break;

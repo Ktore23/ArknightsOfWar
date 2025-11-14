@@ -808,6 +808,8 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 const dy = projectile.y - projectile.targetCenterY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < 8) {
+                    projectile.target.hp = Math.max(0, projectile.target.hp - projectile.totalDamage);
+                    
                     const isTower = projectile.target === exusiaiData.tower;
                     const baseY = isTower ? GROUND_Y + 200 : GROUND_Y + 300;
 

@@ -1210,6 +1210,25 @@ export function renderSurtrSkeleton(surtrData, delta, camera, canvas, groundTile
                     }
                 );
             }
+
+            // Xử lý đặc biệt cho skill_3_idle: chuyển sang Skill_3_Loop nếu có target
+            else if (surtrData.currentAnimation === "skill_3_idle" &&
+                (isCollidingWithEnemyFlag || isCollidingTower) &&
+                !isSwitchingSkeleton) {
+                switchSkeletonFile(
+                    surtrData,
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel",
+                    "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.atlas",
+                    "Skill_3_Begin",  // Hoặc "Skill_3_Begin" nếu cần
+                    (success) => {
+                        if (success) {
+                            surtrData.currentAnimation = "skill_3_begin";
+                            surtrData.isInSkill3State = true;  // Giữ nguyên
+                            console.log("Surtr từ skill_3_idle chuyển sang skill_3_loop");
+                        }
+                    }
+                );
+            }
         }
 
         skeleton.x = surtrData.worldX - camera.x;

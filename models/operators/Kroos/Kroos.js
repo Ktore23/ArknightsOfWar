@@ -694,12 +694,13 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                         otherAlly.isInAttackState || otherAlly.isInSkill3State) {  // <--- Thêm isInSkill3State
                         isBlockedByFrontAlly = true;
                         frontAlly = otherAlly;
-                        kroosData.isBlocked = isBlockedByFrontAlly;
                         break;
                     }
                 }
             }
         }
+
+        kroosData.isBlocked = isBlockedByFrontAlly;
 
         if (!kroosData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !kroosData.isBlocked &&
             kroosData.currentSkelPath === "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel" &&
@@ -792,14 +793,20 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
         if (!kroosData.isInStartAnimation && !isCollidingWithEnemyFlag && !isColliding && !kroosData.isBlocked && !isSwitchingSkeleton && !kroosData.isDead) {
             kroosData.worldX += kroosData.velocity * delta * kroosData.direction;
         } else if (isBlockedByFrontAlly && !isSwitchingSkeleton && !kroosData.isDead) {
-            if (kroosData.direction === -1) {
-                const otherHitbox = {
-                    x: frontAlly.worldX + frontAlly.hitbox.offsetX * (frontAlly.skeleton.scaleX || 1) - frontAlly.hitbox.width / 2,
-                    y: GROUND_Y + 220 + frontAlly.hitbox.offsetY - frontAlly.hitbox.height / 2,
-                    width: frontAlly.hitbox.width,
-                    height: frontAlly.hitbox.height
-                };
-                kroosData.worldX = otherHitbox.x + otherHitbox.width + kroosData.hitbox.width / 2 - kroosData.hitbox.offsetX * (kroosData.skeleton.scaleX || 1);
+            // === CHỈ switch sang Idle, KHÔNG điều chỉnh vị trí ===
+            if (kroosData.currentSkelPath !== "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel") {
+                switchSkeletonFile(
+                    kroosData,
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel",
+                    "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.atlas",
+                    "Idle",
+                    (success) => {
+                        if (success) {
+                            kroosData.isInAttackState = false;
+                            console.log(`Kroos[${kroosData.direction > 0 ? 'Player' : 'Bot'}] blocked → Idle`);
+                        }
+                    }
+                );
             }
         }
 

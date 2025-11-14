@@ -152,7 +152,7 @@ export const characterData = [
     0, // RES
     55, // SPD
     1.0, // SPDATK
-    375, // ATK
+    446, // ATK
     5, // DP
     5, // Cooldown
     "Kỹ năng: Sau mỗi 4 đòn đánh gây <span style='color: red;'>2 lần sát thương mỗi đòn gây 140%</span> lên kẻ địch.",
