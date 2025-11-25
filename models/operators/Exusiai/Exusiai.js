@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/operators/Exusiai/ExusiaiSale/char_103_angel_sale_8.skel";
@@ -179,22 +179,36 @@ export function loadExusiaiSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 let baseDamage = characterDataObj["Exusiai"].atk;
                 let damage1 = 0, damage2 = 0, damage3 = 0, totalDamage = 0;
 
-                let targetDef = 0;
+                // Tính sát thương dựa trên mục tiêu
                 if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
-                    targetDef = characterDataObj[exusiaiData.target.type]?.def || 0;
+                    // Mục tiêu là kẻ địch
+                    const target = exusiaiData.target;
+                    if (exusiaiData.attackCount === 5) {
+                        damage1 = baseDamage * 1.45;
+                        damage2 = baseDamage * 1.45;
+                        damage3 = baseDamage * 1.45;
+                        totalDamage = damage1 + damage2 + damage3;  // vẫn để totalDamage để log nếu muốn
+                        exusiaiData.attackCount = 0;
+                    } else {
+                        damage1 = baseDamage;
+                        damage2 = damage3 = 0;
+                        totalDamage = damage1;
+                    }
                 } else {
+                    // Mục tiêu là tháp
                     const targetTower = exusiaiData.tower;
-                    targetDef = targetTower.def || 0;
-                }
-
-                if (exusiaiData.attackCount === 5) {
-                    const burst = Math.max(baseDamage * 1.45 * 0.05, baseDamage * 1.45 - targetDef);
-                    damage1 = damage2 = damage3 = Math.round(burst);
-                    totalDamage = damage1 + damage2 + damage3;
-                    exusiaiData.attackCount = 0;
-                } else {
-                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
-                    totalDamage = damage1;
+                    // const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
+                    if (exusiaiData.attackCount === 5) {
+                        damage1 = baseDamage * 1.45;
+                        damage2 = baseDamage * 1.45;
+                        damage3 = baseDamage * 1.45;
+                        totalDamage = damage1 + damage2 + damage3;  // vẫn để totalDamage để log nếu muốn
+                        exusiaiData.attackCount = 0;
+                    } else {
+                        damage1 = baseDamage;
+                        damage2 = damage3 = 0;
+                        totalDamage = damage1;
+                    }
                 }
 
                 let targetHitbox, targetCenterX, targetCenterY;
@@ -426,22 +440,36 @@ function switchSkeletonFile(exusiaiData, newSkelPath, newAtlasPath, initialAnima
                             let baseDamage = characterDataObj["Exusiai"].atk;
                             let damage1 = 0, damage2 = 0, damage3 = 0, totalDamage = 0;
 
-                            let targetDef = 0;
+                            // Tính sát thương dựa trên mục tiêu
                             if (exusiaiData.target && exusiaiData.isAttackingEnemy) {
-                                targetDef = characterDataObj[exusiaiData.target.type]?.def || 0;
+                                // Mục tiêu là kẻ địch
+                                const target = exusiaiData.target;
+                                if (exusiaiData.attackCount === 5) {
+                                    damage1 = baseDamage * 1.45;
+                                    damage2 = baseDamage * 1.45;
+                                    damage3 = baseDamage * 1.45;
+                                    totalDamage = damage1 + damage2 + damage3;  // vẫn để totalDamage để log nếu muốn
+                                    exusiaiData.attackCount = 0;
+                                } else {
+                                    damage1 = baseDamage;
+                                    damage2 = damage3 = 0;
+                                    totalDamage = damage1;
+                                }
                             } else {
+                                // Mục tiêu là tháp
                                 const targetTower = exusiaiData.tower;
-                                targetDef = targetTower.def || 0;
-                            }
-
-                            if (exusiaiData.attackCount === 5) {
-                                const burst = Math.max(baseDamage * 1.45 * 0.05, baseDamage * 1.45 - targetDef);
-                                damage1 = damage2 = damage3 = Math.round(burst);
-                                totalDamage = damage1 + damage2 + damage3;
-                                exusiaiData.attackCount = 0;
-                            } else {
-                                damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
-                                totalDamage = damage1;
+                                // const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
+                                if (exusiaiData.attackCount === 5) {
+                                    damage1 = baseDamage * 1.45;
+                                    damage2 = baseDamage * 1.45;
+                                    damage3 = baseDamage * 1.45;
+                                    totalDamage = damage1 + damage2 + damage3;  // vẫn để totalDamage để log nếu muốn
+                                    exusiaiData.attackCount = 0;
+                                } else {
+                                    damage1 = baseDamage;
+                                    damage2 = damage3 = 0;
+                                    totalDamage = damage1;
+                                }
                             }
 
                             let targetHitbox, targetCenterX, targetCenterY;
@@ -808,14 +836,19 @@ export function renderExusiaiSkeleton(exusiaiData, delta, camera, canvas, ground
                 const dy = projectile.y - projectile.targetCenterY;
                 const distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < 8) {
-                    projectile.target.hp = Math.max(0, projectile.target.hp - projectile.totalDamage);
-                    
+                    const finalDamage1 = applyDamage(projectile.target || exusiaiData.tower, projectile.damage1, "physical");
+                    let finalDamage2, finalDamage3 = 0;
+                    if (projectile.damage2 > 0) {
+                        finalDamage2 = applyDamage(projectile.target || exusiaiData.tower, projectile.damage2, "physical");
+                        finalDamage3 = applyDamage(projectile.target || exusiaiData.tower, projectile.damage3, "physical");
+                    }
+
                     const isTower = projectile.target === exusiaiData.tower;
                     const baseY = isTower ? GROUND_Y + 200 : GROUND_Y + 300;
 
-                    if (projectile.damage1 > 0) createDamageText(projectile.targetCenterX, baseY, projectile.damage1);
-                    if (projectile.damage2 > 0) createDamageText(projectile.targetCenterX, baseY + 20, projectile.damage2);
-                    if (projectile.damage3 > 0) createDamageText(projectile.targetCenterX, baseY + 40, projectile.damage3);
+                    if (projectile.damage1 > 0) createDamageText(projectile.targetCenterX, baseY, finalDamage1);
+                    if (projectile.damage2 > 0) createDamageText(projectile.targetCenterX, baseY + 20, finalDamage2);
+                    if (projectile.damage3 > 0) createDamageText(projectile.targetCenterX, baseY + 40, finalDamage3);
 
                     projectile.active = false;
                 }

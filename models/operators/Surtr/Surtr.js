@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/operators/Surtr/SurtrSummer/surtr_summer_weapon.skel";
@@ -76,9 +76,10 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 const enemies = Array.isArray(surtrData.enemies) ? surtrData.enemies : [];
                 enemies.forEach(enemy => {
                     if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
-                        const res = characterDataObj[enemy.type]?.res || 0;
-                        const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
-                        enemy.hp = Math.max(0, enemy.hp - damage);
+                        // const res = characterDataObj[enemy.type]?.res || 0;
+                        // const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
+                        // enemy.hp = Math.max(0, enemy.hp - damage);
+                        const damage = applyDamage(enemy, atk, 'arts');
                         createDamageText(enemy.worldX, GROUND_Y + 300, damage, 'purple');
                     }
                 });
@@ -86,26 +87,29 @@ export function loadSurtrSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 // Đánh tháp nếu trong tầm
                 const tower = surtrData.tower;
                 if (tower && isCollidingWithTower(surtrData, tower)) {
-                    const res = tower.res || 0;
-                    const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
-                    tower.hp = Math.max(0, tower.hp - damage);
+                    // const res = tower.res || 0;
+                    // const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
+                    // tower.hp = Math.max(0, tower.hp - damage);
+                    const damage = applyDamage(tower, atk, 'arts');
                     createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                 }
             }
             // TRƯỚC 10s: đánh đơn như cũ
             else {
                 if (surtrData.target && surtrData.isAttackingEnemy) {
-                    const res = characterDataObj[surtrData.target.type]?.res || 0;
-                    const damage = (Math.max(0, atk * (1 - res / 100)));
-                    surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
+                    // const res = characterDataObj[surtrData.target.type]?.res || 0;
+                    // const damage = (Math.max(0, atk * (1 - res / 100)));
+                    // surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
+                    const damage = applyDamage(surtrData.target, atk, 'arts');
                     createDamageText(surtrData.target.worldX, GROUND_Y + 300, damage, 'purple');
                     if (surtrData.target.hp <= 0) surtrData.target = null;
                 } else {
                     const tower = surtrData.tower;
                     if (tower && isCollidingWithTower(surtrData, tower)) {
-                        const res = tower.res || 0;
-                        const damage = (Math.max(0, atk * (1 - res / 100)));
-                        tower.hp = Math.max(0, tower.hp - damage);
+                        // const res = tower.res || 0;
+                        // const damage = (Math.max(0, atk * (1 - res / 100)));
+                        // tower.hp = Math.max(0, tower.hp - damage);
+                        const damage = applyDamage(tower, atk, 'arts');
                         createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                     }
                 }
@@ -596,9 +600,10 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                             const enemies = Array.isArray(surtrData.enemies) ? surtrData.enemies : [];
                             enemies.forEach(enemy => {
                                 if (enemy && enemy.hp > 0 && isCollidingWithEnemy(surtrData, enemy)) {
-                                    const res = characterDataObj[enemy.type]?.res || 0;
-                                    const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
-                                    enemy.hp = Math.max(0, enemy.hp - damage);
+                                    // const res = characterDataObj[enemy.type]?.res || 0;
+                                    // const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
+                                    // enemy.hp = Math.max(0, enemy.hp - damage);
+                                    const damage = applyDamage(enemy, atk, 'arts');
                                     createDamageText(enemy.worldX, GROUND_Y + 300, damage, 'purple');
                                 }
                             });
@@ -606,26 +611,29 @@ function switchSkeletonFile(surtrData, newSkelPath, newAtlasPath, initialAnimati
                             // Đánh tháp nếu trong tầm
                             const tower = surtrData.tower;
                             if (tower && isCollidingWithTower(surtrData, tower)) {
-                                const res = tower.res || 0;
-                                const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
-                                tower.hp = Math.max(0, tower.hp - damage);
+                                // const res = tower.res || 0;
+                                // const damage = Math.round(Math.max(atk * 0.05, atk * (1 - res / 100)));
+                                // tower.hp = Math.max(0, tower.hp - damage);
+                                const damage = applyDamage(tower, atk, 'arts');
                                 createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                             }
                         }
                         // TRƯỚC 10s: đánh đơn như cũ
                         else {
                             if (surtrData.target && surtrData.isAttackingEnemy) {
-                                const res = characterDataObj[surtrData.target.type]?.res || 0;
-                                const damage = (Math.max(0, atk * (1 - res / 100)));
-                                surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
+                                // const res = characterDataObj[surtrData.target.type]?.res || 0;
+                                // const damage = (Math.max(0, atk * (1 - res / 100)));
+                                // surtrData.target.hp = Math.max(0, surtrData.target.hp - damage);
+                                const damage = applyDamage(surtrData.target, atk, 'arts');
                                 createDamageText(surtrData.target.worldX, GROUND_Y + 300, damage, 'purple');
                                 if (surtrData.target.hp <= 0) surtrData.target = null;
                             } else {
                                 const tower = surtrData.tower;
                                 if (tower && isCollidingWithTower(surtrData, tower)) {
-                                    const res = tower.res || 0;
-                                    const damage = (Math.max(0, atk * (1 - res / 100)));
-                                    tower.hp = Math.max(0, tower.hp - damage);
+                                    // const res = tower.res || 0;
+                                    // const damage = (Math.max(0, atk * (1 - res / 100)));
+                                    // tower.hp = Math.max(0, tower.hp - damage);
+                                    const damage = applyDamage(tower, atk, 'arts');
                                     createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'purple');
                                 }
                             }

@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/operators/Kroos/KroosWitch/char_124_kroos_witch1.skel";
@@ -193,28 +193,28 @@ export function loadKroosSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 // Tính sát thương dựa trên mục tiêu
                 if (kroosData.target && kroosData.isAttackingEnemy) {
                     // Mục tiêu là kẻ địch
-                    const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
+                    const target = kroosData.target;
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
-                        totalDamage = damage1 + damage2;
+                        damage1 = baseDamage * 1.4;
+                        damage2 = baseDamage * 1.4;
+                        totalDamage = damage1 + damage2;  // vẫn để totalDamage để log nếu muốn
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
+                        damage1 = baseDamage;
                         damage2 = 0;
                         totalDamage = damage1;
                     }
                 } else {
                     // Mục tiêu là tháp
                     const targetTower = kroosData.tower;
-                    const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
+                    // const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                     if (kroosData.attackCount === 5) {
-                        damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
-                        damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
-                        totalDamage = damage1 + damage2;
+                        damage1 = baseDamage * 1.4;
+                        damage2 = baseDamage * 1.4;
+                        totalDamage = damage1 + damage2;  // vẫn để totalDamage để log nếu muốn
                         kroosData.attackCount = 0;
                     } else {
-                        damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
+                        damage1 = baseDamage;
                         damage2 = 0;
                         totalDamage = damage1;
                     }
@@ -470,28 +470,28 @@ function switchSkeletonFile(kroosData, newSkelPath, newAtlasPath, initialAnimati
                             // Tính sát thương dựa trên mục tiêu
                             if (kroosData.target && kroosData.isAttackingEnemy) {
                                 // Mục tiêu là kẻ địch
-                                const targetDef = characterDataObj[kroosData.target.type]?.def || 0;
+                                const target = kroosData.target;
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - targetDef));
-                                    totalDamage = damage1 + damage2;
+                                    damage1 = baseDamage * 1.4;
+                                    damage2 = baseDamage * 1.4;
+                                    totalDamage = damage1 + damage2;  // vẫn để totalDamage để log nếu muốn
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
+                                    damage1 = baseDamage;
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }
                             } else {
                                 // Mục tiêu là tháp
                                 const targetTower = kroosData.tower;
-                                const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
+                                // const towerDef = targetTower.def || 0; // Giả sử tháp có def = 0 nếu không có dữ liệu
                                 if (kroosData.attackCount === 5) {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
-                                    damage2 = Math.round(Math.max(baseDamage * 0.05 * 1.4, baseDamage * 1.4 - towerDef));
-                                    totalDamage = damage1 + damage2;
+                                    damage1 = baseDamage * 1.4;
+                                    damage2 = baseDamage * 1.4;
+                                    totalDamage = damage1 + damage2;  // vẫn để totalDamage để log nếu muốn
                                     kroosData.attackCount = 0;
                                 } else {
-                                    damage1 = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
+                                    damage1 = baseDamage;
                                     damage2 = 0;
                                     totalDamage = damage1;
                                 }
@@ -880,40 +880,32 @@ export function renderKroosSkeleton(kroosData, delta, camera, canvas, groundTile
                     const distance = Math.sqrt(dx * dx + dy * dy);
                     const threshold = 5;
                     if (distance < threshold) {
-                        projectile.target.hp = Math.max(0, projectile.target.hp - projectile.damage);
+                        // === ĐOẠN MỚI: Tính và trừ sát thương tại đây ===
+                        const finalDamage1 = applyDamage(projectile.target || kroosData.tower, projectile.damage1, "physical");
+                        let finalDamage2 = 0;
+                        if (projectile.damage2 > 0) {
+                            finalDamage2 = applyDamage(projectile.target || kroosData.tower, projectile.damage2, "physical");
+                        }
 
                         // Phân chia logic hiển thị damage text cho bot và tháp
                         if (projectile.target !== kroosData.tower) {
                             // Mục tiêu là tháp
-                            createDamageText(
-                                projectile.targetCenterX,
-                                GROUND_Y + 300, // Đồng bộ độ cao với Surtr
-                                projectile.damage1,
-                            );
-                            if (projectile.damage2 > 0) {
-                                createDamageText(
-                                    projectile.targetCenterX,
-                                    GROUND_Y + 320, // Offset nhẹ cho damage2
-                                    projectile.damage2,
-                                );
+                            createDamageText(projectile.targetCenterX, GROUND_Y + 300, finalDamage1);
+                            if (finalDamage2 > 0) {
+                                createDamageText(projectile.targetCenterX, GROUND_Y + 320, finalDamage2);
                             }
                             console.log(`Projectile chạm tháp tại (${projectile.targetCenterX}, ${GROUND_Y + 200}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
                         } else {
                             // Mục tiêu là bot
-                            createDamageText(
-                                projectile.targetCenterX,
-                                GROUND_Y + 200, // Giữ độ cao như logic gốc
-                                projectile.damage1,
-                            );
-                            if (projectile.damage2 > 0) {
-                                createDamageText(
-                                    projectile.targetCenterX,
-                                    GROUND_Y + 220, // Offset nhẹ cho damage2
-                                    projectile.damage2,
-                                );
+                            createDamageText(projectile.targetCenterX, GROUND_Y + 200, finalDamage1);
+                            if (finalDamage2 > 0) {
+                                createDamageText(projectile.targetCenterX, GROUND_Y + 220, finalDamage2);
                             }
                             console.log(`Projectile chạm bot tại (${projectile.targetCenterX}, ${GROUND_Y + 300}), gây tổng sát thương ${projectile.damage} (damage1: ${projectile.damage1}, damage2: ${projectile.damage2})`);
                         }
+
+                        console.log(`Đạn Kroos chạm đích! Gây ${finalDamage1}${finalDamage2 > 0 ? ` + ${finalDamage2}` : ''} sát thương (sau def)`);
+
                         projectile.active = false;
                     }
                 }

@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/enemies/Colossus/LostColossus/rockman.skel";
@@ -66,16 +66,18 @@ export function loadLostColossusSkeleton(initialWorldX = 250, isBot = false, GRO
                 let atk = characterDataObj["Lost Colossus"].atk;
                 let damage;
                 if (lostColossusData.target && lostColossusData.isAttackingEnemy) {
-                    const targetDef = characterDataObj[lostColossusData.target.type]?.def || 0;
-                    damage = Math.round(Math.max(atk * 0.05, atk - targetDef));
-                    lostColossusData.target.hp = Math.max(0, lostColossusData.target.hp - damage);
+                    // const targetDef = characterDataObj[lostColossusData.target.type]?.def || 0;
+                    // damage = Math.round(Math.max(atk * 0.05, atk - targetDef));
+                    // lostColossusData.target.hp = Math.max(0, lostColossusData.target.hp - damage);
+                    damage = applyDamage(lostColossusData.target, atk, "physical");
                     createDamageText(lostColossusData.target.worldX, GROUND_Y + 300, damage);
                 } else {
                     const targetTower = lostColossusData.tower;
                     if (targetTower && isCollidingWithTower(lostColossusData, targetTower)) {
-                        const towerDef = targetTower.def || 0;
-                        damage = Math.round(Math.max(atk * 0.05, atk - towerDef));
-                        targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        // const towerDef = targetTower.def || 0;
+                        // damage = Math.round(Math.max(atk * 0.05, atk - towerDef));
+                        // targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        damage = applyDamage(targetTower, atk, "physical");
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
                         createDamageText(towerCenterX, GROUND_Y + 200, damage);
                     }

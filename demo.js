@@ -4,7 +4,7 @@ let canvas, backgroundCanvas, backgroundCtx;
 let gl;
 let importedModules = {}; // Lưu module dynamic
 const characterModuleNameMap = {
-  "Lost Colossus": "LostColossus" //Không khoảng cách ở giữa
+  "Nourished Predator": "NourishedPredator" //Không khoảng cách ở giữa
 };
 const GROUND_Y = 0;
 const WORLD_WIDTH = 2000;
@@ -39,7 +39,7 @@ const TOWER_POSITIONS = [
 
 // Module path cho nhân vật test
 const characterModules = {
-  "Lost Colossus": './models/enemies/Colossus/LostColossus.js'
+  "Nourished Predator": './models/enemies/NourishedPredator/NourishedPredator.js'
 };
 
 // Load groundTileImage
@@ -64,8 +64,8 @@ function isOverlappingWithOtherUnit(newHitbox, existingUnits) {
 }
 
 // Hàm để render Surtr bot ở trạng thái idle
-function addLostColossusBotForTesting() {
-  const char = "Lost Colossus";
+function addNourishedPredatorBotForTesting() {
+  const char = "Nourished Predator";
   const module = importedModules[char];
   if (!module) {
     console.error(`Module cho ${char} không tồn tại`);
@@ -82,7 +82,7 @@ function addLostColossusBotForTesting() {
   }
 
   // Tìm unit Surtr được thả gần nhất
-  let botWorldX = 1500;
+  let botWorldX = 1000;
 
   const newHitbox = {
     x: botWorldX + 0 - 100 / 2,
@@ -159,13 +159,13 @@ async function init() {
   gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
   // Load module cho Surtr
-  const char = "Lost Colossus";
+  const char = "Nourished Predator";
   try {
     const modulePath = characterModules[char];
     const module = await import(modulePath);
     importedModules[char] = module;
-    if (typeof module.initLostColossus === 'function') {
-      module.initLostColossus(gl); // Init assets
+    if (typeof module.initNourishedPredator === 'function') {
+      module.initNourishedPredator(gl); // Init assets
       console.log(`Đã load và init cho demo`);
     } else {
       console.error(`init không tồn tại trong module ${char}`);
@@ -174,7 +174,7 @@ async function init() {
     console.error(`Lỗi load:`, error);
     // Fallback
     importedModules[char] = {
-      loadLostColossusSkeleton: (x, isBot) => ({
+      loadNourishedPredatorSkeleton: (x, isBot) => ({
         worldX: x,
         x: x,
         skeleton: { scaleX: isBot ? -1 : 1, scaleY: 1, state: { setAnimation: () => { } } },
@@ -183,8 +183,8 @@ async function init() {
         velocity: 50,
         tower: TOWER_POSITIONS[1]
       }),
-      isLostColossusLoadingComplete: () => true,
-      renderLostColossusSkeleton: (unit) => {
+      isNourishedPredatorLoadingComplete: () => true,
+      renderNourishedPredatorSkeleton: (unit) => {
         backgroundCtx.fillStyle = "blue";
         backgroundCtx.fillRect(unit.worldX - camera.x - 50, GROUND_Y - 100, 100, 200);
       }
@@ -193,11 +193,11 @@ async function init() {
   }
 
   // Đợi tài nguyên Surtr load xong rồi thêm bot
-  const waitForLostColossusAssets = setInterval(() => {
+  const waitForNourishedPredatorAssets = setInterval(() => {
     const module = importedModules[char];
-    if (module && module.isLostColossusLoadingComplete && module.isLostColossusLoadingComplete()) {
-      clearInterval(waitForLostColossusAssets); // Dừng interval khi load xong
-      addLostColossusBotForTesting(); // Thêm bot
+    if (module && module.isNourishedPredatorLoadingComplete && module.isNourishedPredatorLoadingComplete()) {
+      clearInterval(waitForNourishedPredatorAssets); // Dừng interval khi load xong
+      addNourishedPredatorBotForTesting(); // Thêm bot
     } else {
       console.log(`Đang đợi tài nguyên Surtr load...`);
     }
@@ -216,8 +216,8 @@ async function init() {
 
   // Hiển thị danh sách animation
   const module = importedModules[char];
-  if (module && module.isLostColossusLoadingComplete && module.isLostColossusLoadingComplete()) {
-    const tempUnit = module.loadLostColossusSkeleton(0, false);
+  if (module && module.isNourishedPredatorLoadingComplete && module.isNourishedPredatorLoadingComplete()) {
+    const tempUnit = module.loadNourishedPredatorSkeleton(0, false);
     if (tempUnit && tempUnit.skeleton && tempUnit.skeleton.data && tempUnit.skeleton.data.animations) {
       const animations = tempUnit.skeleton.data.animations.map(anim => anim.name);
       const select = document.getElementById('animationSelect');

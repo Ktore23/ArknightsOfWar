@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 
@@ -65,17 +65,19 @@ export function loadReidSkeleton(initialWorldX = 250, GROUND_Y = 0) {
             const atk = reidData.atk;
 
             if (reidData.target && reidData.isAttackingEnemy) {
-                const def = characterDataObj[reidData.target.type]?.def || 0;
-                const damage = Math.round(Math.max(atk * 0.05, atk - def));
-                reidData.target.hp = Math.max(0, reidData.target.hp - damage);
+                // const def = characterDataObj[reidData.target.type]?.def || 0;
+                // const damage = Math.round(Math.max(atk * 0.05, atk - def));
+                // reidData.target.hp = Math.max(0, reidData.target.hp - damage);
+                const damage = applyDamage(reidData.target, atk, 'physical');
                 createDamageText(reidData.target.worldX, GROUND_Y + 300, damage, 'red');
                 if (reidData.target.hp <= 0) reidData.target = null;
             } else {
                 const tower = reidData.tower;
                 if (tower && isCollidingWithTower(reidData, tower)) {
-                    const def = tower.def || 0;
-                    const damage = Math.round(Math.max(atk * 0.05, atk - def));
-                    tower.hp = Math.max(0, tower.hp - damage);
+                    // const def = tower.def || 0;
+                    // const damage = Math.round(Math.max(atk * 0.05, atk - def));
+                    // tower.hp = Math.max(0, tower.hp - damage);
+                    const damage = applyDamage(tower, atk, 'physical');
                     createDamageText(tower.x + tower.hitbox.offsetX, GROUND_Y + 200, damage, 'red');
                 }
             }

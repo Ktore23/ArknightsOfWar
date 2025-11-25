@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/enemies/FrostNova/FrostNova2/frstar2.skel";
@@ -67,9 +67,10 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                 let damage;
                 if (frostNovaData.target && frostNovaData.isAttackingEnemy) {
                     // Tính sát thương phép cho enemy: ATK × (1 - (RES / 100))
-                    const targetRes = characterDataObj[frostNovaData.target.type]?.res || 0;
-                    damage = Math.round(Math.max(atk * 0.05, atk * (1 - (targetRes / 100))));
-                    frostNovaData.target.hp = Math.max(0, frostNovaData.target.hp - damage);
+                    // const targetRes = characterDataObj[frostNovaData.target.type]?.res || 0;
+                    // damage = Math.round(Math.max(atk * 0.05, atk * (1 - (targetRes / 100))));
+                    // frostNovaData.target.hp = Math.max(0, frostNovaData.target.hp - damage);
+                    damage = applyDamage(frostNovaData.target, atk, 'arts');
                     // Thêm damage text tại vị trí target
                     createDamageText(frostNovaData.target.worldX, GROUND_Y + 300, damage, 'purple');  // Làm tròn damage để hiển thị
                     // console.log(`Frost Nova tại worldX=${frostNovaData.worldX} gây ${Math.round(damage)} sát thương phép lên kẻ địch tại worldX=${frostNovaData.target.worldX} (RES: ${targetRes}). HP kẻ địch còn: ${frostNovaData.target.hp}`);
@@ -77,9 +78,10 @@ export function loadFrostNovaSkeleton(initialWorldX = 250, isBot = false, GROUND
                     const targetTower = frostNovaData.tower;
                     if (targetTower && isCollidingWithTower(frostNovaData, targetTower)) {
                         // Tính sát thương phép cho tower sử dụng res từ targetTower
-                        const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
-                        damage = Math.round(Math.max(atk * 0.05, atk * (1 - (towerRes / 100))));
-                        targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        // const towerRes = targetTower.res || 0; // Lấy res từ tower (20 theo render.js)
+                        // damage = Math.round(Math.max(atk * 0.05, atk * (1 - (towerRes / 100))));
+                        // targetTower.hp = Math.max(0, targetTower.hp - damage);
+                        damage = applyDamage(targetTower, atk, 'arts');
                         // Thêm damage text tại vị trí tháp
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
                         createDamageText(towerCenterX, GROUND_Y + 200, damage, 'purple');

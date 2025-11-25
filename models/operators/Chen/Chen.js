@@ -1,5 +1,5 @@
 import { characterDataObj } from '../../../character.js';
-import { createDamageText, GROUND_Y } from '../../../render.js';
+import { applyDamage, createDamageText, GROUND_Y } from '../../../render.js';
 
 let shader, batcher, mvp, skeletonRenderer, assetManager;
 let currentSkelPath = "assets/operators/Chen/ChenNian/chen_nian.skel";
@@ -72,18 +72,20 @@ export function loadChenSkeleton(initialWorldX = 250, GROUND_Y = 0) {
                 let finalDamage;
                 if (chenData.target && chenData.isAttackingEnemy) {
                     // Áp dụng công thức: damage = atk - def, tối thiểu 20% atk
-                    const targetDef = characterDataObj[chenData.target.type]?.def || 0;
-                    finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
-                    chenData.target.hp = Math.max(0, chenData.target.hp - finalDamage);
+                    // const targetDef = characterDataObj[chenData.target.type]?.def || 0;
+                    // finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
+                    // chenData.target.hp = Math.max(0, chenData.target.hp - finalDamage);
+                    finalDamage = applyDamage(chenData.target, baseDamage, "physical");
                     createDamageText(chenData.target.worldX, GROUND_Y + 300, finalDamage);
                     // console.log(`Chen tại worldX=${chenData.worldX} gây ${finalDamage} sát thương lên kẻ địch tại worldX=${chenData.target.worldX}. HP kẻ địch còn: ${chenData.target.hp}`);
                 } else {
                     const targetTower = chenData.tower;
                     if (targetTower && isCollidingWithTower(chenData, targetTower)) {
                         // Áp dụng công thức cho tháp: damage = atk - def, tối thiểu 20% atk
-                        let towerDef = targetTower.def || 0;
-                        finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
-                        targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
+                        // let towerDef = targetTower.def || 0;
+                        // finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
+                        // targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
+                        finalDamage = applyDamage(targetTower, baseDamage, "physical");
                         const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
                         createDamageText(towerCenterX, GROUND_Y + 200, finalDamage);
                         // console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${finalDamage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);
@@ -332,18 +334,20 @@ function switchSkeletonFile(chenData, newSkelPath, newAtlasPath, initialAnimatio
                             let finalDamage;
                             if (chenData.target && chenData.isAttackingEnemy) {
                                 // Áp dụng công thức: damage = atk - def, tối thiểu 20% atk
-                                const targetDef = characterDataObj[chenData.target.type]?.def || 0;
-                                finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
-                                chenData.target.hp = Math.max(0, chenData.target.hp - finalDamage);
+                                // const targetDef = characterDataObj[chenData.target.type]?.def || 0;
+                                // finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - targetDef));
+                                // chenData.target.hp = Math.max(0, chenData.target.hp - finalDamage);
+                                finalDamage = applyDamage(chenData.target, baseDamage, "physical");
                                 createDamageText(chenData.target.worldX, GROUND_Y + 300, finalDamage);
                                 // console.log(`Chen tại worldX=${chenData.worldX} gây ${finalDamage} sát thương lên kẻ địch tại worldX=${chenData.target.worldX}. HP kẻ địch còn: ${chenData.target.hp}`);
                             } else {
                                 const targetTower = chenData.tower;
                                 if (targetTower && isCollidingWithTower(chenData, targetTower)) {
                                     // Áp dụng công thức cho tháp: damage = atk - def, tối thiểu 20% atk
-                                    let towerDef = targetTower.def || 0;
-                                    finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
-                                    targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
+                                    // let towerDef = targetTower.def || 0;
+                                    // finalDamage = Math.round(Math.max(baseDamage * 0.05, baseDamage - towerDef));
+                                    // targetTower.hp = Math.max(0, targetTower.hp - finalDamage);
+                                    finalDamage = applyDamage(targetTower, baseDamage, "physical");
                                     const towerCenterX = targetTower.x + targetTower.hitbox.offsetX;
                                     createDamageText(towerCenterX, GROUND_Y + 200, finalDamage);
                                     // console.log(`Sự kiện OnAttack: Chen tại worldX=${chenData.worldX} gây ${finalDamage} sát thương lên tháp. HP tháp còn lại: ${targetTower.hp}`);

@@ -77,7 +77,8 @@ const characterModules = {
   "Exusiai": './models/operators/Exusiai/Exusiai.js',
   "Kroos": './models/operators/Kroos/Kroos.js',
   "Reid": './models/enemies/HatefulAvenger/Reid.js',
-  "Lost Colossus": './models/enemies/Colossus/LostColossus.js'
+  "Lost Colossus": './models/enemies/Colossus/LostColossus.js',
+  "Nourished Predator": './models/enemies/NourishedPredator/NourishedPredator.js'
 };
 
 // THÊM MỚI: Map để xử lý tên nhân vật có dấu/special char (như "Ch'en" -> "Chen") để gọi hàm đúng
@@ -89,12 +90,26 @@ export const characterModuleNameMap = {
   "Exusiai": "Exusiai",
   "Kroos": "Kroos",
   "Reid": "Reid",
-  "Lost Colossus": "LostColossus"
+  "Lost Colossus": "LostColossus",
+  "Nourished Predator": "NourishedPredator"
   // Thêm nhân vật mới nếu cần, ví dụ: "Some'Char": "SomeChar"
 };
 
 // Hàm tạo damage text mới
 export function createDamageText(worldX, y, damage, color = 'red') {
+  if (damage === 0) {
+    damageTexts.push({
+      worldX: worldX,
+      y: y,
+      value: "MISS",           // Hiển thị MISS thay vì 0
+      timer: 1.0,
+      velocityY: -50,          // Giữ nguyên tốc độ như số bình thường
+      alpha: 1.0,
+      color: '#FFD700'          // Có thể đổi thành 'white', 'purple', hoặc giữ 'red' nếu muốn giống hệt
+    });
+    return;
+  }
+
   damageTexts.push({
     worldX: worldX,      // Vị trí worldX (để theo camera)
     y: y,                // Vị trí Y ban đầu (thường là vị trí hitbox của target)
@@ -104,6 +119,30 @@ export function createDamageText(worldX, y, damage, color = 'red') {
     alpha: 1.0,          // Độ mờ ban đầu
     color: color         // Màu text (red cho vật lý, blue cho phép, v.v.)
   });
+}
+
+export function applyDamage(target, rawDamage, type = 'physical', attacker = null) {
+  if (!target || target.hp <= 0 || rawDamage <= 0) return 0;
+
+  // 1. Ưu tiên: Nếu target có hàm receiveDamage riêng → dùng nó (tương lai)
+  if (typeof target.receiveDamage === 'function') {
+    return target.receiveDamage(rawDamage, type, attacker);
+  }
+
+  // 2. Fallback: Logic cũ 100% giống hiện tại (để game không thay đổi gì cả)
+  let finalDamage = rawDamage;
+
+  if (type === 'arts') {
+    const res = target.res ?? characterDataObj[target.type]?.res ?? 0;
+    finalDamage = Math.round(Math.max(rawDamage * 0.05, rawDamage * (1 - res / 100)));
+  } else {
+    // physical (mặc định)
+    const def = target.def ?? characterDataObj[target.type]?.def ?? 0;
+    finalDamage = Math.round(Math.max(rawDamage * 0.05, rawDamage - def));
+  }
+
+  target.hp = Math.max(0, target.hp - finalDamage);
+  return finalDamage;
 }
 
 async function init() {
@@ -179,6 +218,7 @@ async function init() {
         case "Kroos": module.initKroos(gl); break;
         case "Reid": module.initReid(gl); break;
         case "Lost Colossus": module.initLostColossus(gl); break;
+        case "Nourished Predator": module.initNourishedPredator(gl); break;
       }
       console.log(`Đã import và init ${char}`);
     } catch (error) {
@@ -721,7 +761,7 @@ function render() {
     showGameOverMessage("bot");
   }
 
-  // Update và vẽ damage texts
+  // Update và vẽ damage texts – CÓ VIỀN ĐEN + KHÔNG ẢNH HƯỞNG GÌ KHÁC
   damageTexts.forEach((text, index) => {
     text.y += text.velocityY * delta;
     text.timer -= delta;
@@ -730,12 +770,27 @@ function render() {
       damageTexts.splice(index, 1);
       return;
     }
-    backgroundCtx.fillStyle = `rgba(${parseColor(text.color)}, ${text.alpha})`; // Sử dụng màu từ text.color
+
+    const screenX = text.worldX - camera.x;
+
+    // Lưu trạng thái canvas trước khi vẽ text có viền
+    backgroundCtx.save();
+
     backgroundCtx.font = "bold 24px Arial";
     backgroundCtx.textAlign = "center";
     backgroundCtx.textBaseline = "middle";
-    const screenX = text.worldX - camera.x;
+
+    // Viền đen (vẽ trước)
+    backgroundCtx.strokeStyle = "rgba(0, 0, 0, " + text.alpha + ")";
+    backgroundCtx.lineWidth = 1;           // Độ dày viền (4–6 là đẹp)
+    backgroundCtx.strokeText(text.value, screenX, text.y);
+
+    // Chữ màu chính (vẽ sau)
+    backgroundCtx.fillStyle = `rgba(${parseColor(text.color)}, ${text.alpha})`;
     backgroundCtx.fillText(text.value, screenX, text.y);
+
+    // Khôi phục lại trạng thái canvas cũ → không ảnh hưởng thanh máu, tháp, UI...
+    backgroundCtx.restore();
   });
 
   if (!isGameOver) {
